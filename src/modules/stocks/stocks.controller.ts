@@ -29,19 +29,18 @@ export class StocksController {
   constructor(private readonly stocksService: StocksService) {}
 
   @Post()
-  @Roles('Admin')
-  @ApiOperation({ summary: 'Create a new stock transaction (Admin only)' })
+  @Roles('Admin', 'Staff')
+  @ApiOperation({ summary: 'Create a new stock mutation (Admin & Staff)' })
   @ApiSuccessResponse(StockEntity)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
   async create(@Body() createStockDto: CreateStockDto): Promise<StockEntity> {
     return this.stocksService.create(createStockDto);
   }
 
   @Get()
   @Roles('Admin', 'Staff')
-  @ApiOperation({ summary: 'Get all stock records (Admin & Staff)' })
+  @ApiOperation({ summary: 'Get all stock mutations (Admin & Staff)' })
   @ApiSuccessArrayResponse(StockEntity)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findAll(): Promise<StockEntity[]> {
@@ -50,7 +49,7 @@ export class StocksController {
 
   @Get(':id')
   @Roles('Admin', 'Staff')
-  @ApiOperation({ summary: 'Get stock record by ID (Admin & Staff)' })
+  @ApiOperation({ summary: 'Get stock mutation by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiSuccessResponse(StockEntity)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -61,7 +60,7 @@ export class StocksController {
 
   @Patch(':id')
   @Roles('Admin')
-  @ApiOperation({ summary: 'Update stock transaction details (Admin only)' })
+  @ApiOperation({ summary: 'Update stock mutation (Admin only)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiSuccessResponse(StockEntity)
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -78,7 +77,7 @@ export class StocksController {
   @Delete(':id')
   @Roles('Admin')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete stock record (Admin only)' })
+  @ApiOperation({ summary: 'Delete stock mutation record (Admin only)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 204, description: 'Stock record deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })

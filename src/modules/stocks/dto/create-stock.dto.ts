@@ -12,8 +12,8 @@ export class CreateStockDto {
   @Min(1, { message: 'Quantity must be at least 1' })
   quantity: number;
 
-  @ApiProperty({ example: 'IN', enum: ['IN', 'OUT'], description: 'Transaction type' })
-  @IsEnum(['IN', 'OUT'], { message: 'Type must be either IN or OUT' })
+  @ApiProperty({ example: 'IN', enum: ['IN', 'OUT', 'ADJUSTMENT'], description: 'Transaction type' })
+  @IsEnum(['IN', 'OUT', 'ADJUSTMENT'], { message: 'Type must be either IN, OUT or ADJUSTMENT' })
   @IsNotEmpty({ message: 'Type is required' })
   type: string;
 

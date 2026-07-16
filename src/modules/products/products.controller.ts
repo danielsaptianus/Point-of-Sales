@@ -35,7 +35,7 @@ export class ProductsController {
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  @ApiResponse({ status: 409, description: 'Product SKU already exists' })
+  @ApiResponse({ status: 409, description: 'SKU already exists' })
   async create(@Body() createProductDto: CreateProductDto): Promise<ProductEntity> {
     return this.productsService.create(createProductDto);
   }
@@ -69,7 +69,7 @@ export class ProductsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  @ApiResponse({ status: 409, description: 'Product SKU already exists' })
+  @ApiResponse({ status: 409, description: 'SKU already exists' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto,

@@ -15,10 +15,17 @@ export const seedUsers = async (
     data: {
       email: 'admin@kulidigital.com',
       password: hashedPassword,
-      first_name: 'Admin',
-      last_name: 'Kuli Digital',
-      position_id: adminPositionId,
       is_active: true,
+      employee: {
+        create: {
+          employee_number: 'EMP-ADMIN-001',
+          first_name: 'Admin',
+          last_name: 'Kuli Digital',
+          gender: 'Male',
+          position_id: adminPositionId,
+          is_active: true,
+        },
+      },
     },
   });
 
@@ -26,10 +33,17 @@ export const seedUsers = async (
     data: {
       email: 'member@kulidigital.com',
       password: hashedPassword,
-      first_name: 'Staff',
-      last_name: 'Kuli Digital',
-      position_id: memberPositionId,
       is_active: true,
+      employee: {
+        create: {
+          employee_number: 'EMP-STAFF-001',
+          first_name: 'Staff',
+          last_name: 'Kuli Digital',
+          gender: 'Female',
+          position_id: memberPositionId,
+          is_active: true,
+        },
+      },
     },
   });
 

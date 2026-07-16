@@ -1,33 +1,34 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsNumber, Min, IsInt, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, Min, IsInt, IsBoolean, IsOptional } from 'class-validator';
 
 export class CreateProductDto {
-  @ApiProperty({ example: 'Espresso' })
+  @ApiProperty({ example: 'Susu UHT Cokelat 250ml' })
   @IsString()
   @IsNotEmpty({ message: 'Product name is required' })
   name: string;
 
-  @ApiProperty({ example: 'ESP-001' })
+  @ApiProperty({ example: 'SKU-SUSU-UHT-001' })
   @IsString()
-  @IsNotEmpty({ message: 'Product SKU is required' })
+  @IsNotEmpty({ message: 'SKU is required' })
   sku: string;
 
-  @ApiPropertyOptional({ example: 'Single shot espresso' })
+  @ApiPropertyOptional({ example: 'Susu UHT rasa cokelat kemasan kotak' })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ example: 15000.0 })
-  @IsNumber()
-  @Min(0, { message: 'Price must be greater than or equal to 0' })
+  @ApiProperty({ example: 6500 })
+  @IsNumber({}, { message: 'Price must be a number' })
+  @Min(0, { message: 'Price cannot be negative' })
   price: number;
 
-  @ApiProperty({ example: 1, description: 'Category ID' })
+  @ApiProperty({ example: 1 })
   @IsInt({ message: 'Category ID must be an integer' })
+  @IsNotEmpty({ message: 'Category ID is required' })
   category_id: number;
 
-  @ApiPropertyOptional({ example: true, default: true })
+  @ApiPropertyOptional({ example: true })
   @IsBoolean()
   @IsOptional()
-  is_active?: boolean = true;
+  is_active?: boolean;
 }

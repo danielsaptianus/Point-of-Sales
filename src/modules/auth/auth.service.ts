@@ -24,15 +24,19 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const { email, password } = loginDto;
 
-    // Find user with position and permissions
+    // Find user with employee, position, and permissions
     const user = await this.prisma.user.findUnique({
       where: { email },
       include: {
-        position: {
+        employee: {
           include: {
-            position_permissions: {
+            position: {
               include: {
-                permission: true,
+                position_permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
               },
             },
           },
@@ -54,8 +58,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Check if employee profile is attached
+    if (!user.employee) {
+      throw new UnauthorizedException('Employee profile not found for this user account');
+    }
+
     // Build permissions array
-    const permissions = user.position.position_permissions.map(
+    const permissions = user.employee.position.position_permissions.map(
       (pp) => pp.permission.name,
     );
 
@@ -63,23 +72,29 @@ export class AuthService {
     const payload: JwtPayload = {
       userId: user.id,
       email: user.email,
-      positionId: user.position.id,
-      positionName: user.position.name,
+      positionId: user.employee.position.id,
+      positionName: user.employee.position.name,
       permissions,
     };
 
     const access_token = this.jwtService.sign(payload);
+
+    // Record last login
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { last_login: new Date() },
+    });
 
     return {
       access_token,
       user: {
         id: user.id,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        first_name: user.employee.first_name,
+        last_name: user.employee.last_name,
         position: {
-          id: user.position.id,
-          name: user.position.name,
+          id: user.employee.position.id,
+          name: user.employee.position.name,
         },
         permissions,
       },
@@ -87,7 +102,7 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    const { email, password, first_name, last_name, position_id } = registerDto;
+    const { email, password, first_name, last_name, gender, employee_number, position_id } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -96,6 +111,16 @@ export class AuthService {
 
     if (existingUser) {
       throw new ConflictException('Email already exists');
+    }
+
+    // Check if employee_number is provided and already exists
+    const empNum = employee_number || `EMP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const existingEmployee = await this.prisma.employee.findUnique({
+      where: { employee_number: empNum },
+    });
+
+    if (existingEmployee) {
+      throw new ConflictException('Employee number already exists');
     }
 
     // Validate position exists
@@ -117,21 +142,31 @@ export class AuthService {
     // Hash password
     const hashedPassword = await PasswordUtil.hash(password);
 
-    // Create user
+    // Create user and nested employee
     const user = await this.prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        first_name,
-        last_name,
-        position_id,
+        employee: {
+          create: {
+            employee_number: empNum,
+            first_name,
+            last_name,
+            gender,
+            position_id,
+          },
+        },
       },
       include: {
-        position: {
+        employee: {
           include: {
-            position_permissions: {
+            position: {
               include: {
-                permission: true,
+                position_permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
               },
             },
           },
@@ -140,7 +175,7 @@ export class AuthService {
     });
 
     // Build permissions array
-    const permissions = user.position.position_permissions.map(
+    const permissions = user.employee.position.position_permissions.map(
       (pp) => pp.permission.name,
     );
 
@@ -148,8 +183,8 @@ export class AuthService {
     const payload: JwtPayload = {
       userId: user.id,
       email: user.email,
-      positionId: user.position.id,
-      positionName: user.position.name,
+      positionId: user.employee.position.id,
+      positionName: user.employee.position.name,
       permissions,
     };
 
@@ -160,11 +195,11 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        first_name: user.employee.first_name,
+        last_name: user.employee.last_name,
         position: {
-          id: user.position.id,
-          name: user.position.name,
+          id: user.employee.position.id,
+          name: user.employee.position.name,
         },
         permissions,
       },

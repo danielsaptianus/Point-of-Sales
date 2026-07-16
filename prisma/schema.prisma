@@ -7,23 +7,22 @@ datasource db {
 }
 
 // ============================================
-// RBAC Schema
+// 1. AUTHENTICATION & RBAC SCHEMA (Milestone 1)
 // ============================================
 
 model User {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  password   String
-  first_name String
-  last_name  String
-  is_active  Boolean   @default(true)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
+  id                  Int       @id @default(autoincrement())
+  email               String    @unique
+  password            String
+  last_password_reset DateTime? 
+  last_login          DateTime?
+  is_active           Boolean   @default(true)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
 
-  // Relations
-  position_id Int
-  position    Position @relation(fields: [position_id], references: [id])
+  // Relasi One-to-One ke Employee
+  employee            Employee?
 
   @@map("users")
 }
@@ -37,8 +36,7 @@ model Position {
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
 
-  // Relations
-  users                User[]
+  employees            Employee[]
   position_permissions PositionPermission[]
 
   @@map("positions")
@@ -48,13 +46,12 @@ model Permission {
   id          Int       @id @default(autoincrement())
   name        String    @unique
   description String?
-  resource    String // e.g., 'USER', 'TRANSACTION', 'REPORT'
-  action      String // e.g., 'VIEW', 'ADD', 'UPDATE', 'DELETE'
+  resource    String
+  action      String
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
 
-  // Relations
   position_permissions PositionPermission[]
 
   @@map("permissions")
@@ -66,7 +63,6 @@ model PositionPermission {
   permission_id Int
   created_at    DateTime @default(now())
 
-  // Relations
   position   Position   @relation(fields: [position_id], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
@@ -75,23 +71,35 @@ model PositionPermission {
 }
 
 // ============================================
-// POS System Schema
+// 2. EMPLOYEE / HR SCHEMA (Milestone 2)
 // ============================================
 
 model Employee {
-  id         Int       @id @default(autoincrement())
-  first_name String
-  last_name  String
-  email      String    @unique
-  phone      String?
-  role       String    @default("Staff") // "Admin" or "Staff"
-  is_active  Boolean   @default(true)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
+  id              Int       @id @default(autoincrement())
+  employee_number String    @unique // NIP
+  first_name      String
+  last_name       String
+  gender          String
+  phone           String?
+  address         String?
+  hire_date       DateTime?
+  is_active       Boolean   @default(true)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  user_id         Int?      @unique
+  user            User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  position_id     Int
+  position        Position  @relation(fields: [position_id], references: [id])
 
   @@map("employees")
 }
+
+// ============================================
+// 3. PRODUCT & INVENTORY SCHEMA (Milestone 3)
+// ============================================
 
 model Category {
   id          Int       @id @default(autoincrement())
@@ -100,6 +108,7 @@ model Category {
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
+  
   products    Product[]
 
   @@map("categories")
@@ -116,25 +125,24 @@ model Product {
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
 
-  // Relations
   category_id Int
   category    Category  @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  
   stocks      Stock[]
 
   @@map("products")
 }
 
 model Stock {
-  id         Int      @id @default(autoincrement())
-  quantity   Int
-  type       String   // "IN" or "OUT"
-  notes      String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  quantity       Int
+  type           String    // "IN", "OUT", "ADJUSTMENT"
+  notes          String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
 
-  // Relations
-  product_id Int
-  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product_id     Int
+  product        Product   @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@map("stocks")
 }

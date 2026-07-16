@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsInt } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsInt, IsEnum, IsOptional } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'john.doe@example.com' })
@@ -22,6 +22,16 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty({ message: 'Last name is required' })
   last_name: string;
+
+  @ApiProperty({ example: 'Male', enum: ['Male', 'Female'] })
+  @IsEnum(['Male', 'Female'], { message: 'Gender must be either Male or Female' })
+  @IsNotEmpty({ message: 'Gender is required' })
+  gender: string;
+
+  @ApiPropertyOptional({ example: 'EMP-12345' })
+  @IsString()
+  @IsOptional()
+  employee_number?: string;
 
   @ApiProperty({ example: 2, description: 'Position ID' })
   @IsInt({ message: 'Position ID must be an integer' })

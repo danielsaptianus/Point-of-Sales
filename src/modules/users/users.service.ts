@@ -20,7 +20,7 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserEntity> {
-    const { email, password, position_id, ...userData } = createUserDto;
+    const { email, password, first_name, last_name, position_id, is_active } = createUserDto;
 
     // Check if email already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -43,20 +43,36 @@ export class UsersService {
     // Hash password
     const hashedPassword = await PasswordUtil.hash(password);
 
-    // Create user
+    // Generate unique employee_number
+    const empNum = `EMP-USER-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    // Create user and nested employee
     const user = await this.prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        position_id,
-        ...userData,
+        is_active: is_active ?? true,
+        employee: {
+          create: {
+            employee_number: empNum,
+            first_name,
+            last_name,
+            gender: 'Male', // default
+            position_id,
+            is_active: is_active ?? true,
+          },
+        },
       },
       include: {
-        position: {
+        employee: {
           include: {
-            position_permissions: {
+            position: {
               include: {
-                permission: true,
+                position_permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
               },
             },
           },
@@ -75,20 +91,21 @@ export class UsersService {
       deleted_at: null,
     };
 
-    if (search) {
-      where.OR = [
-        { first_name: { contains: search, mode: 'insensitive' } },
-        { last_name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
     if (is_active !== undefined) {
       where.is_active = is_active;
     }
 
-    if (position_id) {
-      where.position_id = position_id;
+    if (search || position_id) {
+      where.employee = {};
+      if (search) {
+        where.employee.OR = [
+          { first_name: { contains: search, mode: 'insensitive' } },
+          { last_name: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+      if (position_id) {
+        where.employee.position_id = position_id;
+      }
     }
 
     const [users, total] = await Promise.all([
@@ -97,11 +114,15 @@ export class UsersService {
         skip,
         take: limit,
         include: {
-          position: {
+          employee: {
             include: {
-              position_permissions: {
+              position: {
                 include: {
-                  permission: true,
+                  position_permissions: {
+                    include: {
+                      permission: true,
+                    },
+                  },
                 },
               },
             },
@@ -133,11 +154,15 @@ export class UsersService {
     const user = await this.prisma.user.findFirst({
       where: { id, deleted_at: null },
       include: {
-        position: {
+        employee: {
           include: {
-            position_permissions: {
+            position: {
               include: {
-                permission: true,
+                position_permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
               },
             },
           },
@@ -155,13 +180,14 @@ export class UsersService {
   async update(id: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     const user = await this.prisma.user.findFirst({
       where: { id, deleted_at: null },
+      include: { employee: true },
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    const { email, password, ...updateData } = updateUserDto;
+    const { email, password, first_name, last_name, is_active } = updateUserDto;
 
     // Check email uniqueness if changing email
     if (email && email !== user.email) {
@@ -180,19 +206,32 @@ export class UsersService {
       hashedPassword = await PasswordUtil.hash(password);
     }
 
+    // Update user and optionally linked employee
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
-        ...updateData,
         ...(email && { email }),
         ...(hashedPassword && { password: hashedPassword }),
+        ...(is_active !== undefined && { is_active }),
+        ...(user.employee && (first_name || last_name) && {
+          employee: {
+            update: {
+              ...(first_name && { first_name }),
+              ...(last_name && { last_name }),
+            },
+          },
+        }),
       },
       include: {
-        position: {
+        employee: {
           include: {
-            position_permissions: {
+            position: {
               include: {
-                permission: true,
+                position_permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
               },
             },
           },
@@ -222,10 +261,15 @@ export class UsersService {
   async changePosition(id: number, changePositionDto: ChangePositionDto): Promise<UserEntity> {
     const user = await this.prisma.user.findFirst({
       where: { id, deleted_at: null },
+      include: { employee: true },
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    if (!user.employee) {
+      throw new BadRequestException('Employee profile not found for this user account');
     }
 
     // Validate position exists
@@ -237,23 +281,13 @@ export class UsersService {
       throw new BadRequestException('Invalid position ID');
     }
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
+    // Update position in Employee model
+    await this.prisma.employee.update({
+      where: { id: user.employee.id },
       data: { position_id: changePositionDto.position_id },
-      include: {
-        position: {
-          include: {
-            position_permissions: {
-              include: {
-                permission: true,
-              },
-            },
-          },
-        },
-      },
     });
 
-    return UserTransformHelper.toEntity(updatedUser);
+    return this.findOne(id);
   }
 
   async assignPermissions(
@@ -262,11 +296,15 @@ export class UsersService {
   ): Promise<UserEntity> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deleted_at: null },
-      include: { position: true },
+      include: { employee: { include: { position: true } } },
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    if (!user.employee) {
+      throw new BadRequestException('Employee profile not found for this user account');
     }
 
     // Validate all permissions exist
@@ -280,7 +318,7 @@ export class UsersService {
 
     // Get current permissions for the position
     const currentPermissions = await this.prisma.positionPermission.findMany({
-      where: { position_id: user.position_id },
+      where: { position_id: user.employee.position_id },
     });
 
     const currentPermissionIds = currentPermissions.map((pp) => pp.permission_id);
@@ -295,7 +333,7 @@ export class UsersService {
     if (permissionsToAdd.length > 0) {
       await this.prisma.positionPermission.createMany({
         data: permissionsToAdd.map((permission_id) => ({
-          position_id: user.position_id,
+          position_id: user.employee.position_id,
           permission_id,
         })),
         skipDuplicates: true,
@@ -312,11 +350,15 @@ export class UsersService {
   ): Promise<UserEntity> {
     const user = await this.prisma.user.findFirst({
       where: { id: userId, deleted_at: null },
-      include: { position: true },
+      include: { employee: { include: { position: true } } },
     });
 
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    if (!user.employee) {
+      throw new BadRequestException('Employee profile not found for this user account');
     }
 
     // Validate all permissions exist
@@ -333,7 +375,7 @@ export class UsersService {
     // Remove permissions
     await this.prisma.positionPermission.deleteMany({
       where: {
-        position_id: user.position_id,
+        position_id: user.employee.position_id,
         permission_id: { in: permissionIds },
       },
     });
