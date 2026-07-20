@@ -1,0 +1,154 @@
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '@common/prisma/prisma.service';
+import { CreateSaleDto } from './dto/create-sale.dto';
+import { SaleEntity } from './entities/sale.entity';
+
+@Injectable()
+export class SalesService {
+  constructor(private prisma: PrismaService) {}
+
+  async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<SaleEntity> {
+    const { payment_method, tax = 0, discount = 0, items } = createSaleDto;
+
+    // Menjalankan sekelompok operasi database dalam satu blok $transaction (atomik)
+    return this.prisma.$transaction(async (tx) => {
+      let subtotal = 0;
+      const transactionItemsData = [];
+
+      // 1. Validasi produk dan kalkulasi subtotal harga
+      for (const item of items) {
+        const product = await tx.product.findFirst({
+          where: { id: item.product_id, deleted_at: null },
+        });
+
+        if (!product) {
+          throw new BadRequestException(`Product dengan ID ${item.product_id} tidak ditemukan`);
+        }
+
+        if (!product.is_active) {
+          throw new BadRequestException(`Product ${product.name} sedang tidak aktif`);
+        }
+
+        // Kalkulasi ketersediaan akumulasi stok produk
+        const stockAggregate = await tx.stock.aggregate({
+          _sum: { quantity: true },
+          where: { product_id: item.product_id },
+        });
+        const currentStock = stockAggregate._sum.quantity || 0;
+
+        if (currentStock < item.quantity) {
+          throw new BadRequestException(`Stok produk ${product.name} tidak mencukupi. Tersedia: ${currentStock}, diminta: ${item.quantity}`);
+        }
+
+        const itemSubtotal = product.price * item.quantity;
+        subtotal += itemSubtotal;
+
+        transactionItemsData.push({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: product.price,
+          subtotal: itemSubtotal,
+        });
+      }
+
+      const total = subtotal + tax - discount;
+      if (total < 0) {
+        throw new BadRequestException('Total transaksi tidak boleh bernilai negatif');
+      }
+
+      // Generate nomor invoice transaksi unik
+      const invoiceNumber = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+      // 2. Buat record transaksi utama (Transaction)
+      const transaction = await tx.transaction.create({
+        data: {
+          invoice_number: invoiceNumber,
+          subtotal,
+          tax,
+          discount,
+          total,
+          status: 'PAID', // Untuk CASH langsung lunas
+          user_id: userId,
+          transaction_items: {
+            createMany: {
+              data: transactionItemsData,
+            },
+          },
+        },
+      });
+
+      // 3. Kurangi stok produk secara otomatis dengan membuat mutasi stok keluar (type: OUT)
+      for (const item of transactionItemsData) {
+        await tx.stock.create({
+          data: {
+            product_id: item.product_id,
+            quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
+            type: 'OUT',
+            notes: `Auto stock deduction from sale ${invoiceNumber}`,
+            transaction_id: transaction.id,
+          },
+        });
+      }
+
+      // 4. Catat detail pembayaran (Payment) sebagai CASH
+      await tx.payment.create({
+        data: {
+          payment_method: 'CASH',
+          status: 'PAID',
+          paid_at: new Date(),
+          transaction_id: transaction.id,
+        },
+      });
+
+      // Kembalikan data transaksi yang baru dibuat lengkap dengan relasinya
+      const finalTransaction = await tx.transaction.findUnique({
+        where: { id: transaction.id },
+        include: {
+          transaction_items: { include: { product: true } },
+          payment: true,
+        },
+      });
+
+      return new SaleEntity(finalTransaction);
+    });
+  }
+
+  async findAll(query: any): Promise<SaleEntity[]> {
+    const { status, cashier_id } = query;
+    const where: any = { deleted_at: null };
+
+    if (status) {
+      where.status = status;
+    }
+    if (cashier_id) {
+      where.user_id = Number(cashier_id);
+    }
+
+    const transactions = await this.prisma.transaction.findMany({
+      where,
+      include: {
+        transaction_items: { include: { product: true } },
+        payment: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return transactions.map((t) => new SaleEntity(t));
+  }
+
+  async findOne(id: number): Promise<SaleEntity> {
+    const transaction = await this.prisma.transaction.findFirst({
+      where: { id, deleted_at: null },
+      include: {
+        transaction_items: { include: { product: true } },
+        payment: true,
+      },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(`Transaksi dengan ID ${id} tidak ditemukan`);
+    }
+
+    return new SaleEntity(transaction);
+  }
+}

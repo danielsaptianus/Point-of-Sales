@@ -23,6 +23,9 @@ model User {
 
   // Relasi One-to-One ke Employee
   employee            Employee?
+  
+  // Transactions recorded by this user (cashier)
+  transactions        Transaction[]
 
   @@map("users")
 }
@@ -129,6 +132,7 @@ model Product {
   category    Category  @relation(fields: [category_id], references: [id], onDelete: Restrict)
   
   stocks      Stock[]
+  transaction_items TransactionItem[]
 
   @@map("products")
 }
@@ -143,6 +147,70 @@ model Stock {
 
   product_id     Int
   product        Product   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  
+  // Linkage to transaction if stock change is caused by a sale
+  transaction_id Int?
+  transaction    Transaction? @relation(fields: [transaction_id], references: [id], onDelete: SetNull)
 
   @@map("stocks")
+}
+
+// ============================================
+// 4. SALES & TRANSACTION SCHEMA (Milestone 4)
+// ============================================
+
+model Transaction {
+  id             Int       @id @default(autoincrement())
+  invoice_number String    @unique // e.g. "INV-20260720-XXXX"
+  subtotal       Float     // Total before discount & tax
+  tax            Float     @default(0)
+  discount       Float     @default(0)
+  total          Float     // Net total to pay
+  status         String    @default("PENDING") // "PENDING", "PAID", "CANCELLED", "FAILED"
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+  deleted_at     DateTime?
+
+  // Relations
+  user_id        Int       // Cashier user ID
+  user           User      @relation(fields: [user_id], references: [id])
+  
+  transaction_items TransactionItem[]
+  payment           Payment?
+  stocks            Stock[] // Records stock reduction for this transaction
+
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id             Int         @id @default(autoincrement())
+  quantity       Int
+  price          Float       // Price at checkout time
+  subtotal       Float       // quantity * price
+  
+  // Relations
+  transaction_id Int
+  transaction    Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  product_id     Int
+  product        Product     @relation(fields: [product_id], references: [id], onDelete: Restrict)
+
+  @@map("transaction_items")
+}
+
+model Payment {
+  id              Int       @id @default(autoincrement())
+  payment_method  String    // "CASH", "IPAYMU_REDIRECT"
+  payment_gateway String?   // "IPAYMU"
+  reference_id    String?   @unique // SessionID or Transaction ID from iPaymu
+  status          String    @default("PENDING") // "PENDING", "PAID", "EXPIRED", "FAILED"
+  checkout_url    String?   // Redirect url for iPaymu
+  paid_at         DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  // Relations
+  transaction_id  Int       @unique
+  transaction     Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+
+  @@map("payments")
 }

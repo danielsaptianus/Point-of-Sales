@@ -27,11 +27,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.userId },
       include: {
-        position: {
+        employee: {
           include: {
-            position_permissions: {
+            position: {
               include: {
-                permission: true,
+                position_permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
               },
             },
           },
@@ -39,20 +43,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
-    if (!user || !user.is_active) {
-      throw new UnauthorizedException('User not found or inactive');
+    if (!user || !user.is_active || !user.employee?.position) {
+      throw new UnauthorizedException('User not found, inactive, or missing employee profile');
     }
 
-    // Build permissions array from position
-    const permissions = user.position.position_permissions.map(
+    // Build permissions array from the employee's position
+    const permissions = user.employee.position.position_permissions.map(
       (pp) => pp.permission.name,
     );
 
     return {
       userId: user.id,
       email: user.email,
-      positionId: user.position.id,
-      positionName: user.position.name,
+      positionId: user.employee.position.id,
+      positionName: user.employee.position.name,
       permissions,
     };
   }

@@ -23,6 +23,7 @@ import { EmployeesModule } from './modules/employees/employees.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductsModule } from './modules/products/products.module';
 import { StocksModule } from './modules/stocks/stocks.module';
+import { SalesModule } from './modules/sales/sales.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { StocksModule } from './modules/stocks/stocks.module';
     CategoriesModule,
     ProductsModule,
     StocksModule,
+    SalesModule,
     HealthModule,
   ],
   providers: [
