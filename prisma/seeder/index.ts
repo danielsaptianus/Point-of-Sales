@@ -17,6 +17,9 @@ async function main() {
 
   // Clear existing data
   console.log('🗑️  Clearing existing data...');
+  await prisma.payment.deleteMany();
+  await prisma.transactionItem.deleteMany();
+  await prisma.transaction.deleteMany();
   await prisma.positionPermission.deleteMany();
   await prisma.employee.deleteMany();
   await prisma.user.deleteMany();

@@ -5,6 +5,9 @@ import {
   Body,
   Param,
   Query,
+  Headers,
+  HttpCode,
+  HttpStatus,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -16,6 +19,7 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { GetUser } from '@common/decorators/get-user.decorator';
+import { Public } from '@common/decorators/public.decorator';
 import { ApiSuccessResponse, ApiSuccessArrayResponse } from '@common/decorators/api-response.decorator';
 
 @ApiTags('Sales')
@@ -61,5 +65,31 @@ export class SalesController {
   @ApiResponse({ status: 404, description: 'Transaction not found' })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<SaleEntity> {
     return this.salesService.findOne(id);
+  }
+
+  @Post('webhook')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Callback webhook for iPaymu payment notification' })
+  @ApiResponse({ status: 200, description: 'Notification processed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid signature or body payload' })
+  async handleWebhook(
+    @Headers() headers: any,
+    @Body() body: any,
+  ): Promise<{ success: boolean; message: string }> {
+    await this.salesService.handleWebhook(headers, body);
+    return { success: true, message: 'Webhook processed successfully' };
+  }
+
+  @Post(':id/void')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Cancel/void transaction and restore stock (Admin only)' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiSuccessResponse(SaleEntity)
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Transaction not found' })
+  async voidTransaction(@Param('id', ParseIntPipe) id: number): Promise<SaleEntity> {
+    return this.salesService.voidTransaction(id);
   }
 }
