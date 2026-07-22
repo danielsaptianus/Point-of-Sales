@@ -11,6 +11,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { SalesQueryDto } from './dto/sales-query.dto';
 import { SaleEntity } from './entities/sale.entity';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -41,15 +42,10 @@ export class SalesController {
   @Get()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get all sales history' })
-  @ApiQuery({ name: 'status', required: false, example: 'PAID', description: 'Filter by transaction status' })
-  @ApiQuery({ name: 'cashier_id', required: false, example: 1, description: 'Filter by cashier user ID' })
   @ApiSuccessArrayResponse(SaleEntity)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(
-    @Query('status') status?: string,
-    @Query('cashier_id') cashier_id?: string,
-  ): Promise<SaleEntity[]> {
-    return this.salesService.findAll({ status, cashier_id });
+  async findAll(@Query() query: SalesQueryDto): Promise<SaleEntity[]> {
+    return this.salesService.findAll(query);
   }
 
   @Get(':id')

@@ -161,7 +161,7 @@ export class SalesService {
   }
 
   async findAll(query: any): Promise<SaleEntity[]> {
-    const { status, cashier_id } = query;
+    const { status, cashier_id, startDate, endDate } = query;
     const where: any = { deleted_at: null };
 
     if (status) {
@@ -169,6 +169,16 @@ export class SalesService {
     }
     if (cashier_id) {
       where.user_id = Number(cashier_id);
+    }
+
+    if (startDate || endDate) {
+      where.created_at = {};
+      if (startDate) {
+        where.created_at.gte = new Date(`${startDate}T00:00:00.000Z`);
+      }
+      if (endDate) {
+        where.created_at.lte = new Date(`${endDate}T23:59:59.999Z`);
+      }
     }
 
     const transactions = await this.prisma.transaction.findMany({
