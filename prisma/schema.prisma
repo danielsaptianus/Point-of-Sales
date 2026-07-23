@@ -142,6 +142,7 @@ model Stock {
   quantity       Int
   type           String    // "IN", "OUT", "ADJUSTMENT"
   notes          String?
+  status         String    @default("SUCCESS") // "SUCCESS", "PENDING", "FAILED"
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 

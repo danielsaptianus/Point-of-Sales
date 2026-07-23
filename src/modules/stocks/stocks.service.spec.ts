@@ -129,7 +129,7 @@ describe('StocksService Unit Tests', () => {
 
       const aggregateQuery = await prisma.stock.aggregate({
         _sum: { quantity: true },
-        where: { product_id: 1 },
+        where: { product_id: 1, status: 'SUCCESS' },
       });
 
       const totalStock = aggregateQuery._sum.quantity || 0;
@@ -137,7 +137,7 @@ describe('StocksService Unit Tests', () => {
       expect(totalStock).toBe(8);
       expect(prisma.stock.aggregate).toHaveBeenCalledWith({
         _sum: { quantity: true },
-        where: { product_id: 1 },
+        where: { product_id: 1, status: 'SUCCESS' },
       });
     });
   });

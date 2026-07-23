@@ -36,7 +36,10 @@ export class SalesService {
         // Kalkulasi ketersediaan akumulasi stok produk
         const stockAggregate = await tx.stock.aggregate({
           _sum: { quantity: true },
-          where: { product_id: item.product_id },
+          where: {
+            product_id: item.product_id,
+            status: 'SUCCESS', // Hanya menghitung stok yang sukses
+          },
         });
         const currentStock = stockAggregate._sum.quantity || 0;
 
@@ -88,6 +91,7 @@ export class SalesService {
             product_id: item.product_id,
             quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
             type: 'OUT',
+            status: payment_method === 'CASH' ? 'SUCCESS' : 'PENDING',
             notes: `Auto stock deduction from sale ${invoiceNumber}`,
             transaction_id: transaction.id,
           },
