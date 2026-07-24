@@ -73,6 +73,7 @@ async function bootstrap() {
       .addTag('Categories', 'Category management endpoints')
       .addTag('Products', 'Product management endpoints')
       .addTag('Stocks', 'Stock management endpoints')
+      .addTag('Sales', 'Sales transaction endpoints')
       .addTag('Health', 'Health check endpoints')
       .build();
 

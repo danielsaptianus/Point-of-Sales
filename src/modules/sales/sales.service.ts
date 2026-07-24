@@ -212,4 +212,82 @@ export class SalesService {
 
     return new SaleEntity(transaction);
   }
+
+  /**
+   * Menangani notifikasi webhook callback dari iPaymu secara publik & aman
+   */
+  async handleWebhook(headers: Record<string, string>, body: any): Promise<void> {
+    // 1. Verifikasi digital signature untuk memastikan request benar-benar dari iPaymu
+    const isValid = this.ipaymuService.verifyNotificationSignature(headers, body);
+    if (!isValid) {
+      throw new BadRequestException('Signature atau VA iPaymu tidak valid');
+    }
+
+    const { reference_id, status_code } = body;
+
+    // 2. Cari transaksi berdasarkan nomor invoice (reference_id)
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { invoice_number: reference_id },
+      include: { payment: true },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(`Transaksi dengan invoice ${reference_id} tidak ditemukan`);
+    }
+
+    // Jika transaksi sudah lunas atau sudah dibatalkan, abaikan (Idempotent)
+    if (transaction.status !== 'PENDING') {
+      return;
+    }
+
+    const statusCodeNum = Number(status_code);
+
+    if (statusCodeNum === 1) {
+      // Pembayaran Sukses / Berhasil
+      await this.prisma.$transaction(async (tx) => {
+        // Update status transaksi utama menjadi PAID
+        await tx.transaction.update({
+          where: { id: transaction.id },
+          data: { status: 'PAID' },
+        });
+
+        // Update status detail pembayaran menjadi PAID
+        if (transaction.payment) {
+          await tx.payment.update({
+            where: { id: transaction.payment.id },
+            data: { status: 'PAID', paid_at: new Date() },
+          });
+        }
+
+        // Aktifkan mutasi stok menjadi SUCCESS agar benar-benar memotong persediaan stok produk
+        await tx.stock.updateMany({
+          where: { transaction_id: transaction.id },
+          data: { status: 'SUCCESS' },
+        });
+      });
+    } else if (statusCodeNum === -1) {
+      // Pembayaran Gagal / Expired
+      await this.prisma.$transaction(async (tx) => {
+        // Update status transaksi utama menjadi FAILED
+        await tx.transaction.update({
+          where: { id: transaction.id },
+          data: { status: 'FAILED' },
+        });
+
+        // Update status detail pembayaran menjadi FAILED
+        if (transaction.payment) {
+          await tx.payment.update({
+            where: { id: transaction.payment.id },
+            data: { status: 'FAILED' },
+          });
+        }
+
+        // Set mutasi stok menjadi FAILED agar stok dikembalikan (tidak jadi berkurang)
+        await tx.stock.updateMany({
+          where: { transaction_id: transaction.id },
+          data: { status: 'FAILED' },
+        });
+      });
+    }
+  }
 }

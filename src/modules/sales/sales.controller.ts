@@ -7,6 +7,8 @@ import {
   Query,
   UseGuards,
   ParseIntPipe,
+  Headers,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SalesService } from './sales.service';
@@ -18,13 +20,14 @@ import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { GetUser } from '@common/decorators/get-user.decorator';
 import { ApiSuccessResponse, ApiSuccessArrayResponse } from '@common/decorators/api-response.decorator';
+import { Public } from '@common/decorators/public.decorator';
 
 @ApiTags('Sales')
 @ApiCookieAuth()
 @Controller({ path: 'sales', version: '1' })
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SalesController {
-  constructor(private readonly salesService: SalesService) {}
+  constructor(private readonly salesService: SalesService) { }
 
   @Post()
   @Roles('Admin', 'Staff')
@@ -57,5 +60,42 @@ export class SalesController {
   @ApiResponse({ status: 404, description: 'Transaction not found' })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<SaleEntity> {
     return this.salesService.findOne(id);
+  }
+
+  @Public()
+  @Post('webhook')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Handle payment gateway webhook notifications from iPaymu' })
+  @ApiResponse({ status: 200, description: 'Webhook callback processed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid webhook signature or request validation failed' })
+  async handleWebhook(
+    @Headers() headers: Record<string, string>,
+    @Body() body: any
+  ) {
+    await this.salesService.handleWebhook(headers, body);
+
+    return { success: true, message: 'Webhook callback processed successfully' };
+  }
+
+  @Public()
+  @Get('payment/return')
+  @ApiOperation({ summary: 'iPaymu callback redirect page after transaction success' })
+  paymentReturn(@Query() query: any) {
+    return {
+      statusCode: 200,
+      message: 'Pembayaran berhasil diproses. Anda dapat menutup halaman ini.',
+      data: query,
+    };
+  }
+
+  @Public()
+  @Get('payment/cancel')
+  @ApiOperation({ summary: 'iPaymu callback redirect page after transaction cancellation' })
+  paymentCancel(@Query() query: any) {
+    return {
+      statusCode: 200,
+      message: 'Pembayaran telah dibatalkan oleh pengguna.',
+      data: query,
+    };
   }
 }
