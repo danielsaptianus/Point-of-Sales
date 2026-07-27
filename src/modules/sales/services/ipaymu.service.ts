@@ -63,16 +63,6 @@ export class IPaymuService {
     const stringToSign = `POST:${this.va}:${bodyHash}:${this.apiKey}`;
     const signature = crypto.createHmac('sha256', this.apiKey).update(stringToSign).digest('hex');
 
-    console.log('=== IPAYMU DEBUG START ===');
-    console.log('Endpoint URL:', this.baseUrl);
-    console.log('VA (Header "va"):', this.va);
-    console.log('API Key (loaded):', this.apiKey ? `${this.apiKey.substring(0, 12)}...` : 'EMPTY');
-    console.log('Body Hash:', bodyHash);
-    console.log('String To Sign:', `POST:${this.va}:${bodyHash}:***API_KEY***`);
-    console.log('Generated Signature (Header "signature"):', signature);
-    console.log('Timestamp (Header "timestamp"):', this.getTimestamp());
-    console.log('=== IPAYMU DEBUG END ===');
-
     try {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
@@ -95,13 +85,81 @@ export class IPaymuService {
         const errorMsg = result.message || (result as any).Message || `iPaymu API request failed (HTTP ${response.status})`;
         throw new Error(errorMsg);
       }
- 
+
       return {
         SessionID: dataObj.SessionID || dataObj.sessionId || dataObj.session_id,
         Url: dataObj.Url || dataObj.url,
       };
     } catch (error: any) {
       throw new BadRequestException(`iPaymu SDK Error: ${error.message}`);
+    }
+  }
+
+  /**
+   * Mengirim request pembuatan transaksi pembayaran QRIS langsung (Direct Payment API /api/v2/payment/direct)
+   */
+  async createDirectPayment(payload: { amount: number; referenceId: string }): Promise<{ TransactionID: number; QrImage: string }> {
+    const requestBody = {
+      name: 'POS Customer',
+      phone: '081234567890',
+      email: 'pos_customer@example.com',
+      amount: payload.amount,
+      notifyUrl: this.notifyUrl,
+      referenceId: payload.referenceId,
+      paymentMethod: 'qris',
+      paymentChannel: 'qris',
+    };
+
+    const bodyJson = JSON.stringify(requestBody);
+    const bodyHash = crypto.createHash('sha256').update(bodyJson).digest('hex');
+    const stringToSign = `POST:${this.va}:${bodyHash}:${this.apiKey}`;
+    const signature = crypto.createHmac('sha256', this.apiKey).update(stringToSign).digest('hex');
+
+    const url = `${this.baseUrl}/direct`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'va': this.va,
+          'signature': signature,
+          'timestamp': this.getTimestamp(),
+        },
+        body: bodyJson,
+      });
+
+      const result = await response.json();
+      const successVal = result.success !== undefined ? result.success : result.Success;
+      const dataObj = result.Data || result.data;
+
+      if (!response.ok || successVal !== true || !dataObj) {
+        console.error('iPaymu Direct API Error Response:', result);
+        const errorMsg = result.message || result.Message || `iPaymu Direct API request failed (HTTP ${response.status})`;
+        throw new Error(errorMsg);
+      }
+
+      console.log('=== IPAYMU DIRECT RESPONSE ===');
+      console.log(JSON.stringify(result, null, 2));
+
+      const transactionIdRaw = dataObj.TransactionId ?? dataObj.TransactionID ?? dataObj.transactionId ?? dataObj.transaction_id ?? dataObj.trx_id;
+      if (transactionIdRaw === undefined || transactionIdRaw === null) {
+        throw new Error('Transaction ID not found in iPaymu response Data');
+      }
+
+      const transactionId = Number(transactionIdRaw);
+      if (isNaN(transactionId)) {
+        throw new Error(`Invalid non-numeric Transaction ID: ${transactionIdRaw}`);
+      }
+
+      const qrImage = dataObj.QrImage || dataObj.qrImage || dataObj.qr_image || dataObj.QrTemplate || dataObj.qr_template;
+
+      return {
+        TransactionID: transactionId,
+        QrImage: qrImage,
+      };
+    } catch (error: any) {
+      throw new BadRequestException(`iPaymu Direct Payment Error: ${error.message}`);
     }
   }
 

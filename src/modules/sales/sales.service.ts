@@ -33,13 +33,10 @@ export class SalesService {
           throw new BadRequestException(`Product ${product.name} sedang tidak aktif`);
         }
 
-        // Kalkulasi ketersediaan akumulasi stok produk
+        // Kalkulasi ketersediaan akumulasi sisa stok produk (sum log mutasi)
         const stockAggregate = await tx.stock.aggregate({
           _sum: { quantity: true },
-          where: {
-            product_id: item.product_id,
-            status: 'SUCCESS', // Hanya menghitung stok yang sukses
-          },
+          where: { product_id: item.product_id },
         });
         const currentStock = stockAggregate._sum.quantity || 0;
 
@@ -66,7 +63,7 @@ export class SalesService {
       // Generate nomor invoice transaksi unik
       const invoiceNumber = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-      // 2. Buat record transaksi utama (Transaction)
+      // 2. Buat record transaksi utama (Transaction) dengan status awal PENDING
       const transaction = await tx.transaction.create({
         data: {
           invoice_number: invoiceNumber,
@@ -74,7 +71,7 @@ export class SalesService {
           tax,
           discount,
           total,
-          status: 'PENDING', // default status
+          status: 'PENDING',
           user_id: userId,
           transaction_items: {
             createMany: {
@@ -84,21 +81,7 @@ export class SalesService {
         },
       });
 
-      // 3. Kurangi stok produk secara otomatis dengan membuat mutasi stok keluar (type: OUT)
-      for (const item of transactionItemsData) {
-        await tx.stock.create({
-          data: {
-            product_id: item.product_id,
-            quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
-            type: 'OUT',
-            status: payment_method === 'CASH' ? 'SUCCESS' : 'PENDING',
-            notes: `Auto stock deduction from sale ${invoiceNumber}`,
-            transaction_id: transaction.id,
-          },
-        });
-      }
-
-      // 4. Catat detail pembayaran (Payment) & Hubungkan ke iPaymu SDK jika non-tunai
+      // 3. Proses Pembayaran & Mutasi Stok Keluar
       if (payment_method === 'CASH') {
         // Tunai langsung PAID
         await tx.transaction.update({
@@ -114,38 +97,34 @@ export class SalesService {
             transaction_id: transaction.id,
           },
         });
-      } else if (payment_method === 'IPAYMU_REDIRECT') {
-        // Mengumpulkan nama produk untuk payload iPaymu
-        const productNames = [];
-        const productQty = [];
-        const productPrice = [];
 
+        // Mutasi stok OUT dibuat langsung HANYA untuk CASH (karena langsung lunas/sukses)
         for (const item of transactionItemsData) {
-          const product = await tx.product.findUnique({ where: { id: item.product_id } });
-          if (product) {
-            productNames.push(product.name);
-            productQty.push(item.quantity);
-            productPrice.push(item.price);
-          }
+          await tx.stock.create({
+            data: {
+              product_id: item.product_id,
+              quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
+              type: 'OUT',
+              notes: `Auto stock deduction from sale ${invoiceNumber}`,
+              transaction_id: transaction.id,
+            },
+          });
         }
-
-        // Panggil custom iPaymu SDK service
-        const iPaymuResponse = await this.ipaymuService.createRedirectPayment({
-          product: productNames,
-          qty: productQty,
-          price: productPrice,
+      } else if (payment_method === 'IPAYMU_REDIRECT') {
+        // Panggil custom iPaymu SDK service untuk Direct Payment QRIS
+        const iPaymuResponse = await this.ipaymuService.createDirectPayment({
           amount: total,
           referenceId: invoiceNumber,
         });
 
-        // Buat record pembayaran dengan status PENDING dan simpan URL redirect
+        // Buat record pembayaran dengan status PENDING dan simpan URL QR Image di checkout_url
         await tx.payment.create({
           data: {
             payment_method: 'IPAYMU_REDIRECT',
             payment_gateway: 'IPAYMU',
-            reference_id: iPaymuResponse.SessionID,
+            reference_id: String(iPaymuResponse.TransactionID),
             status: 'PENDING',
-            checkout_url: iPaymuResponse.Url,
+            checkout_url: iPaymuResponse.QrImage,
             transaction_id: transaction.id,
           },
         });
@@ -223,26 +202,35 @@ export class SalesService {
       throw new BadRequestException('Signature atau VA iPaymu tidak valid');
     }
 
-    const { reference_id, status_code } = body;
+    const { reference_id, trx_id, sid, status_code } = body;
 
-    // 2. Cari transaksi berdasarkan nomor invoice (reference_id)
-    const transaction = await this.prisma.transaction.findUnique({
-      where: { invoice_number: reference_id },
-      include: { payment: true },
+    // 2. Cari transaksi berdasarkan invoice_number (reference_id) ATAU trx_id/sid dari iPaymu
+    const transaction = await this.prisma.transaction.findFirst({
+      where: {
+        OR: [
+          { invoice_number: reference_id },
+          { payment: { reference_id: String(trx_id) } },
+          { payment: { reference_id: String(sid) } },
+        ]
+      },
+      include: {
+        payment: true,
+        transaction_items: true, // Sertakan untuk memutasi stok
+      },
     });
 
     if (!transaction) {
-      throw new NotFoundException(`Transaksi dengan invoice ${reference_id} tidak ditemukan`);
+      throw new NotFoundException(`Transaksi tidak ditemukan (reference: ${reference_id}, trx_id: ${trx_id})`);
     }
 
-    // Jika transaksi sudah lunas atau sudah dibatalkan, abaikan (Idempotent)
+    // Jika transaksi sudah lunas atau dibatalkan, abaikan (Idempotent)
     if (transaction.status !== 'PENDING') {
       return;
     }
 
     const statusCodeNum = Number(status_code);
 
-    if (statusCodeNum === 1) {
+    if (statusCodeNum === 1 || String(body.status).toLowerCase() === 'berhasil') {
       // Pembayaran Sukses / Berhasil
       await this.prisma.$transaction(async (tx) => {
         // Update status transaksi utama menjadi PAID
@@ -259,13 +247,20 @@ export class SalesService {
           });
         }
 
-        // Aktifkan mutasi stok menjadi SUCCESS agar benar-benar memotong persediaan stok produk
-        await tx.stock.updateMany({
-          where: { transaction_id: transaction.id },
-          data: { status: 'SUCCESS' },
-        });
+        // TAMBAHKAN data mutasi stok baru (OUT) saat ini karena pembayaran sudah sukses
+        for (const item of transaction.transaction_items) {
+          await tx.stock.create({
+            data: {
+              product_id: item.product_id,
+              quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
+              type: 'OUT',
+              notes: `Auto stock deduction from paid sale ${transaction.invoice_number}`,
+              transaction_id: transaction.id,
+            },
+          });
+        }
       });
-    } else if (statusCodeNum === -1) {
+    } else if (statusCodeNum === -1 || String(body.status).toLowerCase() === 'gagal') {
       // Pembayaran Gagal / Expired
       await this.prisma.$transaction(async (tx) => {
         // Update status transaksi utama menjadi FAILED
@@ -281,13 +276,75 @@ export class SalesService {
             data: { status: 'FAILED' },
           });
         }
-
-        // Set mutasi stok menjadi FAILED agar stok dikembalikan (tidak jadi berkurang)
-        await tx.stock.updateMany({
-          where: { transaction_id: transaction.id },
-          data: { status: 'FAILED' },
-        });
       });
     }
+  }
+
+  /**
+   * Membatalkan transaksi penjualan dan mengembalikan stok barang belanjaan ke persediaan (Admin Only)
+   */
+  async voidTransaction(id: number): Promise<SaleEntity> {
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Cari transaksi beserta detail item belanja & pembayaran
+      const transaction = await tx.transaction.findFirst({
+        where: { id, deleted_at: null },
+        include: {
+          transaction_items: { include: { product: true } },
+          payment: true,
+        },
+      });
+
+      if (!transaction) {
+        throw new NotFoundException(`Transaksi dengan ID ${id} tidak ditemukan`);
+      }
+
+      // 2. Cek apakah transaksi sudah dalam status final (CANCELLED/FAILED)
+      if (transaction.status === 'CANCELLED' || transaction.status === 'FAILED') {
+        throw new BadRequestException(`Transaksi dengan status ${transaction.status} tidak dapat dibatalkan (void)`);
+      }
+
+      const originalStatus = transaction.status;
+
+      // 3. Update status Transaksi menjadi CANCELLED
+      await tx.transaction.update({
+        where: { id },
+        data: { status: 'CANCELLED' },
+      });
+
+      // 4. Update status Payment menjadi CANCELLED
+      if (transaction.payment) {
+        await tx.payment.update({
+          where: { id: transaction.payment.id },
+          data: { status: 'CANCELLED' },
+        });
+      }
+
+      // 5. Restock barang jika transaksi sebelumnya berstatus PAID (stok sempat terpotong)
+      // (Menggunakan penambahan record IN baru tanpa mengubah/menimpa record mutasi lama)
+      if (originalStatus === 'PAID') {
+        for (const item of transaction.transaction_items) {
+          await tx.stock.create({
+            data: {
+              product_id: item.product_id,
+              quantity: item.quantity, // Nilai positif untuk mengembalikan stok
+              type: 'IN', // Tipe IN untuk penambahan stok kembali
+              notes: `Stock restoration from voided sale ${transaction.invoice_number}`,
+              transaction_id: transaction.id,
+            },
+          });
+        }
+      }
+
+      // 6. Ambil data transaksi yang sudah terupdate
+      const updatedTransaction = await tx.transaction.findUnique({
+        where: { id },
+        include: {
+          transaction_items: { include: { product: true } },
+          payment: true,
+        },
+      });
+
+      return new SaleEntity(updatedTransaction);
+    });
   }
 }

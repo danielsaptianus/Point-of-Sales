@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StocksService } from './stocks.service';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { CreateStockDto } from './dto/create-stock.dto';
 
 describe('StocksService Unit Tests', () => {
@@ -72,6 +72,7 @@ describe('StocksService Unit Tests', () => {
       };
 
       mockPrismaService.product.findFirst.mockResolvedValue(mockProduct);
+      mockPrismaService.stock.findFirst.mockResolvedValue(null); // Belum ada stok awal
       mockPrismaService.stock.create.mockResolvedValue(mockStockRecord);
 
       const result = await service.create(createDto);
@@ -97,6 +98,31 @@ describe('StocksService Unit Tests', () => {
       await expect(service.create(createDto)).rejects.toThrow(BadRequestException);
       expect(prisma.stock.create).not.toHaveBeenCalled();
     });
+
+    it('should throw BadRequestException if type is not IN', async () => {
+      const createDto: CreateStockDto = {
+        product_id: 1,
+        quantity: 5,
+        type: 'OUT',
+      };
+
+      await expect(service.create(createDto)).rejects.toThrow(BadRequestException);
+      expect(prisma.stock.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException if stock record for product_id already exists', async () => {
+      const createDto: CreateStockDto = {
+        product_id: 1,
+        quantity: 5,
+        type: 'IN',
+      };
+
+      mockPrismaService.product.findFirst.mockResolvedValue(mockProduct);
+      mockPrismaService.stock.findFirst.mockResolvedValue(mockStockRecord); // Sudah ada stok awal
+
+      await expect(service.create(createDto)).rejects.toThrow(ConflictException);
+      expect(prisma.stock.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('findOne (Mencari Record Mutasi)', () => {
@@ -113,6 +139,29 @@ describe('StocksService Unit Tests', () => {
       mockPrismaService.stock.findFirst.mockResolvedValue(null);
 
       await expect(service.findOne(99)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('update (Update Mutasi Stok secara Akumulatif)', () => {
+    it('should successfully update stock quantity by adding it to existing quantity', async () => {
+      mockPrismaService.stock.findFirst.mockResolvedValueOnce(mockStockRecord);
+
+      mockPrismaService.stock.update.mockResolvedValue({
+        ...mockStockRecord,
+        quantity: 110, // 10 + 100
+      });
+
+      const result = await service.update(1, { quantity: 100 });
+
+      expect(result).toBeDefined();
+      expect(result.quantity).toBe(110);
+      expect(prisma.stock.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: expect.objectContaining({
+          quantity: 110,
+        }),
+        include: expect.any(Object),
+      });
     });
   });
 

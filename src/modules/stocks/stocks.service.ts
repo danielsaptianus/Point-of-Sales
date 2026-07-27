@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
@@ -9,15 +9,29 @@ export class StocksService {
   constructor(private prisma: PrismaService) {}
 
   async create(createStockDto: CreateStockDto): Promise<StockEntity> {
-    const { product_id } = createStockDto;
+    const { product_id, type } = createStockDto;
 
-    // Validate Product exists
+    // 1. Pembuatan stok awal hanya boleh bertipe IN
+    if (type !== 'IN') {
+      throw new BadRequestException('Pembuatan stok awal hanya diperbolehkan dengan tipe IN');
+    }
+
+    // 2. Validate Product exists
     const product = await this.prisma.product.findFirst({
       where: { id: product_id, deleted_at: null },
     });
 
     if (!product) {
       throw new BadRequestException('Invalid product ID');
+    }
+
+    // 3. Hanya boleh ada 1 catatan stok awal per produk
+    const existingStock = await this.prisma.stock.findFirst({
+      where: { product_id },
+    });
+
+    if (existingStock) {
+      throw new ConflictException('Stok awal untuk produk ini sudah terdaftar. Gunakan metode PATCH untuk memperbarui stok.');
     }
 
     const stock = await this.prisma.stock.create({
@@ -51,7 +65,7 @@ export class StocksService {
   }
 
   async update(id: number, updateStockDto: UpdateStockDto): Promise<StockEntity> {
-    await this.findOne(id);
+    const existing = await this.findOne(id);
 
     if (updateStockDto.product_id) {
       const product = await this.prisma.product.findFirst({
@@ -63,9 +77,16 @@ export class StocksService {
       }
     }
 
+    const quantity = updateStockDto.quantity !== undefined
+      ? existing.quantity + updateStockDto.quantity
+      : undefined;
+
     const updatedStock = await this.prisma.stock.update({
       where: { id },
-      data: updateStockDto,
+      data: {
+        ...updateStockDto,
+        ...(quantity !== undefined ? { quantity } : {}),
+      },
       include: { product: { include: { category: true } } },
     });
 

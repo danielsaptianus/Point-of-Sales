@@ -21,6 +21,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { GetUser } from '@common/decorators/get-user.decorator';
 import { ApiSuccessResponse, ApiSuccessArrayResponse } from '@common/decorators/api-response.decorator';
 import { Public } from '@common/decorators/public.decorator';
+import { IpaymuWebhookDto } from './dto/ipaymu-webhook.dto';
 
 @ApiTags('Sales')
 @ApiCookieAuth()
@@ -65,12 +66,12 @@ export class SalesController {
   @Public()
   @Post('webhook')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Handle payment gateway webhook notifications from iPaymu' })
+  @ApiOperation({ summary: 'Webhook callback notification from iPaymu' })
   @ApiResponse({ status: 200, description: 'Webhook callback processed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid webhook signature or request validation failed' })
   async handleWebhook(
     @Headers() headers: Record<string, string>,
-    @Body() body: any
+    @Body() body: IpaymuWebhookDto
   ) {
     await this.salesService.handleWebhook(headers, body);
 
@@ -97,5 +98,17 @@ export class SalesController {
       message: 'Pembayaran telah dibatalkan oleh pengguna.',
       data: query,
     };
+  }
+
+  @Post(':id/void')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Void a sales transaction and restore stock (Admin only)' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiSuccessResponse(SaleEntity)
+  @ApiResponse({ status: 400, description: 'Transaction already voided or failed' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Transaction not found' })
+  async voidTransaction(@Param('id', ParseIntPipe) id: number): Promise<SaleEntity> {
+    return this.salesService.voidTransaction(id);
   }
 }
