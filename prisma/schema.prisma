@@ -73,9 +73,6 @@ model PositionPermission {
   @@map("position_permissions")
 }
 
-// ============================================
-// 2. EMPLOYEE / HR SCHEMA (Milestone 2)
-// ============================================
 
 model Employee {
   id              Int       @id @default(autoincrement())

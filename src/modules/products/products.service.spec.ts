@@ -91,7 +91,7 @@ describe('ProductsService Unit Tests', () => {
       expect(result.category_id).toBe(createDto.category_id);
       expect(prisma.product.create).toHaveBeenCalledWith({
         data: createDto,
-        include: { category: true },
+        include: { category: true, stocks: true },
       });
     });
 

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { IPaymuService } from './services/ipaymu.service';
+import { MidtransService } from './services/midtrans.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { SaleEntity } from './entities/sale.entity';
 
@@ -8,7 +8,7 @@ import { SaleEntity } from './entities/sale.entity';
 export class SalesService {
   constructor(
     private prisma: PrismaService,
-    private ipaymuService: IPaymuService,
+    private midtransService: MidtransService,
   ) {}
 
   async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<SaleEntity> {
@@ -81,7 +81,7 @@ export class SalesService {
         },
       });
 
-      // 3. Proses Pembayaran & Mutasi Stok Keluar
+      // 3. Proses Pembayaran
       if (payment_method === 'CASH') {
         // Tunai langsung PAID
         await tx.transaction.update({
@@ -97,34 +97,34 @@ export class SalesService {
             transaction_id: transaction.id,
           },
         });
-
-        // Mutasi stok OUT dibuat langsung HANYA untuk CASH (karena langsung lunas/sukses)
-        for (const item of transactionItemsData) {
-          await tx.stock.create({
-            data: {
-              product_id: item.product_id,
-              quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
-              type: 'OUT',
-              notes: `Auto stock deduction from sale ${invoiceNumber}`,
-              transaction_id: transaction.id,
-            },
-          });
-        }
-      } else if (payment_method === 'IPAYMU_REDIRECT') {
-        // Panggil custom iPaymu SDK service untuk Direct Payment QRIS
-        const iPaymuResponse = await this.ipaymuService.createDirectPayment({
+      } else if (payment_method === 'MIDTRANS_REDIRECT') {
+        // Panggil custom Midtrans Snap API service untuk pembayaran online
+        const midtransResponse = await this.midtransService.createSnapTransaction({
           amount: total,
           referenceId: invoiceNumber,
         });
 
-        // Buat record pembayaran dengan status PENDING dan simpan URL QR Image di checkout_url
+        // Buat record pembayaran dengan status PENDING dan simpan Snap redirect URL di checkout_url
         await tx.payment.create({
           data: {
-            payment_method: 'IPAYMU_REDIRECT',
-            payment_gateway: 'IPAYMU',
-            reference_id: String(iPaymuResponse.TransactionID),
+            payment_method: 'MIDTRANS_REDIRECT',
+            payment_gateway: 'MIDTRANS',
+            reference_id: midtransResponse.token,
             status: 'PENDING',
-            checkout_url: iPaymuResponse.QrImage,
+            checkout_url: midtransResponse.redirect_url,
+            transaction_id: transaction.id,
+          },
+        });
+      }
+
+      // 4. Mutasi Stok Keluar dibuat langsung saat checkout (untuk CASH & PENDING)
+      for (const item of transactionItemsData) {
+        await tx.stock.create({
+          data: {
+            product_id: item.product_id,
+            quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
+            type: 'OUT',
+            notes: `Stock reserved from sale checkout ${invoiceNumber}`,
             transaction_id: transaction.id,
           },
         });
@@ -193,24 +193,27 @@ export class SalesService {
   }
 
   /**
-   * Menangani notifikasi webhook callback dari iPaymu secara publik & aman
+   * Menangani notifikasi webhook callback dari Midtrans secara publik & aman
    */
   async handleWebhook(headers: Record<string, string>, body: any): Promise<void> {
-    // 1. Verifikasi digital signature untuk memastikan request benar-benar dari iPaymu
-    const isValid = this.ipaymuService.verifyNotificationSignature(headers, body);
+    console.log('=== SALES SERVICE handleWebhook ===');
+    // 1. Verifikasi digital signature untuk memastikan request benar-benar dari Midtrans
+    const isValid = this.midtransService.verifyNotificationSignature(body);
     if (!isValid) {
-      throw new BadRequestException('Signature atau VA iPaymu tidak valid');
+      console.log('Webhook signature verification failed!');
+      throw new BadRequestException('Signature Midtrans tidak valid');
     }
 
-    const { reference_id, trx_id, sid, status_code } = body;
+    const { order_id, transaction_id, transaction_status } = body;
+    console.log('Order ID (Invoice):', order_id);
+    console.log('Transaction Status from Midtrans:', transaction_status);
 
-    // 2. Cari transaksi berdasarkan invoice_number (reference_id) ATAU trx_id/sid dari iPaymu
+    // 2. Cari transaksi berdasarkan invoice_number (order_id) ATAU transaction_id/snap token dari Midtrans
     const transaction = await this.prisma.transaction.findFirst({
       where: {
         OR: [
-          { invoice_number: reference_id },
-          { payment: { reference_id: String(trx_id) } },
-          { payment: { reference_id: String(sid) } },
+          { invoice_number: order_id },
+          { payment: { reference_id: String(transaction_id) } },
         ]
       },
       include: {
@@ -220,17 +223,25 @@ export class SalesService {
     });
 
     if (!transaction) {
-      throw new NotFoundException(`Transaksi tidak ditemukan (reference: ${reference_id}, trx_id: ${trx_id})`);
+      console.log(`Transaction with order_id ${order_id} or transaction_id ${transaction_id} not found in database!`);
+      throw new NotFoundException(`Transaksi tidak ditemukan (order_id: ${order_id})`);
     }
+
+    console.log('Found Transaction in DB:', transaction.invoice_number, 'Current status:', transaction.status);
 
     // Jika transaksi sudah lunas atau dibatalkan, abaikan (Idempotent)
     if (transaction.status !== 'PENDING') {
+      console.log(`Transaction status is already final (${transaction.status}). Ignoring webhook.`);
       return;
     }
 
-    const statusCodeNum = Number(status_code);
+    const isPaid = transaction_status === 'settlement' || transaction_status === 'capture';
+    const isFailed = ['deny', 'expire', 'cancel'].includes(transaction_status);
 
-    if (statusCodeNum === 1 || String(body.status).toLowerCase() === 'berhasil') {
+    console.log('Is Paid?:', isPaid, 'Is Failed?:', isFailed);
+
+    if (isPaid) {
+      console.log('Updating transaction status to PAID...');
       // Pembayaran Sukses / Berhasil
       await this.prisma.$transaction(async (tx) => {
         // Update status transaksi utama menjadi PAID
@@ -246,21 +257,10 @@ export class SalesService {
             data: { status: 'PAID', paid_at: new Date() },
           });
         }
-
-        // TAMBAHKAN data mutasi stok baru (OUT) saat ini karena pembayaran sudah sukses
-        for (const item of transaction.transaction_items) {
-          await tx.stock.create({
-            data: {
-              product_id: item.product_id,
-              quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
-              type: 'OUT',
-              notes: `Auto stock deduction from paid sale ${transaction.invoice_number}`,
-              transaction_id: transaction.id,
-            },
-          });
-        }
       });
-    } else if (statusCodeNum === -1 || String(body.status).toLowerCase() === 'gagal') {
+      console.log('Transaction status updated to PAID successfully.');
+    } else if (isFailed) {
+      console.log('Updating transaction status to FAILED and restoring stock...');
       // Pembayaran Gagal / Expired
       await this.prisma.$transaction(async (tx) => {
         // Update status transaksi utama menjadi FAILED
@@ -276,7 +276,21 @@ export class SalesService {
             data: { status: 'FAILED' },
           });
         }
+
+        // KEMBALIKAN (RESTORE) STOK BARANG KARENA PEMBAYARAN ONLINE GAGAL
+        for (const item of transaction.transaction_items) {
+          await tx.stock.create({
+            data: {
+              product_id: item.product_id,
+              quantity: item.quantity, // Nilai positif untuk mengembalikan stok
+              type: 'IN', // Tipe IN untuk penambahan stok kembali
+              notes: `Stock restored from failed online transaction ${transaction.invoice_number}`,
+              transaction_id: transaction.id,
+            },
+          });
+        }
       });
+      console.log('Transaction status updated to FAILED and stock restored successfully.');
     }
   }
 
@@ -319,9 +333,9 @@ export class SalesService {
         });
       }
 
-      // 5. Restock barang jika transaksi sebelumnya berstatus PAID (stok sempat terpotong)
+      // 5. Restock barang jika transaksi sebelumnya berstatus PAID atau PENDING (stok sempat terpotong)
       // (Menggunakan penambahan record IN baru tanpa mengubah/menimpa record mutasi lama)
-      if (originalStatus === 'PAID') {
+      if (originalStatus === 'PAID' || originalStatus === 'PENDING') {
         for (const item of transaction.transaction_items) {
           await tx.stock.create({
             data: {

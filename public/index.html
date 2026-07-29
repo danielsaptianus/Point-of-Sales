@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Kasir - Testing Panel Utama</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f6fa;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4 {
+      margin-top: 0;
+    }
+    .container {
+      padding: 20px;
+    }
+    .header {
+      background-color: #2980b9;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      background-color: #34495e;
+      padding: 0 10px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #bdc3c7;
+      padding: 15px 20px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .tab-btn:hover {
+      color: white;
+      background-color: #2c3e50;
+    }
+    .tab-btn.active {
+      color: white;
+      background-color: #2980b9;
+      border-bottom: 4px solid #2ecc71;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    
+    /* Green (Success, Product, Stock) */
+    .bg-green { border-top: 4px solid #27ae60; }
+    .btn-green { background-color: #2ecc71; color: white; }
+    .btn-green:hover { background-color: #27ae60; }
+    
+    /* Blue (Auth, Checkout, Navigation) */
+    .bg-blue { border-top: 4px solid #2980b9; }
+    .btn-blue { background-color: #3498db; color: white; }
+    .btn-blue:hover { background-color: #2980b9; }
+    
+    /* Red (Danger, Delete, Void) */
+    .bg-red { border-top: 4px solid #c0392b; }
+    .btn-red { background-color: #e74c3c; color: white; }
+    .btn-red:hover { background-color: #c0392b; }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0 15px 0;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    label {
+      font-weight: bold;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      font-size: 13px;
+    }
+    th {
+      background-color: #f1f2f6;
+    }
+    .toast {
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .toast-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .toast-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    
+    .qris-img {
+      max-width: 250px;
+      display: block;
+      margin: 10px auto;
+      border: 2px solid #ccc;
+    }
+    .badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+    }
+    .badge-pending { background-color: #f39c12; }
+    .badge-paid { background-color: #2ecc71; }
+    .badge-cancelled { background-color: #e74c3c; }
+    .badge-failed { background-color: #7f8c8d; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1 style="margin: 0; font-size: 20px;">POS Kasir - Testing Control Panel</h1>
+    <div id="login-status">Belum Login</div>
+  </div>
+
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('kasir')">Toko Kasir (Checkout & Void)</button>
+    <button class="tab-btn" onclick="switchTab('katalog')">Katalog & Stok</button>
+    <button class="tab-btn" onclick="switchTab('kategori')">Kategori Produk</button>
+    <button class="tab-btn" onclick="switchTab('karyawan')">Karyawan / Users (Admin)</button>
+    <button class="tab-btn" onclick="switchTab('riwayat')">Riwayat Penjualan</button>
+  </div>
+
+  <div class="container">
+
+    <!-- 1. TOKO KASIR TAB -->
+    <div id="tab-kasir" class="tab-content active">
+      <div class="grid-2">
+        <!-- Login & Checkout Form -->
+        <div>
+          <!-- Auth Card -->
+          <div class="card bg-blue">
+            <h2>1. Autentikasi / Login</h2>
+            <form id="login-form">
+              <label>Email Kasir</label>
+              <input type="email" id="login-email" value="admin@arto.com" required>
+              <label>Password</label>
+              <input type="password" id="login-password" value="Password123!" required>
+              <button type="submit" class="btn-blue">Login Sekarang</button>
+              <button type="button" class="btn-red" id="btn-logout" style="margin-left: 10px;">Logout</button>
+            </form>
+            <div id="auth-log"></div>
+          </div>
+
+          <!-- Checkout Card -->
+          <div class="card bg-blue">
+            <h2>2. Keranjang Belanja & Checkout</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+              <input type="number" id="cart-pid" placeholder="Product ID" style="margin: 0; flex: 1;">
+              <input type="number" id="cart-qty" placeholder="Qty" value="1" style="margin: 0; width: 80px;">
+              <button type="button" class="btn-blue" onclick="addToCart()">+ Keranjang</button>
+            </div>
+            
+            <table id="cart-table">
+              <thead>
+                <tr>
+                  <th>Product ID</th>
+                  <th>Quantity</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="cart-items">
+                <tr><td colspan="3" style="text-align: center;">Keranjang Kosong</td></tr>
+              </tbody>
+            </table>
+
+            <form id="checkout-form" style="margin-top: 15px;">
+              <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                  <label>Diskon (IDR)</label>
+                  <input type="number" id="chk-discount" value="0">
+                </div>
+                <div style="flex: 1;">
+                  <label>Pajak (IDR)</label>
+                  <input type="number" id="chk-tax" value="0">
+                </div>
+              </div>
+              <label>Metode Pembayaran</label>
+              <select id="chk-method">
+                <option value="CASH">CASH (Tunai - Langsung PAID)</option>
+                <option value="IPAYMU_REDIRECT">IPAYMU_REDIRECT (QRIS Online - PENDING)</option>
+              </select>
+              <button type="submit" class="btn-blue" style="width: 100%; font-size: 15px;">PROSES CHECKOUT</button>
+            </form>
+            <div id="checkout-log"></div>
+          </div>
+        </div>
+
+        <!-- Checkout Results & Webhook Simulator -->
+        <div>
+          <!-- Results Card -->
+          <div class="card bg-blue">
+            <h2>3. Hasil & QRIS Barcode</h2>
+            <div id="active-checkout-panel" style="display: none; background: #f0f3f4; padding: 15px; border-radius: 6px; border-left: 5px solid #3498db;">
+              <h4>Transaksi Aktif: <span id="active-invoice" style="color: #2980b9;">-</span></h4>
+              <p>Total Bayar: <b>IDR <span id="active-total">0</span></b></p>
+              <p>Status: <span id="active-status-badge" class="badge badge-pending">PENDING</span></p>
+              
+              <div id="qris-box" style="display: none; text-align: center;">
+                <h5>Scan Barcode QRIS iPaymu:</h5>
+                <img src="" id="qris-image-src" class="qris-img">
+                <p>Reference ID / Trx ID: <span id="active-ref-id">-</span></p>
+              </div>
+            </div>
+            <div id="no-active-checkout" style="text-align: center; color: #888; padding: 20px;">
+              Belum ada transaksi aktif yang terpilih
+            </div>
+          </div>
+
+          <!-- Void Card -->
+          <div class="card bg-red">
+            <h2>4. Void Transaksi (Admin Only)</h2>
+            <form id="void-form">
+              <label>Transaction ID yang ingin dibatalkan</label>
+              <input type="number" id="void-tid" placeholder="Contoh: 1" required>
+              <button type="submit" class="btn-red" style="width: 100%;">VOID TRANSAKSI & RESTOCK</button>
+            </form>
+            <div id="void-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. KATALOG & STOK TAB -->
+    <div id="tab-katalog" class="tab-content">
+      <div class="grid-2">
+        <!-- Products Master Panel -->
+        <div class="card bg-green">
+          <h2>1. Data Produk & Edit Master</h2>
+          <button class="btn-green" onclick="fetchProducts()" style="margin-bottom: 10px;">Refresh Produk</button>
+          
+          <h3>Form Simpan/Update Produk (Admin Only)</h3>
+          <form id="product-form">
+            <input type="hidden" id="prod-id">
+            <div style="display: flex; gap: 10px;">
+              <div style="flex: 1;">
+                <label>Nama Produk</label>
+                <input type="text" id="prod-name" placeholder="Susu UHT Cokelat" required>
+              </div>
+              <div style="flex: 1;">
+                <label>SKU</label>
+                <input type="text" id="prod-sku" placeholder="SKU-SUSU-001" required>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <div style="flex: 1;">
+                <label>Harga (IDR)</label>
+                <input type="number" id="prod-price" placeholder="6500" required>
+              </div>
+              <div style="flex: 1;">
+                <label>Kategori ID</label>
+                <input type="number" id="prod-cat-id" placeholder="1" required>
+              </div>
+            </div>
+            <button type="submit" class="btn-green" id="btn-save-prod">Simpan Produk Baru</button>
+            <button type="button" class="btn-red" id="btn-cancel-edit-prod" style="display: none; margin-left: 10px;" onclick="cancelProductEdit()">Batal Edit</button>
+          </form>
+          <div id="product-log"></div>
+
+          <h3>Katalog Produk</h3>
+          <table id="products-table-master">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>SKU</th>
+                <th>Nama</th>
+                <th>Harga</th>
+                <th>Stok</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="text-align: center;">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Stock Actions & Audit Log -->
+        <div>
+          <!-- Stock Actions -->
+          <div class="card bg-green">
+            <h2>2. Kelola Persediaan (Stok)</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div>
+                <h4>A. Set Stok Awal (IN)</h4>
+                <form id="create-stock-form">
+                  <label>Product ID</label>
+                  <input type="number" id="c-stock-pid" required>
+                  <label>Jumlah Stok Awal</label>
+                  <input type="number" id="c-stock-qty" placeholder="50" required>
+                  <button type="submit" class="btn-green">Set Stok</button>
+                </form>
+              </div>
+              <div>
+                <h4>B. Restok Akumulatif (PATCH)</h4>
+                <form id="patch-stock-form">
+                  <label>Product ID</label>
+                  <input type="number" id="p-stock-pid" required>
+                  <label>Jumlah Tambahan</label>
+                  <input type="number" id="p-stock-qty" placeholder="100" required>
+                  <button type="submit" class="btn-green">Tambah Stok</button>
+                </form>
+              </div>
+            </div>
+            <div id="stock-log"></div>
+          </div>
+
+          <!-- Stock Mutation Log -->
+          <div class="card bg-green">
+            <h2>3. Log Mutasi Stok (Audit History)</h2>
+            <button class="btn-green" onclick="fetchStockHistory()" style="margin-bottom: 10px;">Refresh Riwayat Stok</button>
+            <table id="stock-history-table">
+              <thead>
+                <tr>
+                  <th>Waktu</th>
+                  <th>Prod ID</th>
+                  <th>Mutasi</th>
+                  <th>Tipe</th>
+                  <th>Catatan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" style="text-align: center;">Klik Refresh Riwayat untuk memuat data</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. KATEGORI TAB -->
+    <div id="tab-kategori" class="tab-content">
+      <div class="grid-2">
+        <!-- Category Form -->
+        <div class="card bg-green">
+          <h2>1. Buat Kategori Baru (Admin Only)</h2>
+          <form id="category-form">
+            <label>Nama Kategori</label>
+            <input type="text" id="cat-name" placeholder="Makanan Ringan" required>
+            <label>Deskripsi Kategori</label>
+            <textarea id="cat-desc" placeholder="Kue kering, snack, keripik..."></textarea>
+            <button type="submit" class="btn-green">Simpan Kategori</button>
+          </form>
+          <div id="category-log"></div>
+        </div>
+
+        <!-- Category List -->
+        <div class="card bg-green">
+          <h2>2. Daftar Kategori Produk</h2>
+          <button class="btn-green" onclick="fetchCategoriesList()" style="margin-bottom: 10px;">Refresh Daftar</button>
+          <table id="categories-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nama Kategori</th>
+                <th>Deskripsi</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="4" style="text-align: center;">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. KARYAWAN & USERS TAB -->
+    <div id="tab-karyawan" class="tab-content">
+      <div class="grid-2">
+        <!-- Registers & Creates -->
+        <div>
+          <!-- Create Login Account -->
+          <div class="card bg-blue">
+            <h2>1. Daftarkan Akun Login Kasir</h2>
+            <form id="register-form">
+              <label>Email</label>
+              <input type="email" id="reg-email" placeholder="karyawan@arto.com" required>
+              <label>Password</label>
+              <input type="password" id="reg-password" placeholder="Password123!" required>
+              <button type="submit" class="btn-blue">Register Akun Baru</button>
+            </form>
+            <div id="register-log"></div>
+          </div>
+
+          <!-- Create Employee Profile -->
+          <div class="card bg-blue">
+            <h2>2. Buat Profil Karyawan (Admin Only)</h2>
+            <form id="employee-form">
+              <label>NIP / Nomor Karyawan</label>
+              <input type="text" id="emp-num" placeholder="EMP-10024" required>
+              <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                  <label>Nama Depan</label>
+                  <input type="text" id="emp-fname" required>
+                </div>
+                <div style="flex: 1;">
+                  <label>Nama Belakang</label>
+                  <input type="text" id="emp-lname" required>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                  <label>Gender</label>
+                  <select id="emp-gender">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+                <div style="flex: 1;">
+                  <label>Jabatan (Position ID)</label>
+                  <input type="number" id="emp-pos-id" placeholder="1 = Admin, 2 = Staff" required>
+                </div>
+              </div>
+              <label>Hubungkan dengan User ID (Opsional)</label>
+              <input type="number" id="emp-uid" placeholder="ID Akun Login yang dibuat di langkah 1">
+              <button type="submit" class="btn-blue">Simpan Profil</button>
+            </form>
+            <div id="employee-log"></div>
+          </div>
+        </div>
+
+        <!-- Employee List -->
+        <div class="card bg-blue">
+          <h2>3. Daftar Pegawai Aktif (Employees)</h2>
+          <button class="btn-blue" onclick="fetchEmployees()" style="margin-bottom: 10px;">Refresh Pegawai</button>
+          <table id="employees-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>NIP</th>
+                <th>Nama</th>
+                <th>Jabatan</th>
+                <th>Akun Login</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" style="text-align: center;">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. RIWAYAT PENJUALAN TAB -->
+    <div id="tab-riwayat" class="tab-content">
+      <div class="card bg-blue">
+        <h2>Riwayat Seluruh Transaksi Penjualan Toko</h2>
+        <form id="history-filter-form" style="display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px;">
+          <div style="flex: 1;">
+            <label>Tanggal Mulai</label>
+            <input type="date" id="filter-start" style="margin: 0;">
+          </div>
+          <div style="flex: 1;">
+            <label>Tanggal Selesai</label>
+            <input type="date" id="filter-end" style="margin: 0;">
+          </div>
+          <div style="flex: 1;">
+            <label>Kasir ID (User ID)</label>
+            <input type="number" id="filter-user" placeholder="User ID" style="margin: 0;">
+          </div>
+          <button type="submit" class="btn-blue" style="height: 38px;">Tampilkan Riwayat</button>
+        </form>
+
+        <table id="sales-history-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>No Invoice</th>
+              <th>Tanggal</th>
+              <th>Subtotal</th>
+              <th>Total Bersih</th>
+              <th>Kasir</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7" style="text-align: center;">Silakan klik tombol filter di atas untuk memuat riwayat transaksi</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = '/api/v1';
+    let cart = [];
+    let activeTransaction = null;
+
+    // Switch tabs fungsionality
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.currentTarget.classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      
+      // Auto refresh list on click
+      if (tabName === 'katalog') {
+        fetchProducts();
+      } else if (tabName === 'kategori') {
+        fetchCategoriesList();
+      } else if (tabName === 'karyawan') {
+        fetchEmployees();
+      }
+    }
+
+    // Helper functions for logging status
+    function showLog(elementId, message, type = 'success') {
+      const el = document.getElementById(elementId);
+      el.innerHTML = `<div class="toast toast-${type}">${message}</div>`;
+    }
+
+    // AUTH / LOGIN
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const resJson = await response.json();
+        if (!response.ok) {
+          throw new Error(resJson.message || 'Login gagal');
+        }
+
+        document.getElementById('login-status').innerText = `Role: ${resJson.data.user.employee ? resJson.data.user.employee.position.name : 'User'} (${resJson.data.user.first_name})`;
+        showLog('auth-log', `Login Berhasil! Selamat bekerja, ${resJson.data.user.first_name}.`, 'success');
+        
+        fetchProducts();
+      } catch (err) {
+        showLog('auth-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
+        document.getElementById('login-status').innerText = 'Belum Login';
+        showLog('auth-log', 'Logout Berhasil.', 'success');
+      } catch (err) {
+        showLog('auth-log', `Logout Gagal: ${err.message}`, 'error');
+      }
+    });
+
+    // REGISTER ACCOUNT
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Registrasi gagal');
+
+        showLog('register-log', `Registrasi Berhasil! Akun User ID: ${resJson.data.user.id}`, 'success');
+        document.getElementById('reg-email').value = '';
+        document.getElementById('reg-password').value = '';
+      } catch (err) {
+        showLog('register-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+    // FETCH PRODUCTS (renders in POS table and Product Catalog Master)
+    async function fetchProducts() {
+      try {
+        const response = await fetch(`${API_BASE}/products`);
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal fetch produk');
+
+        const tbodyMaster = document.querySelector('#products-table-master tbody');
+        tbodyMaster.innerHTML = '';
+        
+        resJson.data.forEach(p => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><b>${p.id}</b></td>
+            <td>${p.sku}</td>
+            <td>${p.name}</td>
+            <td>IDR ${p.price.toLocaleString()}</td>
+            <td><b>${p.stock !== undefined ? p.stock : 0}</b></td>
+            <td>
+              <button class="btn-blue" style="padding: 4px 8px;" onclick="editProduct(${JSON.stringify(p).replace(/"/g, '&quot;')})">Edit</button>
+              <button class="btn-red" style="padding: 4px 8px;" onclick="deleteProduct(${p.id})">Delete</button>
+            </td>
+          `;
+          tbodyMaster.appendChild(row);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // PRODUCT SAVE/UPDATE
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('prod-id').value;
+      const name = document.getElementById('prod-name').value;
+      const sku = document.getElementById('prod-sku').value;
+      const price = Number(document.getElementById('prod-price').value);
+      const category_id = Number(document.getElementById('prod-cat-id').value);
+
+      const url = id ? `${API_BASE}/products/${id}` : `${API_BASE}/products`;
+      const method = id ? 'PATCH' : 'POST';
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, sku, price, category_id })
+        });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal menyimpan produk');
+
+        showLog('product-log', `Produk berhasil disimpan: ID ${resJson.data.id}`, 'success');
+        cancelProductEdit();
+        fetchProducts();
+      } catch (err) {
+        showLog('product-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+    function editProduct(product) {
+      document.getElementById('prod-id').value = product.id;
+      document.getElementById('prod-name').value = product.name;
+      document.getElementById('prod-sku').value = product.sku;
+      document.getElementById('prod-price').value = product.price;
+      document.getElementById('prod-cat-id').value = product.category_id;
+      document.getElementById('btn-save-prod').innerText = 'Update Produk';
+      document.getElementById('btn-cancel-edit-prod').style.display = 'inline-block';
+    }
+
+    function cancelProductEdit() {
+      document.getElementById('prod-id').value = '';
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-sku').value = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('prod-cat-id').value = '';
+      document.getElementById('btn-save-prod').innerText = 'Simpan Produk Baru';
+      document.getElementById('btn-cancel-edit-prod').style.display = 'none';
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus produk ini secara soft delete?')) return;
+      try {
+        const response = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const resJson = await response.json();
+          throw new Error(resJson.message || 'Gagal menghapus produk');
+        }
+        showLog('product-log', `Produk ID #${id} berhasil didelete.`, 'success');
+        fetchProducts();
+      } catch (err) {
+        showLog('product-log', `Error: ${err.message}`, 'error');
+      }
+    }
+
+    // CREATE STOCK INITIAL (IN)
+    document.getElementById('create-stock-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const product_id = Number(document.getElementById('c-stock-pid').value);
+      const quantity = Number(document.getElementById('c-stock-qty').value);
+
+      try {
+        const response = await fetch(`${API_BASE}/stocks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id, quantity, type: 'IN', notes: 'Initial stock' })
+        });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal set stok');
+
+        showLog('stock-log', `Stok awal diset: ID #${product_id} = ${quantity} unit`, 'success');
+        fetchProducts();
+      } catch (err) {
+        showLog('stock-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+    // PATCH STOCK ACCUMULATIVE
+    document.getElementById('patch-stock-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const product_id = Number(document.getElementById('p-stock-pid').value);
+      const quantity = Number(document.getElementById('p-stock-qty').value);
+
+      try {
+        const response = await fetch(`${API_BASE}/stocks/product/${product_id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quantity, notes: 'Restock via PATCH' })
+        });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal menambah stok');
+
+        showLog('stock-log', `Stok bertambah. Total baru: ${resJson.data.stock} unit`, 'success');
+        fetchProducts();
+      } catch (err) {
+        showLog('stock-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+    // FETCH STOCK HISTORY LOGS
+    async function fetchStockHistory() {
+      try {
+        const response = await fetch(`${API_BASE}/stocks`);
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal fetch riwayat');
+
+        const tbody = document.querySelector('#stock-history-table tbody');
+        tbody.innerHTML = '';
+        resJson.data.forEach(log => {
+          const time = new Date(log.created_at).toLocaleTimeString();
+          const sign = log.quantity > 0 ? '+' : '';
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${time}</td>
+            <td><b>${log.product_id}</b></td>
+            <td style="color:${log.quantity > 0 ? '#27ae60' : '#c0392b'}; font-weight:bold;">${sign}${log.quantity}</td>
+            <td><span class="badge" style="background-color: #34495e;">${log.type}</span></td>
+            <td>${log.notes || '-'}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // CREATE CATEGORY
+    document.getElementById('category-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('cat-name').value;
+      const description = document.getElementById('cat-desc').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/categories`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description })
+        });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal simpan kategori');
+
+        showLog('category-log', `Kategori diselamatkan: ID #${resJson.data.id}`, 'success');
+        document.getElementById('cat-name').value = '';
+        document.getElementById('cat-desc').value = '';
+        fetchCategoriesList();
+      } catch (err) {
+        showLog('category-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+    // FETCH CATEGORIES
+    async function fetchCategoriesList() {
+      try {
+        const response = await fetch(`${API_BASE}/categories`);
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal fetch kategori');
+
+        const tbody = document.querySelector('#categories-table tbody');
+        tbody.innerHTML = '';
+        resJson.data.forEach(cat => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><b>${cat.id}</b></td>
+            <td>${cat.name}</td>
+            <td>${cat.description || '-'}</td>
+            <td><button class="btn-red" style="padding:4px 8px;" onclick="deleteCategory(${cat.id})">Hapus</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus kategori ini?')) return;
+      try {
+        const response = await fetch(`${API_BASE}/categories/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const resJson = await response.json();
+          throw new Error(resJson.message || 'Gagal menghapus kategori');
+        }
+        showLog('category-log', `Kategori ID #${id} berhasil didelete.`, 'success');
+        fetchCategoriesList();
+      } catch (err) {
+        showLog('category-log', `Error: ${err.message}`, 'error');
+      }
+    }
+
+    // CREATE EMPLOYEE PROFILE
+    document.getElementById('employee-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const employee_number = document.getElementById('emp-num').value;
+      const first_name = document.getElementById('emp-fname').value;
+      const last_name = document.getElementById('emp-lname').value;
+      const gender = document.getElementById('emp-gender').value;
+      const position_id = Number(document.getElementById('emp-pos-id').value);
+      const user_id_val = document.getElementById('emp-uid').value;
+      const user_id = user_id_val ? Number(user_id_val) : undefined;
+
+      try {
+        const response = await fetch(`${API_BASE}/employees`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ employee_number, first_name, last_name, gender, position_id, user_id })
+        });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal simpan pegawai');
+
+        showLog('employee-log', `Profil Pegawai tersimpan: ${resJson.data.first_name}`, 'success');
+        fetchEmployees();
+      } catch (err) {
+        showLog('employee-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+    // FETCH EMPLOYEES
+    async function fetchEmployees() {
+      try {
+        const response = await fetch(`${API_BASE}/employees`);
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal fetch pegawai');
+
+        const tbody = document.querySelector('#employees-table tbody');
+        tbody.innerHTML = '';
+        resJson.data.forEach(emp => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><b>${emp.id}</b></td>
+            <td>${emp.employee_number}</td>
+            <td>${emp.first_name} ${emp.last_name}</td>
+            <td><span class="badge" style="background-color:#2980b9;">${emp.position ? emp.position.name : '-'}</span></td>
+            <td>${emp.user ? `${emp.user.email} (ID: ${emp.user.id})` : '<i style="color:#888;">Belum Terhubung</i>'}</td>
+            <td><button class="btn-red" style="padding:4px 8px;" onclick="deleteEmployee(${emp.id})">Delete</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteEmployee(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus pegawai ini (soft delete)?')) return;
+      try {
+        const response = await fetch(`${API_BASE}/employees/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const resJson = await response.json();
+          throw new Error(resJson.message || 'Gagal menghapus pegawai');
+        }
+        fetchEmployees();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // FETCH SALES HISTORY
+    document.getElementById('history-filter-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const start = document.getElementById('filter-start').value;
+      const end = document.getElementById('filter-end').value;
+      const userId = document.getElementById('filter-user').value;
+
+      let queryParams = [];
+      if (start) queryParams.push(`startDate=${start}`);
+      if (end) queryParams.push(`endDate=${end}`);
+      if (userId) queryParams.push(`userId=${userId}`);
+
+      const url = `${API_BASE}/sales?${queryParams.join('&')}`;
+
+      try {
+        const response = await fetch(url);
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Gagal fetch riwayat penjualan');
+
+        const tbody = document.querySelector('#sales-history-table tbody');
+        tbody.innerHTML = '';
+        if (resJson.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Tidak ada transaksi ditemukan</td></tr>';
+          return;
+        }
+
+        resJson.data.forEach(s => {
+          const date = new Date(s.created_at).toLocaleDateString();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><b>${s.id}</b></td>
+            <td>${s.invoice_number}</td>
+            <td>${date}</td>
+            <td>IDR ${s.subtotal.toLocaleString()}</td>
+            <td><b>IDR ${s.total.toLocaleString()}</b></td>
+            <td>User ID #${s.user_id}</td>
+            <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // CART MANAGEMENT
+    function addToCart() {
+      const pid = Number(document.getElementById('cart-pid').value);
+      const qty = Number(document.getElementById('cart-qty').value);
+      
+      if (!pid || pid <= 0 || !qty || qty <= 0) {
+        alert('Masukkan Product ID dan Quantity dengan benar.');
+        return;
+      }
+
+      const existing = cart.find(item => item.product_id === pid);
+      if (existing) {
+        existing.quantity += qty;
+      } else {
+        cart.push({ product_id: pid, quantity: qty });
+      }
+
+      renderCart();
+      document.getElementById('cart-pid').value = '';
+      document.getElementById('cart-qty').value = '1';
+    }
+
+    function removeFromCart(pid) {
+      cart = cart.filter(item => item.product_id !== pid);
+      renderCart();
+    }
+
+    function renderCart() {
+      const tbody = document.getElementById('cart-items');
+      tbody.innerHTML = '';
+      if (cart.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Keranjang Kosong</td></tr>';
+        return;
+      }
+
+      cart.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><b>${item.product_id}</b></td>
+          <td>${item.quantity}</td>
+          <td><button class="btn-red" style="padding: 4px 8px;" onclick="removeFromCart(${item.product_id})">Hapus</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // CHECKOUT PROCESS
+    document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (cart.length === 0) {
+        alert('Keranjang belanja kosong!');
+        return;
+      }
+
+      const discount = Number(document.getElementById('chk-discount').value) || 0;
+      const tax = Number(document.getElementById('chk-tax').value) || 0;
+      const payment_method = document.getElementById('chk-method').value;
+
+      try {
+        const response = await fetch(`${API_BASE}/sales`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: cart, discount, tax, payment_method })
+        });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Checkout gagal');
+
+        showLog('checkout-log', `Checkout sukses! Invoice: ${resJson.data.invoice_number}`, 'success');
+        
+        cart = [];
+        renderCart();
+
+        activeTransaction = resJson.data;
+        document.getElementById('no-active-checkout').style.display = 'none';
+        document.getElementById('active-checkout-panel').style.display = 'block';
+        document.getElementById('active-invoice').innerText = activeTransaction.invoice_number;
+        document.getElementById('active-total').innerText = activeTransaction.total.toLocaleString();
+        
+        const badge = document.getElementById('active-status-badge');
+        badge.className = `badge badge-${activeTransaction.status.toLowerCase()}`;
+        badge.innerText = activeTransaction.status;
+
+        const qrisBox = document.getElementById('qris-box');
+        if (activeTransaction.payment && activeTransaction.payment.payment_method === 'IPAYMU_REDIRECT') {
+          qrisBox.style.display = 'block';
+          document.getElementById('qris-image-src').src = activeTransaction.payment.checkout_url;
+          document.getElementById('active-ref-id').innerText = activeTransaction.payment.reference_id;
+        } else {
+          qrisBox.style.display = 'none';
+        }
+      } catch (err) {
+        showLog('checkout-log', `Error: ${err.message}`, 'error');
+      }
+    });
+
+
+
+    // VOID TRANSACTION (Admin Only)
+    document.getElementById('void-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const transactionId = Number(document.getElementById('void-tid').value);
+
+      try {
+        const response = await fetch(`${API_BASE}/sales/${transactionId}/void`, {
+          method: 'POST'
+        });
+        const resJson = await response.json();
+        if (!response.ok) throw new Error(resJson.message || 'Void transaksi gagal');
+
+        showLog('void-log', `Transaksi #${transactionId} VOIDED. Stok telah dipulihkan!`, 'success');
+      } catch (err) {
+        showLog('void-log', `Void gagal: ${err.message}`, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

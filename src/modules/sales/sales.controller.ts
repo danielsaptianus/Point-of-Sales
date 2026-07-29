@@ -21,7 +21,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { GetUser } from '@common/decorators/get-user.decorator';
 import { ApiSuccessResponse, ApiSuccessArrayResponse } from '@common/decorators/api-response.decorator';
 import { Public } from '@common/decorators/public.decorator';
-import { IpaymuWebhookDto } from './dto/ipaymu-webhook.dto';
+import { MidtransWebhookDto } from './dto/midtrans-webhook.dto';
 
 @ApiTags('Sales')
 @ApiCookieAuth()
@@ -66,12 +66,12 @@ export class SalesController {
   @Public()
   @Post('webhook')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Webhook callback notification from iPaymu' })
+  @ApiOperation({ summary: 'Webhook callback notification from Midtrans' })
   @ApiResponse({ status: 200, description: 'Webhook callback processed successfully' })
   @ApiResponse({ status: 400, description: 'Invalid webhook signature or request validation failed' })
   async handleWebhook(
     @Headers() headers: Record<string, string>,
-    @Body() body: IpaymuWebhookDto
+    @Body() body: any
   ) {
     await this.salesService.handleWebhook(headers, body);
 
@@ -80,7 +80,7 @@ export class SalesController {
 
   @Public()
   @Get('payment/return')
-  @ApiOperation({ summary: 'iPaymu callback redirect page after transaction success' })
+  @ApiOperation({ summary: 'Midtrans callback redirect page after transaction success' })
   paymentReturn(@Query() query: any) {
     return {
       statusCode: 200,
@@ -91,7 +91,7 @@ export class SalesController {
 
   @Public()
   @Get('payment/cancel')
-  @ApiOperation({ summary: 'iPaymu callback redirect page after transaction cancellation' })
+  @ApiOperation({ summary: 'Midtrans callback redirect page after transaction cancellation' })
   paymentCancel(@Query() query: any) {
     return {
       statusCode: 200,

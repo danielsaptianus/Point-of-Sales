@@ -15,6 +15,12 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponseDt
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
+    // Skip transformation for HTML responses (e.g., pos route)
+    const contentType = response.getHeader ? response.getHeader('Content-Type') : '';
+    if (typeof contentType === 'string' && contentType.includes('text/html')) {
+      return next.handle();
+    }
+
     return next.handle().pipe(
       map((data) => {
         // If data is already in ApiResponseDto format, return as is

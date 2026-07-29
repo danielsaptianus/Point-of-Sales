@@ -15,8 +15,8 @@ export class SaleItemDto {
 }
 
 export class CreateSaleDto {
-  @ApiProperty({ example: 'IPAYMU_REDIRECT', enum: ['CASH', 'IPAYMU_REDIRECT'], description: 'Payment method' })
-  @IsEnum(['CASH', 'IPAYMU_REDIRECT'], { message: 'Payment method must be CASH or IPAYMU_REDIRECT' })
+  @ApiProperty({ example: 'MIDTRANS_REDIRECT', enum: ['CASH', 'MIDTRANS_REDIRECT'], description: 'Payment method' })
+  @IsEnum(['CASH', 'MIDTRANS_REDIRECT'], { message: 'Payment method must be CASH or MIDTRANS_REDIRECT' })
   @IsNotEmpty({ message: 'Payment method is required' })
   payment_method: string;
 

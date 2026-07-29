@@ -36,10 +36,18 @@ export class ProductEntity implements Partial<PrismaProduct> {
   @ApiPropertyOptional()
   deleted_at: Date | null;
 
-  constructor(partial: Partial<ProductEntity>) {
+  @ApiPropertyOptional()
+  stock?: number;
+
+  constructor(partial: any) {
     Object.assign(this, partial);
     if (partial.category) {
       this.category = new CategoryEntity(partial.category);
+    }
+    if (partial.stocks && Array.isArray(partial.stocks)) {
+      this.stock = partial.stocks.reduce((sum, item) => sum + item.quantity, 0);
+    } else {
+      this.stock = partial.stock ?? 0;
     }
   }
 }

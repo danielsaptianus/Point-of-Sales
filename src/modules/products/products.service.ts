@@ -31,7 +31,7 @@ export class ProductsService {
 
     const product = await this.prisma.product.create({
       data: createProductDto,
-      include: { category: true },
+      include: { category: true, stocks: true },
     });
 
     return new ProductEntity(product);
@@ -40,7 +40,7 @@ export class ProductsService {
   async findAll(): Promise<ProductEntity[]> {
     const products = await this.prisma.product.findMany({
       where: { deleted_at: null },
-      include: { category: true },
+      include: { category: true, stocks: true },
       orderBy: { created_at: 'desc' },
     });
 
@@ -50,7 +50,7 @@ export class ProductsService {
   async findOne(id: number): Promise<ProductEntity> {
     const product = await this.prisma.product.findFirst({
       where: { id, deleted_at: null },
-      include: { category: true },
+      include: { category: true, stocks: true },
     });
 
     if (!product) {
@@ -90,7 +90,7 @@ export class ProductsService {
     const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: updateProductDto,
-      include: { category: true },
+      include: { category: true, stocks: true },
     });
 
     return new ProductEntity(updatedProduct);
