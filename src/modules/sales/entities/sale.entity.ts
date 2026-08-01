@@ -144,9 +144,7 @@ export class SaleEntity implements Partial<Transaction> {
   constructor(partial: Partial<SaleEntity>) {
     Object.assign(this, partial);
     if (partial.transaction_items) {
-      this.transaction_items = partial.transaction_items.map(
-        (item) => new SaleItemEntity(item),
-      );
+      this.transaction_items = partial.transaction_items.map((item) => new SaleItemEntity(item));
     }
     if (partial.payment) {
       this.payment = new PaymentEntity(partial.payment);

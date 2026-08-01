@@ -35,7 +35,9 @@ export class MidtransService {
   /**
    * Mengirim request pembuatan token transaksi Snap ke Midtrans API
    */
-  async createSnapTransaction(payload: CreateSnapTransactionPayload): Promise<MidtransSnapResponse> {
+  async createSnapTransaction(
+    payload: CreateSnapTransactionPayload,
+  ): Promise<MidtransSnapResponse> {
     const requestBody: any = {
       transaction_details: {
         order_id: payload.referenceId,
@@ -63,8 +65,8 @@ export class MidtransService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': authHeader,
+          Accept: 'application/json',
+          Authorization: authHeader,
         },
         body: JSON.stringify(requestBody),
       });
@@ -73,7 +75,9 @@ export class MidtransService {
 
       if (!response.ok || !result.token || !result.redirect_url) {
         console.error('Midtrans API Error Response:', result);
-        const errorMsg = result.error_messages ? result.error_messages.join(', ') : `Midtrans API request failed (HTTP ${response.status})`;
+        const errorMsg = result.error_messages
+          ? result.error_messages.join(', ')
+          : `Midtrans API request failed (HTTP ${response.status})`;
         throw new Error(errorMsg);
       }
 
@@ -102,10 +106,15 @@ export class MidtransService {
     console.log('Order ID:', orderId);
     console.log('Status Code:', statusCode);
     console.log('Gross Amount:', grossAmount);
-    console.log('Server Key (first 5 chars):', this.serverKey ? this.serverKey.substring(0, 5) + '...' : 'empty');
+    console.log(
+      'Server Key (first 5 chars):',
+      this.serverKey ? this.serverKey.substring(0, 5) + '...' : 'empty',
+    );
 
     if (!signatureKey || !orderId || !statusCode || !grossAmount) {
-      console.log('Verification failed: missing signature_key, order_id, status_code, or gross_amount');
+      console.log(
+        'Verification failed: missing signature_key, order_id, status_code, or gross_amount',
+      );
       return false;
     }
 

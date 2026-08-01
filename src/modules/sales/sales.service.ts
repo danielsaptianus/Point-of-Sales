@@ -41,7 +41,9 @@ export class SalesService {
         const currentStock = stockAggregate._sum.quantity || 0;
 
         if (currentStock < item.quantity) {
-          throw new BadRequestException(`Stok produk ${product.name} tidak mencukupi. Tersedia: ${currentStock}, diminta: ${item.quantity}`);
+          throw new BadRequestException(
+            `Stok produk ${product.name} tidak mencukupi. Tersedia: ${currentStock}, diminta: ${item.quantity}`,
+          );
         }
 
         const itemSubtotal = product.price * item.quantity;
@@ -211,10 +213,7 @@ export class SalesService {
     // 2. Cari transaksi berdasarkan invoice_number (order_id) ATAU transaction_id/snap token dari Midtrans
     const transaction = await this.prisma.transaction.findFirst({
       where: {
-        OR: [
-          { invoice_number: order_id },
-          { payment: { reference_id: String(transaction_id) } },
-        ]
+        OR: [{ invoice_number: order_id }, { payment: { reference_id: String(transaction_id) } }],
       },
       include: {
         payment: true,
@@ -223,11 +222,18 @@ export class SalesService {
     });
 
     if (!transaction) {
-      console.log(`Transaction with order_id ${order_id} or transaction_id ${transaction_id} not found in database!`);
+      console.log(
+        `Transaction with order_id ${order_id} or transaction_id ${transaction_id} not found in database!`,
+      );
       throw new NotFoundException(`Transaksi tidak ditemukan (order_id: ${order_id})`);
     }
 
-    console.log('Found Transaction in DB:', transaction.invoice_number, 'Current status:', transaction.status);
+    console.log(
+      'Found Transaction in DB:',
+      transaction.invoice_number,
+      'Current status:',
+      transaction.status,
+    );
 
     // Jika transaksi sudah lunas atau dibatalkan, abaikan (Idempotent)
     if (transaction.status !== 'PENDING') {
@@ -314,7 +320,9 @@ export class SalesService {
 
       // 2. Cek apakah transaksi sudah dalam status final (CANCELLED/FAILED)
       if (transaction.status === 'CANCELLED' || transaction.status === 'FAILED') {
-        throw new BadRequestException(`Transaksi dengan status ${transaction.status} tidak dapat dibatalkan (void)`);
+        throw new BadRequestException(
+          `Transaksi dengan status ${transaction.status} tidak dapat dibatalkan (void)`,
+        );
       }
 
       const originalStatus = transaction.status;

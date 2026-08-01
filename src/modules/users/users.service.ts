@@ -213,14 +213,15 @@ export class UsersService {
         ...(email && { email }),
         ...(hashedPassword && { password: hashedPassword }),
         ...(is_active !== undefined && { is_active }),
-        ...(user.employee && (first_name || last_name) && {
-          employee: {
-            update: {
-              ...(first_name && { first_name }),
-              ...(last_name && { last_name }),
+        ...(user.employee &&
+          (first_name || last_name) && {
+            employee: {
+              update: {
+                ...(first_name && { first_name }),
+                ...(last_name && { last_name }),
+              },
             },
-          },
-        }),
+          }),
       },
       include: {
         employee: {
@@ -325,9 +326,7 @@ export class UsersService {
     const newPermissionIds = permissions.map((p) => p.id);
 
     // Find permissions to add
-    const permissionsToAdd = newPermissionIds.filter(
-      (id) => !currentPermissionIds.includes(id),
-    );
+    const permissionsToAdd = newPermissionIds.filter((id) => !currentPermissionIds.includes(id));
 
     // Add new permissions
     if (permissionsToAdd.length > 0) {

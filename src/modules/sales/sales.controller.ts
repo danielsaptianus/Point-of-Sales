@@ -10,7 +10,14 @@ import {
   Headers,
   HttpCode,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiCookieAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { SalesQueryDto } from './dto/sales-query.dto';
@@ -19,7 +26,10 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 import { GetUser } from '@common/decorators/get-user.decorator';
-import { ApiSuccessResponse, ApiSuccessArrayResponse } from '@common/decorators/api-response.decorator';
+import {
+  ApiSuccessResponse,
+  ApiSuccessArrayResponse,
+} from '@common/decorators/api-response.decorator';
 import { Public } from '@common/decorators/public.decorator';
 import { MidtransWebhookDto } from './dto/midtrans-webhook.dto';
 
@@ -28,7 +38,7 @@ import { MidtransWebhookDto } from './dto/midtrans-webhook.dto';
 @Controller({ path: 'sales', version: '1' })
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SalesController {
-  constructor(private readonly salesService: SalesService) { }
+  constructor(private readonly salesService: SalesService) {}
 
   @Post()
   @Roles('Admin', 'Staff')
@@ -68,11 +78,11 @@ export class SalesController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Webhook callback notification from Midtrans' })
   @ApiResponse({ status: 200, description: 'Webhook callback processed successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid webhook signature or request validation failed' })
-  async handleWebhook(
-    @Headers() headers: Record<string, string>,
-    @Body() body: any
-  ) {
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid webhook signature or request validation failed',
+  })
+  async handleWebhook(@Headers() headers: Record<string, string>, @Body() body: any) {
     await this.salesService.handleWebhook(headers, body);
 
     return { success: true, message: 'Webhook callback processed successfully' };

@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsInt, Min, IsEnum, IsOptional, ValidateNested, ArrayMinSize } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsInt,
+  Min,
+  IsEnum,
+  IsOptional,
+  ValidateNested,
+  ArrayMinSize,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SaleItemDto {
@@ -15,8 +24,14 @@ export class SaleItemDto {
 }
 
 export class CreateSaleDto {
-  @ApiProperty({ example: 'MIDTRANS_REDIRECT', enum: ['CASH', 'MIDTRANS_REDIRECT'], description: 'Payment method' })
-  @IsEnum(['CASH', 'MIDTRANS_REDIRECT'], { message: 'Payment method must be CASH or MIDTRANS_REDIRECT' })
+  @ApiProperty({
+    example: 'MIDTRANS_REDIRECT',
+    enum: ['CASH', 'MIDTRANS_REDIRECT'],
+    description: 'Payment method',
+  })
+  @IsEnum(['CASH', 'MIDTRANS_REDIRECT'], {
+    message: 'Payment method must be CASH or MIDTRANS_REDIRECT',
+  })
   @IsNotEmpty({ message: 'Payment method is required' })
   payment_method: string;
 

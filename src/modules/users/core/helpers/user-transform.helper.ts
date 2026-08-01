@@ -2,22 +2,22 @@ import { User, Employee, Position, PositionPermission, Permission } from '@prism
 import { UserEntity } from '../entities/user.entity';
 
 type UserWithRelations = User & {
-  employee?: (Employee & {
-    position?: Position & {
-      position_permissions?: (PositionPermission & {
-        permission: Permission;
-      })[];
-    };
-  }) | null;
+  employee?:
+    | (Employee & {
+        position?: Position & {
+          position_permissions?: (PositionPermission & {
+            permission: Permission;
+          })[];
+        };
+      })
+    | null;
 };
 
 export class UserTransformHelper {
   static toEntity(user: UserWithRelations): UserEntity {
     const employee = user.employee;
     const position = employee?.position;
-    const permissions = position?.position_permissions?.map(
-      (pp) => pp.permission.name,
-    ) || [];
+    const permissions = position?.position_permissions?.map((pp) => pp.permission.name) || [];
 
     return new UserEntity({
       id: user.id,
@@ -30,11 +30,13 @@ export class UserTransformHelper {
       last_name: employee?.last_name || '',
       position_id: employee?.position_id || 0,
       permissions,
-      position: position ? {
-        id: position.id,
-        name: position.name,
-        description: position.description,
-      } : undefined,
+      position: position
+        ? {
+            id: position.id,
+            name: position.name,
+            description: position.description,
+          }
+        : undefined,
     });
   }
 

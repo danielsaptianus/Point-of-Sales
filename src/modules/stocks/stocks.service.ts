@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
@@ -31,7 +36,9 @@ export class StocksService {
     });
 
     if (existingStock) {
-      throw new ConflictException('Stok awal untuk produk ini sudah terdaftar. Gunakan metode PATCH untuk memperbarui stok.');
+      throw new ConflictException(
+        'Stok awal untuk produk ini sudah terdaftar. Gunakan metode PATCH untuk memperbarui stok.',
+      );
     }
 
     const stock = await this.prisma.stock.create({
@@ -77,9 +84,10 @@ export class StocksService {
       }
     }
 
-    const quantity = updateStockDto.quantity !== undefined
-      ? existing.quantity + updateStockDto.quantity
-      : undefined;
+    const quantity =
+      updateStockDto.quantity !== undefined
+        ? existing.quantity + updateStockDto.quantity
+        : undefined;
 
     const updatedStock = await this.prisma.stock.update({
       where: { id },

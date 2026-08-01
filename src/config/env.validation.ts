@@ -23,7 +23,6 @@ export const validationSchema = Joi.object({
   // API
   API_PREFIX: Joi.string().default('api'),
 
-
   // Swagger
   SWAGGER_ENABLED: Joi.boolean().default(true),
   SWAGGER_PATH: Joi.string().default('api-docs'),

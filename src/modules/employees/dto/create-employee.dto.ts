@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsInt, IsEnum, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  IsEnum,
+  IsDateString,
+} from 'class-validator';
 
 export class CreateEmployeeDto {
   @ApiProperty({ example: 'EMP-10023' })

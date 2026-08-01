@@ -290,7 +290,9 @@ describe('SalesService Unit Tests', () => {
     it('should throw BadRequestException if webhook signature check fails', async () => {
       mockMidtransService.verifyNotificationSignature.mockReturnValue(false);
 
-      await expect(service.handleWebhook(mockHeaders, mockBody)).rejects.toThrow(BadRequestException);
+      await expect(service.handleWebhook(mockHeaders, mockBody)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException if invoice is not found in database', async () => {

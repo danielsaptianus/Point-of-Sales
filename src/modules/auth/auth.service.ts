@@ -64,9 +64,7 @@ export class AuthService {
     }
 
     // Build permissions array
-    const permissions = user.employee.position.position_permissions.map(
-      (pp) => pp.permission.name,
-    );
+    const permissions = user.employee.position.position_permissions.map((pp) => pp.permission.name);
 
     // Generate JWT token
     const payload: JwtPayload = {
@@ -102,7 +100,8 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
-    const { email, password, first_name, last_name, gender, employee_number, position_id } = registerDto;
+    const { email, password, first_name, last_name, gender, employee_number, position_id } =
+      registerDto;
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
@@ -175,9 +174,7 @@ export class AuthService {
     });
 
     // Build permissions array
-    const permissions = user.employee.position.position_permissions.map(
-      (pp) => pp.permission.name,
-    );
+    const permissions = user.employee.position.position_permissions.map((pp) => pp.permission.name);
 
     // Generate JWT token
     const payload: JwtPayload = {

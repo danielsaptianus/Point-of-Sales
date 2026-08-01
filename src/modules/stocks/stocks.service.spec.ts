@@ -169,7 +169,7 @@ describe('StocksService Unit Tests', () => {
     it('should calculate the aggregate product stock based on sum mutations', async () => {
       // Mensimulasikan logika query agregasi sum Prisma:
       // SUM(IN = 15) + SUM(OUT = -5) + SUM(ADJUSTMENT = -2) = Total: 8
-      
+
       mockPrismaService.stock.aggregate.mockResolvedValue({
         _sum: {
           quantity: 8, // Mengembalikan hasil agregasi matematika

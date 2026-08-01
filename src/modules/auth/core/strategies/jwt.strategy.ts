@@ -48,9 +48,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Build permissions array from the employee's position
-    const permissions = user.employee.position.position_permissions.map(
-      (pp) => pp.permission.name,
-    );
+    const permissions = user.employee.position.position_permissions.map((pp) => pp.permission.name);
 
     return {
       userId: user.id,

@@ -2,12 +2,19 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class MidtransWebhookDto {
-  @ApiProperty({ example: 'INV-1785141425461-871', description: 'POS system invoice number (reference ID)' })
+  @ApiProperty({
+    example: 'INV-1785141425461-871',
+    description: 'POS system invoice number (reference ID)',
+  })
   @IsNotEmpty()
   @IsString()
   order_id: string;
 
-  @ApiProperty({ example: 'settlement', description: 'Transaction status ("settlement", "pending", "capture", "deny", "expire", "cancel")' })
+  @ApiProperty({
+    example: 'settlement',
+    description:
+      'Transaction status ("settlement", "pending", "capture", "deny", "expire", "cancel")',
+  })
   @IsNotEmpty()
   @IsString()
   transaction_status: string;
@@ -17,7 +24,10 @@ export class MidtransWebhookDto {
   @IsString()
   status_code: string;
 
-  @ApiProperty({ example: 'fda5ae73-66d2-468d-8313-3a224c9028a7', description: 'Midtrans signature key' })
+  @ApiProperty({
+    example: 'fda5ae73-66d2-468d-8313-3a224c9028a7',
+    description: 'Midtrans signature key',
+  })
   @IsNotEmpty()
   @IsString()
   signature_key: string;
@@ -27,7 +37,10 @@ export class MidtransWebhookDto {
   @IsString()
   gross_amount: string;
 
-  @ApiProperty({ example: '4b68e9f5-1b48-433b-85be-58727a8581e6', description: 'Midtrans transaction ID' })
+  @ApiProperty({
+    example: '4b68e9f5-1b48-433b-85be-58727a8581e6',
+    description: 'Midtrans transaction ID',
+  })
   @IsNotEmpty()
   @IsString()
   transaction_id: string;
