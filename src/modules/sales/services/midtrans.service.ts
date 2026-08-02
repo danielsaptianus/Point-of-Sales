@@ -12,6 +12,10 @@ interface MidtransSnapResponse {
   redirect_url: string;
 }
 
+/**
+ * Service to handle integration with Midtrans Payment Gateway.
+ * Supports creating Snap transactions and verifying webhook signatures.
+ */
 @Injectable()
 export class MidtransService {
   private serverKey: string;
@@ -33,7 +37,10 @@ export class MidtransService {
   }
 
   /**
-   * Mengirim request pembuatan token transaksi Snap ke Midtrans API
+   * Mengirim request pembuatan token transaksi Snap ke Midtrans API.
+   *
+   * @param payload Objek berisi total nominal pembayaran dan ID referensi transaksi (nomor invoice).
+   * @returns Promise berisi token Snap dan URL redirect pembayaran.
    */
   async createSnapTransaction(
     payload: CreateSnapTransactionPayload,
@@ -91,7 +98,12 @@ export class MidtransService {
   }
 
   /**
-   * Memvalidasi digital signature dari callback webhook Midtrans
+   * Memvalidasi digital signature dari callback webhook Midtrans.
+   *
+   * Formula verifikasi: SHA512(order_id + status_code + gross_amount + ServerKey).
+   *
+   * @param body Payload body request webhook dari Midtrans.
+   * @returns Boolean true jika signature valid, false jika tidak cocok atau data tidak lengkap.
    */
   verifyNotificationSignature(body: any): boolean {
     console.log('=== VERIFY MIDTRANS WEBHOOK SIGNATURE ===');
