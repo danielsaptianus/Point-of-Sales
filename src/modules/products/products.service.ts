@@ -1,3 +1,4 @@
+import { Product, Category } from '@prisma/client';
 import {
   Injectable,
   NotFoundException,
@@ -5,15 +6,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { CreateProductDto } from '@common/dto/create-product.dto';
-import { UpdateProductDto } from '@common/dto/update-product.dto';
-import { ProductEntity } from '@common/entities/product.entity';
+import { CreateProductDto } from '@modules/products/core/dto/create-product.dto';
+import { UpdateProductDto } from '@modules/products/core/dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createProductDto: CreateProductDto): Promise<ProductEntity> {
+  async create(createProductDto: CreateProductDto): Promise<Product> {
     const { sku, category_id } = createProductDto;
 
     // Check SKU conflict
@@ -39,20 +39,20 @@ export class ProductsService {
       include: { category: true, stocks: true },
     });
 
-    return new ProductEntity(product);
+    return product;
   }
 
-  async findAll(): Promise<ProductEntity[]> {
+  async findAll(): Promise<Product[]> {
     const products = await this.prisma.product.findMany({
       where: { deleted_at: null },
       include: { category: true, stocks: true },
       orderBy: { created_at: 'desc' },
     });
 
-    return products.map((prod) => new ProductEntity(prod));
+    return products.map((prod) => prod);
   }
 
-  async findOne(id: number): Promise<ProductEntity> {
+  async findOne(id: number): Promise<Product> {
     const product = await this.prisma.product.findFirst({
       where: { id, deleted_at: null },
       include: { category: true, stocks: true },
@@ -62,10 +62,10 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    return new ProductEntity(product);
+    return product;
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<ProductEntity> {
+  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     await this.findOne(id);
 
     if (updateProductDto.sku) {
@@ -98,7 +98,7 @@ export class ProductsService {
       include: { category: true, stocks: true },
     });
 
-    return new ProductEntity(updatedProduct);
+    return updatedProduct;
   }
 
   async remove(id: number): Promise<void> {

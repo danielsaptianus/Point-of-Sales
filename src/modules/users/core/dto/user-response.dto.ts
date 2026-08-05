@@ -26,6 +26,18 @@ export class UserResponseDto {
   @Exclude()
   password: string;
 
+  @ApiProperty()
+  position_id?: number;
+
+  @ApiProperty({ required: false })
+  position?: any;
+
+  @ApiProperty({ required: false })
+  permissions?: string[];
+
+  @ApiProperty({ required: false })
+  deleted_at?: Date | null;
+
   constructor(partial: Partial<UserResponseDto>) {
     Object.assign(this, partial);
   }

@@ -1,3 +1,4 @@
+import { Category } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -12,10 +13,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
-import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from '@common/dto/create-category.dto';
-import { UpdateCategoryDto } from '@common/dto/update-category.dto';
-import { CategoryEntity } from '@common/entities/category.entity';
+import { CategoriesService } from '../../categories.service';
+import { CreateCategoryDto } from '@modules/categories/core/dto/create-category.dto';
+import { UpdateCategoryDto } from '@modules/categories/core/dto/update-category.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -34,21 +34,21 @@ export class CategoriesController {
   @Post()
   @Roles('Admin')
   @ApiOperation({ summary: 'Create a new product category (Admin only)' })
-  @ApiSuccessResponse(CategoryEntity)
+  @ApiSuccessResponse(CreateCategoryDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 409, description: 'Category name already exists' })
-  async create(@Body() createCategoryDto: CreateCategoryDto): Promise<CategoryEntity> {
+  async create(@Body() createCategoryDto: CreateCategoryDto): Promise<Category> {
     return this.categoriesService.create(createCategoryDto);
   }
 
   @Get()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get all categories (Admin & Staff)' })
-  @ApiSuccessArrayResponse(CategoryEntity)
+  @ApiSuccessArrayResponse(CreateCategoryDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(): Promise<CategoryEntity[]> {
+  async findAll(): Promise<Category[]> {
     return this.categoriesService.findAll();
   }
 
@@ -56,10 +56,10 @@ export class CategoriesController {
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get category by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(CategoryEntity)
+  @ApiSuccessResponse(CreateCategoryDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<CategoryEntity> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Category> {
     return this.categoriesService.findOne(id);
   }
 
@@ -67,7 +67,7 @@ export class CategoriesController {
   @Roles('Admin')
   @ApiOperation({ summary: 'Update category (Admin only)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(CategoryEntity)
+  @ApiSuccessResponse(CreateCategoryDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -76,7 +76,7 @@ export class CategoriesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<CategoryEntity> {
+  ): Promise<Category> {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 

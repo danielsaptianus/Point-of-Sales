@@ -1,3 +1,4 @@
+import { Transaction } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -18,10 +19,9 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { SalesService } from './sales.service';
-import { CreateSaleDto } from '@common/dto/create-sale.dto';
-import { SalesQueryDto } from '@common/dto/sales-query.dto';
-import { SaleEntity } from '@common/entities/sale.entity';
+import { SalesService } from '../../sales.service';
+import { CreateSaleDto } from '@modules/sales/core/dto/create-sale.dto';
+import { SalesQueryDto } from '@modules/sales/core/dto/sales-query.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -31,7 +31,7 @@ import {
   ApiSuccessArrayResponse,
 } from '@common/decorators/api-response.decorator';
 import { Public } from '@common/decorators/public.decorator';
-import { MidtransWebhookDto } from '@common/dto/midtrans-webhook.dto';
+import { MidtransWebhookDto } from '@modules/sales/core/dto/midtrans-webhook.dto';
 
 @ApiTags('Sales')
 @ApiCookieAuth()
@@ -43,22 +43,22 @@ export class SalesController {
   @Post()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Create a new POS transaction (checkout)' })
-  @ApiSuccessResponse(SaleEntity)
+  @ApiSuccessResponse(CreateSaleDto)
   @ApiResponse({ status: 400, description: 'Validation failed or insufficient stock' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async checkout(
     @GetUser('userId') userId: number,
     @Body() createSaleDto: CreateSaleDto,
-  ): Promise<SaleEntity> {
+  ): Promise<Transaction> {
     return this.salesService.checkout(userId, createSaleDto);
   }
 
   @Get()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get all sales history' })
-  @ApiSuccessArrayResponse(SaleEntity)
+  @ApiSuccessArrayResponse(CreateSaleDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(@Query() query: SalesQueryDto): Promise<SaleEntity[]> {
+  async findAll(@Query() query: SalesQueryDto): Promise<Transaction[]> {
     return this.salesService.findAll(query);
   }
 
@@ -66,10 +66,10 @@ export class SalesController {
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get sales transaction by ID' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(SaleEntity)
+  @ApiSuccessResponse(CreateSaleDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<SaleEntity> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Transaction> {
     return this.salesService.findOne(id);
   }
 
@@ -114,11 +114,11 @@ export class SalesController {
   @Roles('Admin')
   @ApiOperation({ summary: 'Void a sales transaction and restore stock (Admin only)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(SaleEntity)
+  @ApiSuccessResponse(CreateSaleDto)
   @ApiResponse({ status: 400, description: 'Transaction already voided or failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
-  async voidTransaction(@Param('id', ParseIntPipe) id: number): Promise<SaleEntity> {
+  async voidTransaction(@Param('id', ParseIntPipe) id: number): Promise<Transaction> {
     return this.salesService.voidTransaction(id);
   }
 }

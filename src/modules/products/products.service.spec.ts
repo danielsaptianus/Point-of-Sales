@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsService } from './products.service';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
-import { CreateProductDto } from '@common/dto/create-product.dto';
-import { UpdateProductDto } from '@common/dto/update-product.dto';
+import { CreateProductDto } from '@modules/products/core/dto/create-product.dto';
+import { UpdateProductDto } from '@modules/products/core/dto/update-product.dto';
 
 describe('ProductsService Unit Tests', () => {
   let service: ProductsService;

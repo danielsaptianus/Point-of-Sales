@@ -1,14 +1,14 @@
+import { Category } from '@prisma/client';
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { CreateCategoryDto } from '@common/dto/create-category.dto';
-import { UpdateCategoryDto } from '@common/dto/update-category.dto';
-import { CategoryEntity } from '@common/entities/category.entity';
+import { CreateCategoryDto } from '@modules/categories/core/dto/create-category.dto';
+import { UpdateCategoryDto } from '@modules/categories/core/dto/update-category.dto';
 
 @Injectable()
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<CategoryEntity> {
+  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
     const { name } = createCategoryDto;
 
     const existingCategory = await this.prisma.category.findFirst({
@@ -23,19 +23,19 @@ export class CategoriesService {
       data: createCategoryDto,
     });
 
-    return new CategoryEntity(category);
+    return category;
   }
 
-  async findAll(): Promise<CategoryEntity[]> {
+  async findAll(): Promise<Category[]> {
     const categories = await this.prisma.category.findMany({
       where: { deleted_at: null },
       orderBy: { created_at: 'desc' },
     });
 
-    return categories.map((cat) => new CategoryEntity(cat));
+    return categories.map((cat) => cat);
   }
 
-  async findOne(id: number): Promise<CategoryEntity> {
+  async findOne(id: number): Promise<Category> {
     const category = await this.prisma.category.findFirst({
       where: { id, deleted_at: null },
     });
@@ -44,10 +44,10 @@ export class CategoriesService {
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
 
-    return new CategoryEntity(category);
+    return category;
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<CategoryEntity> {
+  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
     await this.findOne(id);
 
     if (updateCategoryDto.name) {
@@ -69,7 +69,7 @@ export class CategoriesService {
       data: updateCategoryDto,
     });
 
-    return new CategoryEntity(updatedCategory);
+    return updatedCategory;
   }
 
   async remove(id: number): Promise<void> {

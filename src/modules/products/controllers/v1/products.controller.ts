@@ -1,3 +1,4 @@
+import { Product } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -12,10 +13,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
-import { ProductsService } from './products.service';
-import { CreateProductDto } from '@common/dto/create-product.dto';
-import { UpdateProductDto } from '@common/dto/update-product.dto';
-import { ProductEntity } from '@common/entities/product.entity';
+import { ProductsService } from '../../products.service';
+import { CreateProductDto } from '@modules/products/core/dto/create-product.dto';
+import { UpdateProductDto } from '@modules/products/core/dto/update-product.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -34,21 +34,21 @@ export class ProductsController {
   @Post()
   @Roles('Admin')
   @ApiOperation({ summary: 'Create a new product (Admin only)' })
-  @ApiSuccessResponse(ProductEntity)
+  @ApiSuccessResponse(CreateProductDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 409, description: 'SKU already exists' })
-  async create(@Body() createProductDto: CreateProductDto): Promise<ProductEntity> {
+  async create(@Body() createProductDto: CreateProductDto): Promise<Product> {
     return this.productsService.create(createProductDto);
   }
 
   @Get()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get all products (Admin & Staff)' })
-  @ApiSuccessArrayResponse(ProductEntity)
+  @ApiSuccessArrayResponse(CreateProductDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(): Promise<ProductEntity[]> {
+  async findAll(): Promise<Product[]> {
     return this.productsService.findAll();
   }
 
@@ -56,10 +56,10 @@ export class ProductsController {
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get product by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(ProductEntity)
+  @ApiSuccessResponse(CreateProductDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<ProductEntity> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Product> {
     return this.productsService.findOne(id);
   }
 
@@ -67,7 +67,7 @@ export class ProductsController {
   @Roles('Admin')
   @ApiOperation({ summary: 'Update product (Admin only)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(ProductEntity)
+  @ApiSuccessResponse(CreateProductDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -76,7 +76,7 @@ export class ProductsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto,
-  ): Promise<ProductEntity> {
+  ): Promise<Product> {
     return this.productsService.update(id, updateProductDto);
   }
 

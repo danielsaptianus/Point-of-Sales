@@ -8,10 +8,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { PasswordUtil } from '@common/utils/password.util';
-import { LoginDto } from '@common/dto/login.dto';
-import { RegisterDto } from '@common/dto/register.dto';
-import { AuthResponseDto } from '@common/dto/auth-response.dto';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { LoginDto } from '@modules/auth/core/dto/login.dto';
+import { RegisterDto } from '@modules/auth/core/dto/register.dto';
+import { AuthResponseDto } from '@modules/auth/core/dto/auth-response.dto';
+import { JwtPayload } from './core/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {

@@ -1,3 +1,4 @@
+import { Employee } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -12,10 +13,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
-import { EmployeesService } from './employees.service';
-import { CreateEmployeeDto } from '@common/dto/create-employee.dto';
-import { UpdateEmployeeDto } from '@common/dto/update-employee.dto';
-import { EmployeeEntity } from '@common/entities/employee.entity';
+import { EmployeesService } from '../../employees.service';
+import { CreateEmployeeDto } from '@modules/employees/core/dto/create-employee.dto';
+import { UpdateEmployeeDto } from '@modules/employees/core/dto/update-employee.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -34,22 +34,22 @@ export class EmployeesController {
   @Post()
   @Roles('Admin')
   @ApiOperation({ summary: 'Create a new employee (Admin only)' })
-  @ApiSuccessResponse(EmployeeEntity)
+  @ApiSuccessResponse(CreateEmployeeDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Requires Admin role' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
-  async create(@Body() createEmployeeDto: CreateEmployeeDto): Promise<EmployeeEntity> {
+  async create(@Body() createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
     return this.employeesService.create(createEmployeeDto);
   }
 
   @Get()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get all employees (Admin & Staff)' })
-  @ApiSuccessArrayResponse(EmployeeEntity)
+  @ApiSuccessArrayResponse(CreateEmployeeDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  async findAll(): Promise<EmployeeEntity[]> {
+  async findAll(): Promise<Employee[]> {
     return this.employeesService.findAll();
   }
 
@@ -57,11 +57,11 @@ export class EmployeesController {
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get employee by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(EmployeeEntity)
+  @ApiSuccessResponse(CreateEmployeeDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Employee not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<EmployeeEntity> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Employee> {
     return this.employeesService.findOne(id);
   }
 
@@ -69,7 +69,7 @@ export class EmployeesController {
   @Roles('Admin')
   @ApiOperation({ summary: 'Update employee details (Admin only)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(EmployeeEntity)
+  @ApiSuccessResponse(CreateEmployeeDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Requires Admin role' })
@@ -78,7 +78,7 @@ export class EmployeesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEmployeeDto: UpdateEmployeeDto,
-  ): Promise<EmployeeEntity> {
+  ): Promise<Employee> {
     return this.employeesService.update(id, updateEmployeeDto);
   }
 

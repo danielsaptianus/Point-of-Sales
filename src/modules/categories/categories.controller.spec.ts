@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CategoriesController } from './categories.controller';
+import { CategoriesController } from './controllers/v1/categories.controller';
 import { CategoriesService } from './categories.service';
 import { PrismaService } from '@common/prisma/prisma.service';
 

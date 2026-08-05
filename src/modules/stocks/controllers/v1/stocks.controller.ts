@@ -1,3 +1,4 @@
+import { Stock } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -12,10 +13,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
-import { StocksService } from './stocks.service';
-import { CreateStockDto } from '@common/dto/create-stock.dto';
-import { UpdateStockDto } from '@common/dto/update-stock.dto';
-import { StockEntity } from '@common/entities/stock.entity';
+import { StocksService } from '../../stocks.service';
+import { CreateStockDto } from '@modules/stocks/core/dto/create-stock.dto';
+import { UpdateStockDto } from '@modules/stocks/core/dto/update-stock.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -34,19 +34,19 @@ export class StocksController {
   @Post()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Create a new stock mutation (Admin & Staff)' })
-  @ApiSuccessResponse(StockEntity)
+  @ApiSuccessResponse(CreateStockDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async create(@Body() createStockDto: CreateStockDto): Promise<StockEntity> {
+  async create(@Body() createStockDto: CreateStockDto): Promise<Stock> {
     return this.stocksService.create(createStockDto);
   }
 
   @Get()
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get all stock mutations (Admin & Staff)' })
-  @ApiSuccessArrayResponse(StockEntity)
+  @ApiSuccessArrayResponse(CreateStockDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(): Promise<StockEntity[]> {
+  async findAll(): Promise<Stock[]> {
     return this.stocksService.findAll();
   }
 
@@ -54,10 +54,10 @@ export class StocksController {
   @Roles('Admin', 'Staff')
   @ApiOperation({ summary: 'Get stock mutation by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(StockEntity)
+  @ApiSuccessResponse(CreateStockDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Stock record not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<StockEntity> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Stock> {
     return this.stocksService.findOne(id);
   }
 
@@ -65,7 +65,7 @@ export class StocksController {
   @Roles('Admin')
   @ApiOperation({ summary: 'Update stock mutation (Admin only)' })
   @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(StockEntity)
+  @ApiSuccessResponse(CreateStockDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -73,7 +73,7 @@ export class StocksController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateStockDto: UpdateStockDto,
-  ): Promise<StockEntity> {
+  ): Promise<Stock> {
     return this.stocksService.update(id, updateStockDto);
   }
 

@@ -1,8 +1,8 @@
+import { Product, Transaction, Stock } from '@prisma/client';
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { MidtransService } from './services/midtrans.service';
-import { CreateSaleDto } from '@common/dto/create-sale.dto';
-import { SaleEntity } from '@common/entities/sale.entity';
+import { CreateSaleDto } from '@modules/sales/core/dto/create-sale.dto';
 
 @Injectable()
 export class SalesService {
@@ -11,7 +11,7 @@ export class SalesService {
     private midtransService: MidtransService,
   ) {}
 
-  async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<SaleEntity> {
+  async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<Transaction> {
     const { payment_method, tax = 0, discount = 0, items } = createSaleDto;
 
     // Menjalankan sekelompok operasi database dalam satu blok $transaction (atomik)
@@ -141,11 +141,11 @@ export class SalesService {
         },
       });
 
-      return new SaleEntity(finalTransaction);
+      return finalTransaction;
     });
   }
 
-  async findAll(query: any): Promise<SaleEntity[]> {
+  async findAll(query: any): Promise<Transaction[]> {
     const { status, cashier_id, startDate, endDate } = query;
     const where: any = { deleted_at: null };
 
@@ -175,10 +175,10 @@ export class SalesService {
       orderBy: { created_at: 'desc' },
     });
 
-    return transactions.map((t) => new SaleEntity(t));
+    return transactions.map((t) => t);
   }
 
-  async findOne(id: number): Promise<SaleEntity> {
+  async findOne(id: number): Promise<Transaction> {
     const transaction = await this.prisma.transaction.findFirst({
       where: { id, deleted_at: null },
       include: {
@@ -191,7 +191,7 @@ export class SalesService {
       throw new NotFoundException(`Transaksi dengan ID ${id} tidak ditemukan`);
     }
 
-    return new SaleEntity(transaction);
+    return transaction;
   }
 
   /**
@@ -303,7 +303,7 @@ export class SalesService {
   /**
    * Membatalkan transaksi penjualan dan mengembalikan stok barang belanjaan ke persediaan (Admin Only)
    */
-  async voidTransaction(id: number): Promise<SaleEntity> {
+  async voidTransaction(id: number): Promise<Transaction> {
     return this.prisma.$transaction(async (tx) => {
       // 1. Cari transaksi beserta detail item belanja & pembayaran
       const transaction = await tx.transaction.findFirst({
@@ -366,7 +366,7 @@ export class SalesService {
         },
       });
 
-      return new SaleEntity(updatedTransaction);
+      return updatedTransaction;
     });
   }
 }

@@ -1,3 +1,4 @@
+import { Product, Stock } from '@prisma/client';
 import {
   Injectable,
   NotFoundException,
@@ -5,15 +6,14 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { CreateStockDto } from '@common/dto/create-stock.dto';
-import { UpdateStockDto } from '@common/dto/update-stock.dto';
-import { StockEntity } from '@common/entities/stock.entity';
+import { CreateStockDto } from '@modules/stocks/core/dto/create-stock.dto';
+import { UpdateStockDto } from '@modules/stocks/core/dto/update-stock.dto';
 
 @Injectable()
 export class StocksService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createStockDto: CreateStockDto): Promise<StockEntity> {
+  async create(createStockDto: CreateStockDto): Promise<Stock> {
     const { product_id, type } = createStockDto;
 
     // 1. Pembuatan stok awal hanya boleh bertipe IN
@@ -46,19 +46,19 @@ export class StocksService {
       include: { product: { include: { category: true } } },
     });
 
-    return new StockEntity(stock);
+    return stock;
   }
 
-  async findAll(): Promise<StockEntity[]> {
+  async findAll(): Promise<Stock[]> {
     const stocks = await this.prisma.stock.findMany({
       include: { product: { include: { category: true } } },
       orderBy: { created_at: 'desc' },
     });
 
-    return stocks.map((st) => new StockEntity(st));
+    return stocks.map((st) => st);
   }
 
-  async findOne(id: number): Promise<StockEntity> {
+  async findOne(id: number): Promise<Stock> {
     const stock = await this.prisma.stock.findFirst({
       where: { id },
       include: { product: { include: { category: true } } },
@@ -68,10 +68,10 @@ export class StocksService {
       throw new NotFoundException(`Stock record with ID ${id} not found`);
     }
 
-    return new StockEntity(stock);
+    return stock;
   }
 
-  async update(id: number, updateStockDto: UpdateStockDto): Promise<StockEntity> {
+  async update(id: number, updateStockDto: UpdateStockDto): Promise<Stock> {
     const existing = await this.findOne(id);
 
     if (updateStockDto.product_id) {
@@ -98,7 +98,7 @@ export class StocksService {
       include: { product: { include: { category: true } } },
     });
 
-    return new StockEntity(updatedStock);
+    return updatedStock;
   }
 
   async remove(id: number): Promise<void> {
