@@ -159,9 +159,9 @@
 
   <div class="tabs-nav">
     <button class="tab-btn active" onclick="switchTab('kasir')">Toko Kasir (Checkout & Void)</button>
-    <button class="tab-btn" onclick="switchTab('katalog')">Katalog & Stok</button>
-    <button class="tab-btn" onclick="switchTab('kategori')">Kategori Produk</button>
-    <button class="tab-btn" onclick="switchTab('karyawan')">Karyawan / Users (Admin)</button>
+    <button class="tab-btn" id="tab-btn-katalog" onclick="switchTab('katalog')">Katalog & Stok</button>
+    <button class="tab-btn" id="tab-btn-kategori" onclick="switchTab('kategori')">Kategori Produk</button>
+    <button class="tab-btn" id="tab-btn-karyawan" onclick="switchTab('karyawan')">Karyawan / Users (Admin)</button>
     <button class="tab-btn" onclick="switchTab('riwayat')">Riwayat Penjualan</button>
   </div>
 
@@ -256,7 +256,7 @@
           </div>
 
           <!-- Void Card -->
-          <div class="card bg-red">
+          <div class="card bg-red" id="void-card">
             <h2>4. Void Transaksi (Admin Only)</h2>
             <form id="void-form">
               <label>Transaction ID yang ingin dibatalkan</label>
@@ -579,9 +579,11 @@
           throw new Error(resJson.message || 'Login gagal');
         }
 
-        document.getElementById('login-status').innerText = `Role: ${resJson.data.user.employee ? resJson.data.user.employee.position.name : 'User'} (${resJson.data.user.first_name})`;
+        const role = resJson.data.user.position ? resJson.data.user.position.name : (resJson.data.user.employee ? resJson.data.user.employee.position.name : 'User');
+        document.getElementById('login-status').innerText = `Role: ${role} (${resJson.data.user.first_name})`;
         showLog('auth-log', `Login Berhasil! Selamat bekerja, ${resJson.data.user.first_name}.`, 'success');
         
+        applyRoleRestrictions(role);
         fetchProducts();
       } catch (err) {
         showLog('auth-log', `Error: ${err.message}`, 'error');
@@ -593,6 +595,7 @@
         await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
         document.getElementById('login-status').innerText = 'Belum Login';
         showLog('auth-log', 'Logout Berhasil.', 'success');
+        applyRoleRestrictions('Guest');
       } catch (err) {
         showLog('auth-log', `Logout Gagal: ${err.message}`, 'error');
       }
@@ -1106,6 +1109,37 @@
         showLog('void-log', `Void gagal: ${err.message}`, 'error');
       }
     });
+
+    // Role restrictions helper
+    function applyRoleRestrictions(role) {
+      const isStaff = (role === 'Staff' || role === 'Member');
+      const katalogBtn = document.getElementById('tab-btn-katalog');
+      const kategoriBtn = document.getElementById('tab-btn-kategori');
+      const karyawanBtn = document.getElementById('tab-btn-karyawan');
+      const voidCard = document.getElementById('void-card');
+      
+      if (isStaff) {
+        if (katalogBtn) katalogBtn.style.display = 'none';
+        if (kategoriBtn) kategoriBtn.style.display = 'none';
+        if (karyawanBtn) karyawanBtn.style.display = 'none';
+        if (voidCard) voidCard.style.display = 'none';
+        
+        // Redirect to Toko Kasir tab if the user was on an admin-only tab
+        const activeTab = document.querySelector('.tab-btn.active');
+        if (activeTab && (activeTab.id === 'tab-btn-katalog' || activeTab.id === 'tab-btn-kategori' || activeTab.id === 'tab-btn-karyawan')) {
+          const kasirTabBtn = document.querySelector(".tab-btn[onclick*='kasir']");
+          if (kasirTabBtn) {
+            kasirTabBtn.click();
+          }
+        }
+      } else {
+        // Admin or Guest/Unlogged (Default)
+        if (katalogBtn) katalogBtn.style.display = 'inline-block';
+        if (kategoriBtn) kategoriBtn.style.display = 'inline-block';
+        if (karyawanBtn) karyawanBtn.style.display = 'inline-block';
+        if (voidCard) voidCard.style.display = 'block';
+      }
+    }
   </script>
 </body>
 </html>
