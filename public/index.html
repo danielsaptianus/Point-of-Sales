@@ -148,6 +148,7 @@
     .badge-cancelled { background-color: #e74c3c; }
     .badge-failed { background-color: #7f8c8d; }
   </style>
+  <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js"></script>
 </head>
 <body>
 
@@ -221,7 +222,7 @@
               <label>Metode Pembayaran</label>
               <select id="chk-method">
                 <option value="CASH">CASH (Tunai - Langsung PAID)</option>
-                <option value="IPAYMU_REDIRECT">IPAYMU_REDIRECT (QRIS Online - PENDING)</option>
+                <option value="MIDTRANS_REDIRECT">MIDTRANS_REDIRECT (Midtrans Snap - PENDING)</option>
               </select>
               <button type="submit" class="btn-blue" style="width: 100%; font-size: 15px;">PROSES CHECKOUT</button>
             </form>
@@ -239,10 +240,14 @@
               <p>Total Bayar: <b>IDR <span id="active-total">0</span></b></p>
               <p>Status: <span id="active-status-badge" class="badge badge-pending">PENDING</span></p>
               
-              <div id="qris-box" style="display: none; text-align: center;">
-                <h5>Scan Barcode QRIS iPaymu:</h5>
-                <img src="" id="qris-image-src" class="qris-img">
-                <p>Reference ID / Trx ID: <span id="active-ref-id">-</span></p>
+              <div id="midtrans-box" style="display: none; text-align: center; margin-top: 15px; padding: 15px; background: #fff; border-radius: 6px; border: 1px dashed #3498db;">
+                <h4 style="color: #2980b9; margin-bottom: 10px;">Pembayaran Online Midtrans</h4>
+                <p style="font-size: 13px;">Silakan bayar menggunakan pilihan di bawah ini:</p>
+                <button type="button" class="btn-blue" id="btn-pay-snap" style="width: 100%; padding: 10px; margin-bottom: 10px; font-size: 14px;">⚡ BAYAR SEKARANG (SNAP POPUP)</button>
+                <a href="#" id="link-pay-redirect" target="_blank" style="display: block; text-decoration: none; color: #2980b9; font-weight: bold; font-size: 13px; margin-top: 8px;">Buka di Tab Baru ↗</a>
+                <p style="font-size: 11px; color: #7f8c8d; margin-top: 10px;">
+                  <b>Token Snap:</b> <code id="active-snap-token">-</code>
+                </p>
               </div>
             </div>
             <div id="no-active-checkout" style="text-align: center; color: #888; padding: 20px;">
@@ -1039,13 +1044,43 @@
         badge.className = `badge badge-${activeTransaction.status.toLowerCase()}`;
         badge.innerText = activeTransaction.status;
 
-        const qrisBox = document.getElementById('qris-box');
-        if (activeTransaction.payment && activeTransaction.payment.payment_method === 'IPAYMU_REDIRECT') {
-          qrisBox.style.display = 'block';
-          document.getElementById('qris-image-src').src = activeTransaction.payment.checkout_url;
-          document.getElementById('active-ref-id').innerText = activeTransaction.payment.reference_id;
+        const midtransBox = document.getElementById('midtrans-box');
+        if (activeTransaction.payment && activeTransaction.payment.payment_method === 'MIDTRANS_REDIRECT') {
+          midtransBox.style.display = 'block';
+          document.getElementById('active-snap-token').innerText = activeTransaction.payment.reference_id;
+          
+          // Setup link tab baru
+          document.getElementById('link-pay-redirect').href = activeTransaction.payment.checkout_url;
+          
+          // Setup Snap Popup click handler
+          document.getElementById('btn-pay-snap').onclick = function() {
+            if (window.snap) {
+              window.snap.pay(activeTransaction.payment.reference_id, {
+                onSuccess: function(result) {
+                  showLog('checkout-log', 'Pembayaran Berhasil! Mengalihkan...', 'success');
+                  setTimeout(() => location.reload(), 1500);
+                },
+                onPending: function(result) {
+                  showLog('checkout-log', 'Menunggu pembayaran selesai.', 'success');
+                },
+                onError: function(result) {
+                  showLog('checkout-log', 'Pembayaran Gagal/Error.', 'error');
+                },
+                onClose: function() {
+                  showLog('checkout-log', 'Popup pembayaran ditutup.', 'error');
+                }
+              });
+            } else {
+              alert('Library Snap.js gagal dimuat. Silakan gunakan link Buka di Tab Baru.');
+            }
+          };
+          
+          // Otomatis buka Snap Popup untuk kenyamanan
+          if (window.snap) {
+            document.getElementById('btn-pay-snap').click();
+          }
         } else {
-          qrisBox.style.display = 'none';
+          midtransBox.style.display = 'none';
         }
       } catch (err) {
         showLog('checkout-log', `Error: ${err.message}`, 'error');
