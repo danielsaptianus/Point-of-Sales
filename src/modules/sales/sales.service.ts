@@ -1,7 +1,7 @@
 import { Product, Transaction, Stock } from '@prisma/client';
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { MidtransService } from './services/midtrans.service';
+import { MidtransService } from './core/helpers/midtrans.service';
 import { CreateSaleDto } from '@modules/sales/core/dto/create-sale.dto';
 
 @Injectable()
