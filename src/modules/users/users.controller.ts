@@ -13,13 +13,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
-import { UsersService } from '../../users.service';
-import { CreateUserDto } from '@modules/users/core/dto/create-user.dto';
-import { UpdateUserDto } from '@modules/users/core/dto/update-user.dto';
-import { ChangePositionDto } from '@modules/users/core/dto/change-position.dto';
-import { ManagePermissionsDto } from '@modules/users/core/dto/manage-permissions.dto';
-import { UserQueryDto } from '@modules/users/core/dto/user-query.dto';
-import { UserEntity } from '../../core/entities/user.entity';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePositionDto } from './dto/change-position.dto';
+import { ManagePermissionsDto } from './dto/manage-permissions.dto';
+import { UserQueryDto } from './dto/user-query.dto';
+import { UserEntity } from './entities/user.entity';
 import { Permissions } from '@common/decorators/permissions.decorator';
 import { PERMISSIONS } from '@common/constants/permissions.constant';
 import {

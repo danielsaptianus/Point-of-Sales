@@ -8,8 +8,6 @@
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "npx rimraf dist",
-    "copy-templates": "cp -r templates dist/",
-    "dev": "ts-node src/cli.ts",
     "prepublishOnly": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
