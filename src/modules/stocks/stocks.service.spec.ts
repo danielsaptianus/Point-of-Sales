@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { StocksService } from './stocks.service';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
-import { CreateStockDto } from './dto/create-stock.dto';
+import { CreateStockDto } from '@common/dto/create-stock.dto';
 
 describe('StocksService Unit Tests', () => {
   let service: StocksService;

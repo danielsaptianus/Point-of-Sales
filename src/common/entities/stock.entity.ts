@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Stock as PrismaStock } from '@prisma/client';
-import { ProductEntity } from '@modules/products/entities/product.entity';
+import { ProductEntity } from './product.entity';
 
 export class StockEntity implements Partial<PrismaStock> {
   @ApiProperty()

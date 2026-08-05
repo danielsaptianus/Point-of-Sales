@@ -13,9 +13,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
 import { EmployeesService } from './employees.service';
-import { CreateEmployeeDto } from './dto/create-employee.dto';
-import { UpdateEmployeeDto } from './dto/update-employee.dto';
-import { EmployeeEntity } from './entities/employee.entity';
+import { CreateEmployeeDto } from '@common/dto/create-employee.dto';
+import { UpdateEmployeeDto } from '@common/dto/update-employee.dto';
+import { EmployeeEntity } from '@common/entities/employee.entity';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';

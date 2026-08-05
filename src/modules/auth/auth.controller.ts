@@ -2,9 +2,9 @@ import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Res } from '@n
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { AuthResponseDto } from './dto/auth-response.dto';
+import { LoginDto } from '@common/dto/login.dto';
+import { RegisterDto } from '@common/dto/register.dto';
+import { AuthResponseDto } from '@common/dto/auth-response.dto';
 import { Public } from '@common/decorators/public.decorator';
 import { ApiSuccessResponse } from '@common/decorators/api-response.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';

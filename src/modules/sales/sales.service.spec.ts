@@ -3,7 +3,7 @@ import { SalesService } from './sales.service';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { MidtransService } from './services/midtrans.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { CreateSaleDto } from './dto/create-sale.dto';
+import { CreateSaleDto } from '@common/dto/create-sale.dto';
 
 describe('SalesService Unit Tests', () => {
   let service: SalesService;

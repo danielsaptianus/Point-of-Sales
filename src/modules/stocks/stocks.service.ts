@@ -5,9 +5,9 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { CreateStockDto } from './dto/create-stock.dto';
-import { UpdateStockDto } from './dto/update-stock.dto';
-import { StockEntity } from './entities/stock.entity';
+import { CreateStockDto } from '@common/dto/create-stock.dto';
+import { UpdateStockDto } from '@common/dto/update-stock.dto';
+import { StockEntity } from '@common/entities/stock.entity';
 
 @Injectable()
 export class StocksService {

@@ -13,9 +13,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
 import { StocksService } from './stocks.service';
-import { CreateStockDto } from './dto/create-stock.dto';
-import { UpdateStockDto } from './dto/update-stock.dto';
-import { StockEntity } from './entities/stock.entity';
+import { CreateStockDto } from '@common/dto/create-stock.dto';
+import { UpdateStockDto } from '@common/dto/update-stock.dto';
+import { StockEntity } from '@common/entities/stock.entity';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';

@@ -19,9 +19,9 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { SalesService } from './sales.service';
-import { CreateSaleDto } from './dto/create-sale.dto';
-import { SalesQueryDto } from './dto/sales-query.dto';
-import { SaleEntity } from './entities/sale.entity';
+import { CreateSaleDto } from '@common/dto/create-sale.dto';
+import { SalesQueryDto } from '@common/dto/sales-query.dto';
+import { SaleEntity } from '@common/entities/sale.entity';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -31,7 +31,7 @@ import {
   ApiSuccessArrayResponse,
 } from '@common/decorators/api-response.decorator';
 import { Public } from '@common/decorators/public.decorator';
-import { MidtransWebhookDto } from './dto/midtrans-webhook.dto';
+import { MidtransWebhookDto } from '@common/dto/midtrans-webhook.dto';
 
 @ApiTags('Sales')
 @ApiCookieAuth()

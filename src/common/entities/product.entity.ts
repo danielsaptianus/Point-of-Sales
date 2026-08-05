@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Product as PrismaProduct } from '@prisma/client';
-import { CategoryEntity } from '@modules/categories/entities/category.entity';
+import { CategoryEntity } from './category.entity';
 
 export class ProductEntity implements Partial<PrismaProduct> {
   @ApiProperty()

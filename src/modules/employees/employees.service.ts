@@ -5,9 +5,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { CreateEmployeeDto } from './dto/create-employee.dto';
-import { UpdateEmployeeDto } from './dto/update-employee.dto';
-import { EmployeeEntity } from './entities/employee.entity';
+import { CreateEmployeeDto } from '@common/dto/create-employee.dto';
+import { UpdateEmployeeDto } from '@common/dto/update-employee.dto';
+import { EmployeeEntity } from '@common/entities/employee.entity';
 
 @Injectable()
 export class EmployeesService {

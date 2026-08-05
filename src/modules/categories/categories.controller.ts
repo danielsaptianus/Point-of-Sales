@@ -13,9 +13,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
-import { CategoryEntity } from './entities/category.entity';
+import { CreateCategoryDto } from '@common/dto/create-category.dto';
+import { UpdateCategoryDto } from '@common/dto/update-category.dto';
+import { CategoryEntity } from '@common/entities/category.entity';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';

@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { PasswordUtil } from '@common/utils/password.util';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ChangePositionDto } from './dto/change-position.dto';
-import { ManagePermissionsDto } from './dto/manage-permissions.dto';
-import { UserQueryDto } from './dto/user-query.dto';
-import { UserEntity } from './entities/user.entity';
+import { CreateUserDto } from '@common/dto/create-user.dto';
+import { UpdateUserDto } from '@common/dto/update-user.dto';
+import { ChangePositionDto } from '@common/dto/change-position.dto';
+import { ManagePermissionsDto } from '@common/dto/manage-permissions.dto';
+import { UserQueryDto } from '@common/dto/user-query.dto';
+import { UserEntity } from '@common/entities/user.entity';
 import { UserTransformHelper } from './helpers/user-transform.helper';
 import { PaginatedResponseDto } from '@common/dto/pagination.dto';
 

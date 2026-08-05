@@ -1,5 +1,5 @@
 import { User, Employee, Position, PositionPermission, Permission } from '@prisma/client';
-import { UserEntity } from '../entities/user.entity';
+import { UserEntity } from '@common/entities/user.entity';
 
 type UserWithRelations = User & {
   employee?:
