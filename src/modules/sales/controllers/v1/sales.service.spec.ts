@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SalesService } from './sales.service';
+import { SalesService } from '../../sales.service';
 import { PrismaService } from '@common/prisma/prisma.service';
-import { MidtransService } from './core/helpers/midtrans.service';
+import { MidtransService } from '../../core/helpers/midtrans.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateSaleDto } from '@modules/sales/core/dto/create-sale.dto';
 

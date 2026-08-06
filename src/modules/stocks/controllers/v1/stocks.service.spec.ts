@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { StocksService } from './stocks.service';
+import { StocksService } from '../../stocks.service';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { CreateStockDto } from '@modules/stocks/core/dto/create-stock.dto';

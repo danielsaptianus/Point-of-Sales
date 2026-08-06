@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProductsService } from './products.service';
+import { ProductsService } from '../../products.service';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from '@modules/products/core/dto/create-product.dto';
