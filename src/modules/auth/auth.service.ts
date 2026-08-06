@@ -21,7 +21,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(loginDto: LoginDto): Promise<any> {
     const { email, password } = loginDto;
 
     // Find user with employee, position, and permissions
@@ -94,12 +94,11 @@ export class AuthService {
           id: user.employee.position.id,
           name: user.employee.position.name,
         },
-        permissions,
       },
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+  async register(registerDto: RegisterDto): Promise<any> {
     const { email, password, first_name, last_name, gender, employee_number, position_id } =
       registerDto;
 
@@ -198,7 +197,6 @@ export class AuthService {
           id: user.employee.position.id,
           name: user.employee.position.name,
         },
-        permissions,
       },
     };
   }

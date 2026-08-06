@@ -22,18 +22,15 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiSuccessResponse(AuthResponseDto)
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(
-    @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthResponseDto> {
-    const authResponse = await this.authService.login(loginDto);
-    res.cookie('Authentication', authResponse.access_token, {
+  async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response): Promise<any> {
+    const { access_token, user } = await this.authService.login(loginDto);
+    res.cookie('Authentication', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    return authResponse;
+    return { user };
   }
 
   @Public()
@@ -44,15 +41,15 @@ export class AuthController {
   async register(
     @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthResponseDto> {
-    const authResponse = await this.authService.register(registerDto);
-    res.cookie('Authentication', authResponse.access_token, {
+  ): Promise<any> {
+    const { access_token, user } = await this.authService.register(registerDto);
+    res.cookie('Authentication', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    return authResponse;
+    return { user };
   }
 
   @Post('logout')

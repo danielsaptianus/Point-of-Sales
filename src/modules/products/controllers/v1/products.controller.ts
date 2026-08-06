@@ -39,7 +39,7 @@ export class ProductsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 409, description: 'SKU already exists' })
-  async create(@Body() createProductDto: CreateProductDto): Promise<Product> {
+  async create(@Body() createProductDto: CreateProductDto): Promise<any> {
     return this.productsService.create(createProductDto);
   }
 
@@ -48,7 +48,7 @@ export class ProductsController {
   @ApiOperation({ summary: 'Get all products (Admin & Staff)' })
   @ApiSuccessArrayResponse(CreateProductDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(): Promise<Product[]> {
+  async findAll(): Promise<any[]> {
     return this.productsService.findAll();
   }
 
@@ -59,7 +59,7 @@ export class ProductsController {
   @ApiSuccessResponse(CreateProductDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Product not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Product> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.productsService.findOne(id);
   }
 
@@ -76,7 +76,7 @@ export class ProductsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto,
-  ): Promise<Product> {
+  ): Promise<any> {
     return this.productsService.update(id, updateProductDto);
   }
 

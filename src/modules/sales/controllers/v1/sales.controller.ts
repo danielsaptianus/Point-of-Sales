@@ -49,7 +49,7 @@ export class SalesController {
   async checkout(
     @GetUser('userId') userId: number,
     @Body() createSaleDto: CreateSaleDto,
-  ): Promise<Transaction> {
+  ): Promise<any> {
     return this.salesService.checkout(userId, createSaleDto);
   }
 
@@ -58,7 +58,7 @@ export class SalesController {
   @ApiOperation({ summary: 'Get all sales history' })
   @ApiSuccessArrayResponse(CreateSaleDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(@Query() query: SalesQueryDto): Promise<Transaction[]> {
+  async findAll(@Query() query: SalesQueryDto): Promise<any[]> {
     return this.salesService.findAll(query);
   }
 
@@ -69,7 +69,7 @@ export class SalesController {
   @ApiSuccessResponse(CreateSaleDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Transaction> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.salesService.findOne(id);
   }
 
@@ -118,7 +118,7 @@ export class SalesController {
   @ApiResponse({ status: 400, description: 'Transaction already voided or failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Transaction not found' })
-  async voidTransaction(@Param('id', ParseIntPipe) id: number): Promise<Transaction> {
+  async voidTransaction(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.salesService.voidTransaction(id);
   }
 }

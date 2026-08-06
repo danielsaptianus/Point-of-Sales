@@ -39,7 +39,7 @@ export class CategoriesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 409, description: 'Category name already exists' })
-  async create(@Body() createCategoryDto: CreateCategoryDto): Promise<Category> {
+  async create(@Body() createCategoryDto: CreateCategoryDto): Promise<any> {
     return this.categoriesService.create(createCategoryDto);
   }
 
@@ -48,7 +48,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get all categories (Admin & Staff)' })
   @ApiSuccessArrayResponse(CreateCategoryDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(): Promise<Category[]> {
+  async findAll(): Promise<any[]> {
     return this.categoriesService.findAll();
   }
 
@@ -59,7 +59,7 @@ export class CategoriesController {
   @ApiSuccessResponse(CreateCategoryDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Category> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.categoriesService.findOne(id);
   }
 
@@ -76,7 +76,7 @@ export class CategoriesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<Category> {
+  ): Promise<any> {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 

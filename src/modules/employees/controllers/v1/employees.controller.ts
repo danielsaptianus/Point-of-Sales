@@ -39,7 +39,7 @@ export class EmployeesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - Requires Admin role' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
-  async create(@Body() createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
+  async create(@Body() createEmployeeDto: CreateEmployeeDto): Promise<any> {
     return this.employeesService.create(createEmployeeDto);
   }
 
@@ -49,7 +49,7 @@ export class EmployeesController {
   @ApiSuccessArrayResponse(CreateEmployeeDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  async findAll(): Promise<Employee[]> {
+  async findAll(): Promise<any[]> {
     return this.employeesService.findAll();
   }
 
@@ -61,7 +61,7 @@ export class EmployeesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Employee not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Employee> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.employeesService.findOne(id);
   }
 
@@ -78,7 +78,7 @@ export class EmployeesController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEmployeeDto: UpdateEmployeeDto,
-  ): Promise<Employee> {
+  ): Promise<any> {
     return this.employeesService.update(id, updateEmployeeDto);
   }
 

@@ -8,7 +8,15 @@ import { UpdateCategoryDto } from '@modules/categories/core/dto/update-category.
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
+  private transformCategory(cat: any) {
+    return {
+      id: cat.id,
+      name: cat.name,
+      description: cat.description,
+    };
+  }
+
+  async create(createCategoryDto: CreateCategoryDto): Promise<any> {
     const { name } = createCategoryDto;
 
     const existingCategory = await this.prisma.category.findFirst({
@@ -23,19 +31,19 @@ export class CategoriesService {
       data: createCategoryDto,
     });
 
-    return category;
+    return this.transformCategory(category);
   }
 
-  async findAll(): Promise<Category[]> {
+  async findAll(): Promise<any[]> {
     const categories = await this.prisma.category.findMany({
       where: { deleted_at: null },
       orderBy: { created_at: 'desc' },
     });
 
-    return categories.map((cat) => cat);
+    return categories.map((cat) => this.transformCategory(cat));
   }
 
-  async findOne(id: number): Promise<Category> {
+  async findOne(id: number): Promise<any> {
     const category = await this.prisma.category.findFirst({
       where: { id, deleted_at: null },
     });
@@ -44,10 +52,10 @@ export class CategoriesService {
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
 
-    return category;
+    return this.transformCategory(category);
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<any> {
     await this.findOne(id);
 
     if (updateCategoryDto.name) {
@@ -69,7 +77,7 @@ export class CategoriesService {
       data: updateCategoryDto,
     });
 
-    return updatedCategory;
+    return this.transformCategory(updatedCategory);
   }
 
   async remove(id: number): Promise<void> {

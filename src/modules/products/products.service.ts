@@ -12,8 +12,26 @@ import { UpdateProductDto } from '@modules/products/core/dto/update-product.dto'
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
+  private transformProduct(product: any) {
+    const stock = product.stocks?.reduce((acc: number, s: any) => acc + s.quantity, 0) || 0;
+    return {
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      price: product.price,
+      category_id: product.category_id,
+      is_active: product.is_active,
+      stock,
+      category: product.category
+        ? {
+            id: product.category.id,
+            name: product.category.name,
+          }
+        : undefined,
+    };
+  }
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
+  async create(createProductDto: CreateProductDto): Promise<any> {
     const { sku, category_id } = createProductDto;
 
     // Check SKU conflict
@@ -39,20 +57,20 @@ export class ProductsService {
       include: { category: true, stocks: true },
     });
 
-    return product;
+    return this.transformProduct(product);
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(): Promise<any[]> {
     const products = await this.prisma.product.findMany({
       where: { deleted_at: null },
       include: { category: true, stocks: true },
       orderBy: { created_at: 'desc' },
     });
 
-    return products.map((prod) => prod);
+    return products.map((prod) => this.transformProduct(prod));
   }
 
-  async findOne(id: number): Promise<Product> {
+  async findOne(id: number): Promise<any> {
     const product = await this.prisma.product.findFirst({
       where: { id, deleted_at: null },
       include: { category: true, stocks: true },
@@ -62,10 +80,10 @@ export class ProductsService {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
 
-    return product;
+    return this.transformProduct(product);
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(id: number, updateProductDto: UpdateProductDto): Promise<any> {
     await this.findOne(id);
 
     if (updateProductDto.sku) {
@@ -98,7 +116,7 @@ export class ProductsService {
       include: { category: true, stocks: true },
     });
 
-    return updatedProduct;
+    return this.transformProduct(updatedProduct);
   }
 
   async remove(id: number): Promise<void> {

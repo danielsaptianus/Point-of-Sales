@@ -11,7 +11,48 @@ export class SalesService {
     private midtransService: MidtransService,
   ) {}
 
-  async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<Transaction> {
+  private transformTransactionList(t: any) {
+    return {
+      id: t.id,
+      invoice_number: t.invoice_number,
+      created_at: t.created_at,
+      subtotal: t.subtotal,
+      total: t.total,
+      user_id: t.user_id,
+      status: t.status,
+    };
+  }
+
+  private transformTransactionDetail(t: any) {
+    return {
+      id: t.id,
+      invoice_number: t.invoice_number,
+      created_at: t.created_at,
+      subtotal: t.subtotal,
+      tax: t.tax,
+      discount: t.discount,
+      total: t.total,
+      user_id: t.user_id,
+      status: t.status,
+      payment: t.payment
+        ? {
+            payment_method: t.payment.payment_method,
+            reference_id: t.payment.reference_id,
+            checkout_url: t.payment.checkout_url,
+          }
+        : null,
+      transaction_items:
+        t.transaction_items?.map((item: any) => ({
+          product_id: item.product_id,
+          product_name: item.product?.name || '',
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal,
+        })) || [],
+    };
+  }
+
+  async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<any> {
     const { payment_method, tax = 0, discount = 0, items } = createSaleDto;
 
     // Menjalankan sekelompok operasi database dalam satu blok $transaction (atomik)
@@ -141,11 +182,11 @@ export class SalesService {
         },
       });
 
-      return finalTransaction;
+      return this.transformTransactionDetail(finalTransaction);
     });
   }
 
-  async findAll(query: any): Promise<Transaction[]> {
+  async findAll(query: any): Promise<any[]> {
     const { status, cashier_id, startDate, endDate } = query;
     const where: any = { deleted_at: null };
 
@@ -175,10 +216,10 @@ export class SalesService {
       orderBy: { created_at: 'desc' },
     });
 
-    return transactions.map((t) => t);
+    return transactions.map((t) => this.transformTransactionList(t));
   }
 
-  async findOne(id: number): Promise<Transaction> {
+  async findOne(id: number): Promise<any> {
     const transaction = await this.prisma.transaction.findFirst({
       where: { id, deleted_at: null },
       include: {
@@ -191,7 +232,7 @@ export class SalesService {
       throw new NotFoundException(`Transaksi dengan ID ${id} tidak ditemukan`);
     }
 
-    return transaction;
+    return this.transformTransactionDetail(transaction);
   }
 
   /**
@@ -303,7 +344,7 @@ export class SalesService {
   /**
    * Membatalkan transaksi penjualan dan mengembalikan stok barang belanjaan ke persediaan (Admin Only)
    */
-  async voidTransaction(id: number): Promise<Transaction> {
+  async voidTransaction(id: number): Promise<any> {
     return this.prisma.$transaction(async (tx) => {
       // 1. Cari transaksi beserta detail item belanja & pembayaran
       const transaction = await tx.transaction.findFirst({
@@ -366,7 +407,7 @@ export class SalesService {
         },
       });
 
-      return updatedTransaction;
+      return this.transformTransactionDetail(updatedTransaction);
     });
   }
 }

@@ -37,7 +37,7 @@ export class StocksController {
   @ApiSuccessResponse(CreateStockDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async create(@Body() createStockDto: CreateStockDto): Promise<Stock> {
+  async create(@Body() createStockDto: CreateStockDto): Promise<any> {
     return this.stocksService.create(createStockDto);
   }
 
@@ -46,7 +46,7 @@ export class StocksController {
   @ApiOperation({ summary: 'Get all stock mutations (Admin & Staff)' })
   @ApiSuccessArrayResponse(CreateStockDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(): Promise<Stock[]> {
+  async findAll(): Promise<any[]> {
     return this.stocksService.findAll();
   }
 
@@ -57,7 +57,7 @@ export class StocksController {
   @ApiSuccessResponse(CreateStockDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Stock record not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Stock> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<any> {
     return this.stocksService.findOne(id);
   }
 
@@ -73,7 +73,7 @@ export class StocksController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateStockDto: UpdateStockDto,
-  ): Promise<Stock> {
+  ): Promise<any> {
     return this.stocksService.update(id, updateStockDto);
   }
 

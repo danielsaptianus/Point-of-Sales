@@ -13,7 +13,28 @@ import { UpdateEmployeeDto } from '@modules/employees/core/dto/update-employee.d
 export class EmployeesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
+  private transformEmployee(emp: any) {
+    return {
+      id: emp.id,
+      employee_number: emp.employee_number,
+      first_name: emp.first_name,
+      last_name: emp.last_name,
+      position: emp.position
+        ? {
+            id: emp.position.id,
+            name: emp.position.name,
+          }
+        : null,
+      user: emp.user
+        ? {
+            id: emp.user.id,
+            email: emp.user.email,
+          }
+        : null,
+    };
+  }
+
+  async create(createEmployeeDto: CreateEmployeeDto): Promise<any> {
     const { employee_number, position_id, user_id, hire_date, ...rest } = createEmployeeDto;
 
     // Check unique employee_number
@@ -65,20 +86,20 @@ export class EmployeesService {
       include: { position: true, user: true },
     });
 
-    return employee;
+    return this.transformEmployee(employee);
   }
 
-  async findAll(): Promise<Employee[]> {
+  async findAll(): Promise<any[]> {
     const employees = await this.prisma.employee.findMany({
       where: { deleted_at: null },
       include: { position: true, user: true },
       orderBy: { created_at: 'desc' },
     });
 
-    return employees.map((emp) => emp);
+    return employees.map((emp) => this.transformEmployee(emp));
   }
 
-  async findOne(id: number): Promise<Employee> {
+  async findOne(id: number): Promise<any> {
     const employee = await this.prisma.employee.findFirst({
       where: { id, deleted_at: null },
       include: { position: true, user: true },
@@ -88,10 +109,10 @@ export class EmployeesService {
       throw new NotFoundException(`Employee with ID ${id} not found`);
     }
 
-    return employee;
+    return this.transformEmployee(employee);
   }
 
-  async update(id: number, updateEmployeeDto: UpdateEmployeeDto): Promise<Employee> {
+  async update(id: number, updateEmployeeDto: UpdateEmployeeDto): Promise<any> {
     const employee = await this.prisma.employee.findFirst({
       where: { id, deleted_at: null },
     });
@@ -156,7 +177,7 @@ export class EmployeesService {
       include: { position: true, user: true },
     });
 
-    return updatedEmployee;
+    return this.transformEmployee(updatedEmployee);
   }
 
   async remove(id: number): Promise<void> {

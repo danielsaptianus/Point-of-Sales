@@ -13,7 +13,18 @@ import { UpdateStockDto } from '@modules/stocks/core/dto/update-stock.dto';
 export class StocksService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createStockDto: CreateStockDto): Promise<Stock> {
+  private transformStock(st: any) {
+    return {
+      id: st.id,
+      created_at: st.created_at,
+      product_id: st.product_id,
+      quantity: st.quantity,
+      type: st.type,
+      notes: st.notes,
+    };
+  }
+
+  async create(createStockDto: CreateStockDto): Promise<any> {
     const { product_id, type } = createStockDto;
 
     // 1. Pembuatan stok awal hanya boleh bertipe IN
@@ -46,19 +57,19 @@ export class StocksService {
       include: { product: { include: { category: true } } },
     });
 
-    return stock;
+    return this.transformStock(stock);
   }
 
-  async findAll(): Promise<Stock[]> {
+  async findAll(): Promise<any[]> {
     const stocks = await this.prisma.stock.findMany({
       include: { product: { include: { category: true } } },
       orderBy: { created_at: 'desc' },
     });
 
-    return stocks.map((st) => st);
+    return stocks.map((st) => this.transformStock(st));
   }
 
-  async findOne(id: number): Promise<Stock> {
+  async findOne(id: number): Promise<any> {
     const stock = await this.prisma.stock.findFirst({
       where: { id },
       include: { product: { include: { category: true } } },
@@ -68,10 +79,10 @@ export class StocksService {
       throw new NotFoundException(`Stock record with ID ${id} not found`);
     }
 
-    return stock;
+    return this.transformStock(stock);
   }
 
-  async update(id: number, updateStockDto: UpdateStockDto): Promise<Stock> {
+  async update(id: number, updateStockDto: UpdateStockDto): Promise<any> {
     const existing = await this.findOne(id);
 
     if (updateStockDto.product_id) {
@@ -98,7 +109,7 @@ export class StocksService {
       include: { product: { include: { category: true } } },
     });
 
-    return updatedStock;
+    return this.transformStock(updatedStock);
   }
 
   async remove(id: number): Promise<void> {
