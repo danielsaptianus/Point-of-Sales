@@ -200,4 +200,34 @@ export class AuthService {
       },
     };
   }
+
+  async getProfile(userId: number): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        employee: {
+          include: {
+            position: true,
+          },
+        },
+      },
+    });
+
+    if (!user || !user.employee) {
+      throw new UnauthorizedException('User profile not found');
+    }
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.employee.first_name,
+        last_name: user.employee.last_name,
+        position: {
+          id: user.employee.position.id,
+          name: user.employee.position.name,
+        },
+      },
+    };
+  }
 }

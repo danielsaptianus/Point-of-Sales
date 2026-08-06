@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpCode, HttpStatus, UseGuards, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from '../../auth.service';
@@ -9,6 +9,7 @@ import { Public } from '@common/decorators/public.decorator';
 import { ApiSuccessResponse } from '@common/decorators/api-response.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@common/guards/permissions.guard';
+import { GetUser } from '@common/decorators/get-user.decorator';
 
 @ApiTags('Authentication')
 @Controller({ path: 'auth', version: '1' })
@@ -64,5 +65,12 @@ export class AuthController {
       expires: new Date(0),
     });
     return { message: 'Logout successful' };
+  }
+
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiSuccessResponse(AuthResponseDto)
+  async getProfile(@GetUser('userId') userId: number): Promise<any> {
+    return this.authService.getProfile(userId);
   }
 }

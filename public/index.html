@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,12 +12,112 @@
       margin: 0;
       padding: 0;
     }
-    h1, h2, h3, h4 {
+
+    /* Premium Login Screen Style */
+    #login-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      color: white;
+      text-align: center;
+    }
+    .login-logo {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+    }
+    .login-subtitle {
+      color: #cbd5e1;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+    .login-form-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .login-form-group label {
+      display: block;
+      color: #94a3b8;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .login-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: white;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      margin: 0;
+      box-sizing: border-box;
+    }
+    .login-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+      margin-top: 10px;
+    }
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+      background: linear-gradient(135deg, #7dd3fc 0%, #0369a1 100%);
+    }
+    .login-btn:active {
+      transform: translateY(0);
+    }
+    #login-error-box {
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
       margin-top: 0;
     }
+
     .container {
       padding: 20px;
     }
+
     .header {
       background-color: #2980b9;
       color: white;
@@ -24,8 +125,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+
     /* Tabs Navigation */
     .tabs-nav {
       display: flex;
@@ -33,6 +135,7 @@
       padding: 0 10px;
       margin-bottom: 20px;
     }
+
     .tab-btn {
       background: none;
       border: none;
@@ -43,50 +146,82 @@
       font-weight: bold;
       transition: all 0.3s;
     }
+
     .tab-btn:hover {
       color: white;
       background-color: #2c3e50;
     }
+
     .tab-btn.active {
       color: white;
       background-color: #2980b9;
       border-bottom: 4px solid #2ecc71;
     }
+
     .tab-content {
       display: none;
     }
+
     .tab-content.active {
       display: block;
     }
-    
+
     /* Layouts */
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
     }
+
     .card {
       background: white;
       padding: 15px;
       border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
       margin-bottom: 20px;
     }
-    
+
     /* Green (Success, Product, Stock) */
-    .bg-green { border-top: 4px solid #27ae60; }
-    .btn-green { background-color: #2ecc71; color: white; }
-    .btn-green:hover { background-color: #27ae60; }
-    
+    .bg-green {
+      border-top: 4px solid #27ae60;
+    }
+
+    .btn-green {
+      background-color: #2ecc71;
+      color: white;
+    }
+
+    .btn-green:hover {
+      background-color: #27ae60;
+    }
+
     /* Blue (Auth, Checkout, Navigation) */
-    .bg-blue { border-top: 4px solid #2980b9; }
-    .btn-blue { background-color: #3498db; color: white; }
-    .btn-blue:hover { background-color: #2980b9; }
-    
+    .bg-blue {
+      border-top: 4px solid #2980b9;
+    }
+
+    .btn-blue {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .btn-blue:hover {
+      background-color: #2980b9;
+    }
+
     /* Red (Danger, Delete, Void) */
-    .bg-red { border-top: 4px solid #c0392b; }
-    .btn-red { background-color: #e74c3c; color: white; }
-    .btn-red:hover { background-color: #c0392b; }
+    .bg-red {
+      border-top: 4px solid #c0392b;
+    }
+
+    .btn-red {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .btn-red:hover {
+      background-color: #c0392b;
+    }
 
     button {
       padding: 8px 12px;
@@ -95,7 +230,10 @@
       cursor: pointer;
       font-weight: bold;
     }
-    input, select, textarea {
+
+    input,
+    select,
+    textarea {
       width: 100%;
       padding: 8px;
       margin: 8px 0 15px 0;
@@ -103,39 +241,56 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
     label {
       font-weight: bold;
       font-size: 13px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
     }
-    th, td {
+
+    th,
+    td {
       border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
       font-size: 13px;
     }
+
     th {
       background-color: #f1f2f6;
     }
+
     .toast {
       padding: 10px;
       margin-top: 10px;
       border-radius: 4px;
       font-weight: bold;
     }
-    .toast-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    .toast-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    
+
+    .toast-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .toast-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
     .qris-img {
       max-width: 250px;
       display: block;
       margin: 10px auto;
       border: 2px solid #ccc;
     }
+
     .badge {
       padding: 4px 8px;
       border-radius: 4px;
@@ -143,48 +298,73 @@
       font-weight: bold;
       color: white;
     }
-    .badge-pending { background-color: #f39c12; }
-    .badge-paid { background-color: #2ecc71; }
-    .badge-cancelled { background-color: #e74c3c; }
-    .badge-failed { background-color: #7f8c8d; }
+
+    .badge-pending {
+      background-color: #f39c12;
+    }
+
+    .badge-paid {
+      background-color: #2ecc71;
+    }
+
+    .badge-cancelled {
+      background-color: #e74c3c;
+    }
+
+    .badge-failed {
+      background-color: #7f8c8d;
+    }
   </style>
   <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js"></script>
 </head>
+
 <body>
 
-  <div class="header">
-    <h1 style="margin: 0; font-size: 20px;">POS Kasir - Testing Control Panel</h1>
-    <div id="login-status">Belum Login</div>
+  <!-- Screen 1: Premium Glassmorphic Login -->
+  <div id="login-screen" style="display: none;">
+    <div class="login-container">
+      <div class="login-logo">ARTO POS</div>
+      <div class="login-subtitle">Silakan masuk menggunakan akun kasir Anda</div>
+      <form id="login-form">
+        <div class="login-form-group">
+          <label>Email Kasir</label>
+          <input type="email" id="login-email" class="login-input" value="admin@arto.com" required placeholder="kasir@arto.com">
+        </div>
+        <div class="login-form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" class="login-input" value="Password123!" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="login-btn">MASUK SISTEM</button>
+      </form>
+      <div id="login-error-box"></div>
+    </div>
   </div>
 
-  <div class="tabs-nav">
-    <button class="tab-btn active" onclick="switchTab('kasir')">Toko Kasir (Checkout & Void)</button>
-    <button class="tab-btn" id="tab-btn-katalog" onclick="switchTab('katalog')">Katalog & Stok</button>
-    <button class="tab-btn" id="tab-btn-kategori" onclick="switchTab('kategori')">Kategori Produk</button>
-    <button class="tab-btn" id="tab-btn-karyawan" onclick="switchTab('karyawan')">Karyawan / Users (Admin)</button>
-    <button class="tab-btn" onclick="switchTab('riwayat')">Riwayat Penjualan</button>
-  </div>
+  <!-- Screen 2: Main Application Dashboard -->
+  <div id="main-app" style="display: none;">
+    <div class="header">
+      <h1 style="margin: 0; font-size: 20px;">POS Kasir - Testing Control Panel</h1>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <div id="login-status" style="font-weight: bold; font-size: 14px;">Belum Login</div>
+        <button type="button" class="btn-red" id="btn-logout" style="padding: 6px 12px; font-size: 13px;">Logout</button>
+      </div>
+    </div>
 
-  <div class="container">
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('kasir')">Toko Kasir (Checkout & Void)</button>
+      <button class="tab-btn" id="tab-btn-katalog" onclick="switchTab('katalog')">Katalog & Stok</button>
+      <button class="tab-btn" id="tab-btn-kategori" onclick="switchTab('kategori')">Kategori Produk</button>
+      <button class="tab-btn" id="tab-btn-karyawan" onclick="switchTab('karyawan')">Karyawan / Admin</button>
+      <button class="tab-btn" onclick="switchTab('riwayat')">Riwayat Penjualan</button>
+    </div>
 
-    <!-- 1. TOKO KASIR TAB -->
-    <div id="tab-kasir" class="tab-content active">
-      <div class="grid-2">
-        <!-- Login & Checkout Form -->
-        <div>
-          <!-- Auth Card -->
-          <div class="card bg-blue">
-            <h2>1. Autentikasi / Login</h2>
-            <form id="login-form">
-              <label>Email Kasir</label>
-              <input type="email" id="login-email" value="admin@arto.com" required>
-              <label>Password</label>
-              <input type="password" id="login-password" value="Password123!" required>
-              <button type="submit" class="btn-blue">Login Sekarang</button>
-              <button type="button" class="btn-red" id="btn-logout" style="margin-left: 10px;">Logout</button>
-            </form>
-            <div id="auth-log"></div>
-          </div>
+    <div class="container">
+
+      <!-- 1. TOKO KASIR TAB -->
+      <div id="tab-kasir" class="tab-content active">
+        <div class="grid-2">
+          <!-- Checkout Form Column -->
+          <div>
 
           <!-- Checkout Card -->
           <div class="card bg-blue">
@@ -194,7 +374,7 @@
               <input type="number" id="cart-qty" placeholder="Qty" value="1" style="margin: 0; width: 80px;">
               <button type="button" class="btn-blue" onclick="addToCart()">+ Keranjang</button>
             </div>
-            
+
             <table id="cart-table">
               <thead>
                 <tr>
@@ -204,7 +384,9 @@
                 </tr>
               </thead>
               <tbody id="cart-items">
-                <tr><td colspan="3" style="text-align: center;">Keranjang Kosong</td></tr>
+                <tr>
+                  <td colspan="3" style="text-align: center;">Keranjang Kosong</td>
+                </tr>
               </tbody>
             </table>
 
@@ -235,16 +417,22 @@
           <!-- Results Card -->
           <div class="card bg-blue">
             <h2>3. Hasil & QRIS Barcode</h2>
-            <div id="active-checkout-panel" style="display: none; background: #f0f3f4; padding: 15px; border-radius: 6px; border-left: 5px solid #3498db;">
+            <div id="active-checkout-panel"
+              style="display: none; background: #f0f3f4; padding: 15px; border-radius: 6px; border-left: 5px solid #3498db;">
               <h4>Transaksi Aktif: <span id="active-invoice" style="color: #2980b9;">-</span></h4>
               <p>Total Bayar: <b>IDR <span id="active-total">0</span></b></p>
               <p>Status: <span id="active-status-badge" class="badge badge-pending">PENDING</span></p>
-              
-              <div id="midtrans-box" style="display: none; text-align: center; margin-top: 15px; padding: 15px; background: #fff; border-radius: 6px; border: 1px dashed #3498db;">
+
+              <div id="midtrans-box"
+                style="display: none; text-align: center; margin-top: 15px; padding: 15px; background: #fff; border-radius: 6px; border: 1px dashed #3498db;">
                 <h4 style="color: #2980b9; margin-bottom: 10px;">Pembayaran Online Midtrans</h4>
                 <p style="font-size: 13px;">Silakan bayar menggunakan pilihan di bawah ini:</p>
-                <button type="button" class="btn-blue" id="btn-pay-snap" style="width: 100%; padding: 10px; margin-bottom: 10px; font-size: 14px;">⚡ BAYAR SEKARANG (SNAP POPUP)</button>
-                <a href="#" id="link-pay-redirect" target="_blank" style="display: block; text-decoration: none; color: #2980b9; font-weight: bold; font-size: 13px; margin-top: 8px;">Buka di Tab Baru ↗</a>
+                <button type="button" class="btn-blue" id="btn-pay-snap"
+                  style="width: 100%; padding: 10px; margin-bottom: 10px; font-size: 14px;">⚡ BAYAR SEKARANG (SNAP
+                  POPUP)</button>
+                <a href="#" id="link-pay-redirect" target="_blank"
+                  style="display: block; text-decoration: none; color: #2980b9; font-weight: bold; font-size: 13px; margin-top: 8px;">Buka
+                  di Tab Baru ↗</a>
                 <p style="font-size: 11px; color: #7f8c8d; margin-top: 10px;">
                   <b>Token Snap:</b> <code id="active-snap-token">-</code>
                 </p>
@@ -257,7 +445,7 @@
 
           <!-- Void Card -->
           <div class="card bg-red" id="void-card">
-            <h2>4. Void Transaksi (Admin Only)</h2>
+            <h2>4. Void Transaksi</h2>
             <form id="void-form">
               <label>Transaction ID yang ingin dibatalkan</label>
               <input type="number" id="void-tid" placeholder="Contoh: 1" required>
@@ -276,8 +464,8 @@
         <div class="card bg-green">
           <h2>1. Data Produk & Edit Master</h2>
           <button class="btn-green" onclick="fetchProducts()" style="margin-bottom: 10px;">Refresh Produk</button>
-          
-          <h3>Form Simpan/Update Produk (Admin Only)</h3>
+
+          <h3>Form Simpan/Update Produk</h3>
           <form id="product-form">
             <input type="hidden" id="prod-id">
             <div style="display: flex; gap: 10px;">
@@ -301,7 +489,8 @@
               </div>
             </div>
             <button type="submit" class="btn-green" id="btn-save-prod">Simpan Produk Baru</button>
-            <button type="button" class="btn-red" id="btn-cancel-edit-prod" style="display: none; margin-left: 10px;" onclick="cancelProductEdit()">Batal Edit</button>
+            <button type="button" class="btn-red" id="btn-cancel-edit-prod" style="display: none; margin-left: 10px;"
+              onclick="cancelProductEdit()">Batal Edit</button>
           </form>
           <div id="product-log"></div>
 
@@ -318,7 +507,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="6" style="text-align: center;">Memuat data...</td></tr>
+              <tr>
+                <td colspan="6" style="text-align: center;">Memuat data...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -327,7 +518,7 @@
         <div>
           <!-- Stock Actions -->
           <div class="card bg-green">
-            <h2>2. Kelola Persediaan (Stok)</h2>
+            <h2>2. Kelola Persediaan Stok</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
               <div>
                 <h4>A. Set Stok Awal (IN)</h4>
@@ -355,8 +546,9 @@
 
           <!-- Stock Mutation Log -->
           <div class="card bg-green">
-            <h2>3. Log Mutasi Stok (Audit History)</h2>
-            <button class="btn-green" onclick="fetchStockHistory()" style="margin-bottom: 10px;">Refresh Riwayat Stok</button>
+            <h2>3. Log Mutasi Stok</h2>
+            <button class="btn-green" onclick="fetchStockHistory()" style="margin-bottom: 10px;">Refresh Riwayat
+              Stok</button>
             <table id="stock-history-table">
               <thead>
                 <tr>
@@ -368,7 +560,9 @@
                 </tr>
               </thead>
               <tbody>
-                <tr><td colspan="5" style="text-align: center;">Klik Refresh Riwayat untuk memuat data</td></tr>
+                <tr>
+                  <td colspan="5" style="text-align: center;">Klik Refresh Riwayat untuk memuat data</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -381,7 +575,7 @@
       <div class="grid-2">
         <!-- Category Form -->
         <div class="card bg-green">
-          <h2>1. Buat Kategori Baru (Admin Only)</h2>
+          <h2>1. Buat Kategori Baru</h2>
           <form id="category-form">
             <label>Nama Kategori</label>
             <input type="text" id="cat-name" placeholder="Makanan Ringan" required>
@@ -406,7 +600,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="4" style="text-align: center;">Memuat data...</td></tr>
+              <tr>
+                <td colspan="4" style="text-align: center;">Memuat data...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -433,7 +629,7 @@
 
           <!-- Create Employee Profile -->
           <div class="card bg-blue">
-            <h2>2. Buat Profil Karyawan (Admin Only)</h2>
+            <h2>2. Buat Profil Karyawan</h2>
             <form id="employee-form">
               <label>NIP / Nomor Karyawan</label>
               <input type="text" id="emp-num" placeholder="EMP-10024" required>
@@ -470,7 +666,7 @@
 
         <!-- Employee List -->
         <div class="card bg-blue">
-          <h2>3. Daftar Pegawai Aktif (Employees)</h2>
+          <h2>3. Daftar Pegawai Aktif</h2>
           <button class="btn-blue" onclick="fetchEmployees()" style="margin-bottom: 10px;">Refresh Pegawai</button>
           <table id="employees-table">
             <thead>
@@ -484,7 +680,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="6" style="text-align: center;">Memuat data...</td></tr>
+              <tr>
+                <td colspan="6" style="text-align: center;">Memuat data...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -524,13 +722,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td colspan="7" style="text-align: center;">Silakan klik tombol filter di atas untuk memuat riwayat transaksi</td></tr>
+            <tr>
+              <td colspan="7" style="text-align: center;">Silakan klik tombol filter di atas untuk memuat riwayat
+                transaksi</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-  </div>
+  </div> <!-- End of container -->
+  </div> <!-- End of main-app -->
 
   <script>
     const API_BASE = '/api/v1';
@@ -541,10 +743,10 @@
     function switchTab(tabName) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      
+
       event.currentTarget.classList.add('active');
       document.getElementById(`tab-${tabName}`).classList.add('active');
-      
+
       // Auto refresh list on click
       if (tabName === 'katalog') {
         fetchProducts();
@@ -566,6 +768,7 @@
       e.preventDefault();
       const email = document.getElementById('login-email').value;
       const password = document.getElementById('login-password').value;
+      const errBox = document.getElementById('login-error-box');
 
       try {
         const response = await fetch(`${API_BASE}/auth/login`, {
@@ -573,20 +776,25 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-        
+
         const resJson = await response.json();
         if (!response.ok) {
           throw new Error(resJson.message || 'Login gagal');
         }
 
-        const role = resJson.data.user.position ? resJson.data.user.position.name : (resJson.data.user.employee ? resJson.data.user.employee.position.name : 'User');
+        const role = resJson.data.user.position ? resJson.data.user.position.name : 'User';
         document.getElementById('login-status').innerText = `Role: ${role} (${resJson.data.user.first_name})`;
-        showLog('auth-log', `Login Berhasil! Selamat bekerja, ${resJson.data.user.first_name}.`, 'success');
-        
+        if (errBox) errBox.innerHTML = '';
+
         applyRoleRestrictions(role);
         fetchProducts();
+
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
       } catch (err) {
-        showLog('auth-log', `Error: ${err.message}`, 'error');
+        if (errBox) {
+          errBox.innerHTML = `<div class="toast toast-error">Error: ${err.message}</div>`;
+        }
       }
     });
 
@@ -594,10 +802,35 @@
       try {
         await fetch(`${API_BASE}/auth/logout`, { method: 'POST' });
         document.getElementById('login-status').innerText = 'Belum Login';
-        showLog('auth-log', 'Logout Berhasil.', 'success');
+        
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'none';
+        
         applyRoleRestrictions('Guest');
       } catch (err) {
-        showLog('auth-log', `Logout Gagal: ${err.message}`, 'error');
+        alert(`Logout Gagal: ${err.message}`);
+      }
+    });
+
+    // Check session on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch(`${API_BASE}/auth/me`);
+        const resJson = await response.json();
+        if (!response.ok) {
+          throw new Error();
+        }
+        const role = resJson.data.user.position ? resJson.data.user.position.name : 'User';
+        document.getElementById('login-status').innerText = `Role: ${role} (${resJson.data.user.first_name})`;
+        
+        applyRoleRestrictions(role);
+        fetchProducts();
+        
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+      } catch (err) {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'none';
       }
     });
 
@@ -613,7 +846,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-        
+
         const resJson = await response.json();
         if (!response.ok) throw new Error(resJson.message || 'Registrasi gagal');
 
@@ -634,7 +867,7 @@
 
         const tbodyMaster = document.querySelector('#products-table-master tbody');
         tbodyMaster.innerHTML = '';
-        
+
         resJson.data.forEach(p => {
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -969,7 +1202,7 @@
     function addToCart() {
       const pid = Number(document.getElementById('cart-pid').value);
       const qty = Number(document.getElementById('cart-qty').value);
-      
+
       if (!pid || pid <= 0 || !qty || qty <= 0) {
         alert('Masukkan Product ID dan Quantity dengan benar.');
         return;
@@ -1033,7 +1266,7 @@
         if (!response.ok) throw new Error(resJson.message || 'Checkout gagal');
 
         showLog('checkout-log', `Checkout sukses! Invoice: ${resJson.data.invoice_number}`, 'success');
-        
+
         cart = [];
         renderCart();
 
@@ -1042,7 +1275,7 @@
         document.getElementById('active-checkout-panel').style.display = 'block';
         document.getElementById('active-invoice').innerText = activeTransaction.invoice_number;
         document.getElementById('active-total').innerText = activeTransaction.total.toLocaleString();
-        
+
         const badge = document.getElementById('active-status-badge');
         badge.className = `badge badge-${activeTransaction.status.toLowerCase()}`;
         badge.innerText = activeTransaction.status;
@@ -1051,25 +1284,25 @@
         if (activeTransaction.payment && activeTransaction.payment.payment_method === 'MIDTRANS_REDIRECT') {
           midtransBox.style.display = 'block';
           document.getElementById('active-snap-token').innerText = activeTransaction.payment.reference_id;
-          
+
           // Setup link tab baru
           document.getElementById('link-pay-redirect').href = activeTransaction.payment.checkout_url;
-          
+
           // Setup Snap Popup click handler
-          document.getElementById('btn-pay-snap').onclick = function() {
+          document.getElementById('btn-pay-snap').onclick = function () {
             if (window.snap) {
               window.snap.pay(activeTransaction.payment.reference_id, {
-                onSuccess: function(result) {
+                onSuccess: function (result) {
                   showLog('checkout-log', 'Pembayaran Berhasil! Mengalihkan...', 'success');
                   setTimeout(() => location.reload(), 1500);
                 },
-                onPending: function(result) {
+                onPending: function (result) {
                   showLog('checkout-log', 'Menunggu pembayaran selesai.', 'success');
                 },
-                onError: function(result) {
+                onError: function (result) {
                   showLog('checkout-log', 'Pembayaran Gagal/Error.', 'error');
                 },
-                onClose: function() {
+                onClose: function () {
                   showLog('checkout-log', 'Popup pembayaran ditutup.', 'error');
                 }
               });
@@ -1077,7 +1310,7 @@
               alert('Library Snap.js gagal dimuat. Silakan gunakan link Buka di Tab Baru.');
             }
           };
-          
+
           // Otomatis buka Snap Popup untuk kenyamanan
           if (window.snap) {
             document.getElementById('btn-pay-snap').click();
@@ -1117,13 +1350,13 @@
       const kategoriBtn = document.getElementById('tab-btn-kategori');
       const karyawanBtn = document.getElementById('tab-btn-karyawan');
       const voidCard = document.getElementById('void-card');
-      
+
       if (isStaff) {
         if (katalogBtn) katalogBtn.style.display = 'none';
         if (kategoriBtn) kategoriBtn.style.display = 'none';
         if (karyawanBtn) karyawanBtn.style.display = 'none';
         if (voidCard) voidCard.style.display = 'none';
-        
+
         // Redirect to Toko Kasir tab if the user was on an admin-only tab
         const activeTab = document.querySelector('.tab-btn.active');
         if (activeTab && (activeTab.id === 'tab-btn-katalog' || activeTab.id === 'tab-btn-kategori' || activeTab.id === 'tab-btn-karyawan')) {
@@ -1142,4 +1375,5 @@
     }
   </script>
 </body>
+
 </html>
