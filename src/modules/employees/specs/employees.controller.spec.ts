@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CategoriesController } from './controllers/v1/categories.controller';
-import { CategoriesService } from './categories.service';
+import { EmployeesController } from '../controllers/v1/employees.controller';
+import { EmployeesService } from '../employees.service';
 import { PrismaService } from '@common/prisma/prisma.service';
 
-describe('CategoriesController', () => {
-  let controller: CategoriesController;
+describe('EmployeesController', () => {
+  let controller: EmployeesController;
 
   const mockPrismaService = {
-    category: {
+    employee: {
       findFirst: jest.fn(),
       findMany: jest.fn(),
       create: jest.fn(),
@@ -17,9 +17,9 @@ describe('CategoriesController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CategoriesController],
+      controllers: [EmployeesController],
       providers: [
-        CategoriesService,
+        EmployeesService,
         {
           provide: PrismaService,
           useValue: mockPrismaService,
@@ -27,7 +27,7 @@ describe('CategoriesController', () => {
       ],
     }).compile();
 
-    controller = module.get<CategoriesController>(CategoriesController);
+    controller = module.get<EmployeesController>(EmployeesController);
   });
 
   it('should be defined', () => {
