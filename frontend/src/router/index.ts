@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '@/views/LoginView.vue';
 import PosView from '@/views/PosView.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import AdminDashboardView from '@/views/admin/AdminDashboardView.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
@@ -17,6 +19,23 @@ const router = createRouter({
       name: 'pos',
       component: PosView,
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          redirect: '/admin/dashboard'
+        },
+        {
+          path: 'dashboard',
+          name: 'admin-dashboard',
+          component: AdminDashboardView
+        }
+        // Future admin routes will go here (products, users, etc.)
+      ]
     },
     {
       path: '/',
