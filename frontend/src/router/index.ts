@@ -4,6 +4,9 @@ import PosView from '@/views/PosView.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue';
 import AdminProductsView from '@/views/admin/AdminProductsView.vue';
+import AdminInventoryView from '@/views/admin/AdminInventoryView.vue';
+import AdminEmployeesView from '@/views/admin/AdminEmployeesView.vue';
+import AdminReportsView from '@/views/admin/AdminReportsView.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
@@ -39,8 +42,23 @@ const router = createRouter({
           path: 'products',
           name: 'admin-products',
           component: AdminProductsView
+        },
+        {
+          path: 'inventory',
+          name: 'admin-inventory',
+          component: AdminInventoryView
+        },
+        {
+          path: 'employees',
+          name: 'admin-employees',
+          component: AdminEmployeesView
+        },
+        {
+          path: 'reports',
+          name: 'admin-reports',
+          component: AdminReportsView
         }
-        // Future admin routes will go here (users, etc.)
+        // Future admin routes will go here (settings, etc.)
       ]
     },
     {

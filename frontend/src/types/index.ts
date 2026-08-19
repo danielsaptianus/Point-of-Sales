@@ -1,18 +1,30 @@
+export interface Position {
+  id: number;
+  name: string;
+  description?: string;
+  is_active: boolean;
+}
+
+export interface Employee {
+  id: number;
+  employee_number: string;
+  first_name: string;
+  last_name: string;
+  gender: 'L' | 'P' | string;
+  phone?: string;
+  address?: string;
+  hire_date?: string;
+  is_active: boolean;
+  position_id: number;
+  position?: Position;
+  user_id?: number;
+}
+
 export interface User {
   id: number;
   email: string;
   is_active: boolean;
-  employee?: {
-    id: number;
-    employee_number: string;
-    first_name: string;
-    last_name: string;
-    gender: string;
-    position?: {
-      id: number;
-      name: string;
-    };
-  };
+  employee?: Employee;
 }
 
 export interface Category {
@@ -66,4 +78,15 @@ export interface Transaction {
     change: number;
     reference_id?: string;
   };
+}
+
+export interface StockTransaction {
+  id: number;
+  product_id: number;
+  product_name?: string; // Helpful for UI
+  quantity: number;
+  type: 'IN' | 'OUT' | 'ADJUSTMENT';
+  notes?: string;
+  status: 'SUCCESS' | 'PENDING' | 'FAILED';
+  created_at: string;
 }
