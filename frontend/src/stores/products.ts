@@ -45,6 +45,23 @@ export const useProductStore = defineStore('products', () => {
     searchQuery.value = query;
   }
 
+  async function addProduct(product: Omit<Product, 'id'>) {
+    const newId = products.value.length > 0 ? Math.max(...products.value.map(p => p.id)) + 1 : 1;
+    const newProduct: Product = { ...product, id: newId };
+    products.value.push(newProduct);
+  }
+
+  async function updateProduct(id: number, updatedData: Partial<Product>) {
+    const index = products.value.findIndex(p => p.id === id);
+    if (index !== -1) {
+      products.value[index] = { ...products.value[index], ...updatedData };
+    }
+  }
+
+  async function deleteProduct(id: number) {
+    products.value = products.value.filter(p => p.id !== id);
+  }
+
   return {
     products,
     categories,
@@ -55,5 +72,8 @@ export const useProductStore = defineStore('products', () => {
     fetchProducts,
     setCategory,
     setSearch,
+    addProduct,
+    updateProduct,
+    deleteProduct,
   };
 });

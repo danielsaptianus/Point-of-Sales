@@ -3,6 +3,7 @@ import LoginView from '@/views/LoginView.vue';
 import PosView from '@/views/PosView.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue';
+import AdminProductsView from '@/views/admin/AdminProductsView.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
@@ -33,8 +34,13 @@ const router = createRouter({
           path: 'dashboard',
           name: 'admin-dashboard',
           component: AdminDashboardView
+        },
+        {
+          path: 'products',
+          name: 'admin-products',
+          component: AdminProductsView
         }
-        // Future admin routes will go here (products, users, etc.)
+        // Future admin routes will go here (users, etc.)
       ]
     },
     {
