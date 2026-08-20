@@ -327,8 +327,8 @@ const handleHoldOrder = () => {
   width: 72px;
   height: 72px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px dashed rgba(15, 23, 42, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,7 +365,7 @@ const handleHoldOrder = () => {
 }
 
 .cart-item-row:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(15, 23, 42, 0.15);
 }
 
 .item-main {
@@ -428,7 +428,7 @@ const handleHoldOrder = () => {
 }
 
 .stepper-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.05);
 }
 
 .qty-val {

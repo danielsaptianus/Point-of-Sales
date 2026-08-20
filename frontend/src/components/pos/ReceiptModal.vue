@@ -166,7 +166,7 @@ const handlePrint = () => {
   padding: 20px 18px;
   border-radius: var(--radius-md);
   font-size: 0.8rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
 

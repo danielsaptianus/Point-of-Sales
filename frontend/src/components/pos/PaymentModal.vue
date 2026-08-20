@@ -293,8 +293,8 @@ const handleConfirmPayment = async () => {
 }
 
 .total-banner {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.3);
   border-radius: var(--radius-lg);
   padding: 16px 20px;
   display: flex;
@@ -348,7 +348,7 @@ const handleConfirmPayment = async () => {
   background: var(--primary-light);
   color: var(--primary);
   border-color: var(--primary);
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.2);
 }
 
 .tab-body {
@@ -403,8 +403,8 @@ const handleConfirmPayment = async () => {
 }
 
 .change-positive {
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.3);
   color: var(--primary);
 }
 

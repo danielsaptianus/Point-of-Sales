@@ -76,7 +76,7 @@ const getIcon = (iconName?: string) => {
 .cat-chip:hover {
   background: var(--bg-card-hover);
   color: var(--text-main);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(15, 23, 42, 0.15);
   transform: translateY(-1px);
 }
 

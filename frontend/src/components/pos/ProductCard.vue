@@ -108,7 +108,7 @@ const handleAddToCart = () => {
 .sku-badge {
   font-size: 0.72rem;
   color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-input);
   padding: 3px 8px;
   border-radius: var(--radius-sm);
 }
@@ -164,8 +164,8 @@ const handleAddToCart = () => {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
