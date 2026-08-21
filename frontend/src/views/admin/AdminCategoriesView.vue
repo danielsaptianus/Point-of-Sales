@@ -82,6 +82,7 @@ function handleSave() {
       <table class="data-table">
         <thead>
           <tr>
+            <th class="w-12">No</th>
             <th>Icon</th>
             <th>Category Name</th>
             <th>Description</th>
@@ -90,7 +91,7 @@ function handleSave() {
         </thead>
         <tbody>
           <tr v-if="filteredCategories.length === 0">
-            <td colspan="4" class="empty-state">
+            <td colspan="5" class="empty-state">
               <div class="empty-content">
                 <LayoutGrid class="empty-icon" :size="48" />
                 <h3>No categories found</h3>
@@ -99,7 +100,8 @@ function handleSave() {
             </td>
           </tr>
           
-          <tr v-for="category in filteredCategories" :key="category.id">
+          <tr v-for="(category, index) in filteredCategories" :key="category.id">
+            <td class="text-center text-sm text-slate-500 font-medium">{{ index + 1 }}</td>
             <td>
               <div class="icon-badge">
                 <!-- If dynamic icons aren't perfectly mapped, use a fallback layoutgrid -->

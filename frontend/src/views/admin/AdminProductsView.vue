@@ -103,6 +103,7 @@ function handleSave() {
       <table class="data-table">
         <thead>
           <tr>
+            <th class="w-12">No</th>
             <th>Product Info</th>
             <th>Category</th>
             <th>SKU</th>
@@ -114,7 +115,7 @@ function handleSave() {
         </thead>
         <tbody>
           <tr v-if="filteredProducts.length === 0">
-            <td colspan="7" class="empty-state">
+            <td colspan="8" class="empty-state">
               <div class="empty-content">
                 <Box class="empty-icon" :size="48" />
                 <h3>No products found</h3>
@@ -123,7 +124,8 @@ function handleSave() {
             </td>
           </tr>
           
-          <tr v-for="product in filteredProducts" :key="product.id">
+          <tr v-for="(product, index) in filteredProducts" :key="product.id">
+            <td class="text-center text-sm text-slate-500 font-medium">{{ index + 1 }}</td>
             <td>
               <div class="product-info">
                 <div class="product-img">

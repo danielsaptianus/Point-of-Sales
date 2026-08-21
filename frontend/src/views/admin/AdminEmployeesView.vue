@@ -91,6 +91,7 @@ async function handleDelete(emp: Employee) {
       <table class="data-table">
         <thead>
           <tr>
+            <th class="w-12">No</th>
             <th>Employee</th>
             <th>Contact Info</th>
             <th>Position</th>
@@ -101,7 +102,7 @@ async function handleDelete(emp: Employee) {
         </thead>
         <tbody>
           <tr v-if="filteredEmployees.length === 0">
-            <td colspan="6" class="empty-state">
+            <td colspan="7" class="empty-state">
               <div class="empty-content">
                 <Users class="empty-icon" :size="48" />
                 <h3>No employees found</h3>
@@ -110,7 +111,8 @@ async function handleDelete(emp: Employee) {
             </td>
           </tr>
           
-          <tr v-for="emp in filteredEmployees" :key="emp.id">
+          <tr v-for="(emp, index) in filteredEmployees" :key="emp.id">
+            <td class="text-center text-sm text-slate-500 font-medium">{{ index + 1 }}</td>
             <td>
               <div class="employee-info">
                 <div class="avatar">

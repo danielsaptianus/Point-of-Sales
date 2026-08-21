@@ -103,6 +103,7 @@ function getProductName(id: number, fallback?: string) {
         <table class="data-table">
           <thead>
             <tr>
+              <th class="w-12">No</th>
               <th>Date</th>
               <th>Time</th>
               <th>Product</th>
@@ -113,9 +114,10 @@ function getProductName(id: number, fallback?: string) {
           </thead>
           <tbody>
             <tr v-if="filteredHistory.length === 0">
-              <td colspan="6" class="empty-state">No stock movements found.</td>
+              <td colspan="7" class="empty-state">No stock movements found.</td>
             </tr>
-            <tr v-for="txn in filteredHistory" :key="txn.id">
+            <tr v-for="(txn, index) in filteredHistory" :key="txn.id">
+              <td class="text-center text-sm text-slate-500 font-medium">{{ index + 1 }}</td>
               <td class="text-slate-500 text-sm font-medium">{{ formatJustDate(txn.created_at) }}</td>
               <td class="text-slate-400 text-sm">{{ formatTime(txn.created_at) }}</td>
               <td class="font-medium text-slate-900">{{ getProductName(txn.product_id, txn.product_name) }}</td>

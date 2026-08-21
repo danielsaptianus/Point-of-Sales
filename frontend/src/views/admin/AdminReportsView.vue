@@ -232,6 +232,7 @@ const filteredTransactions = computed(() => {
         <table class="data-table">
           <thead>
             <tr>
+              <th class="w-12">No</th>
               <th>Invoice</th>
               <th>Date</th>
               <th>Cashier</th>
@@ -242,9 +243,10 @@ const filteredTransactions = computed(() => {
           </thead>
           <tbody>
             <tr v-if="filteredTransactions.length === 0">
-              <td colspan="6" class="empty-state">No transactions found.</td>
+              <td colspan="7" class="empty-state">No transactions found.</td>
             </tr>
-            <tr v-for="txn in filteredTransactions" :key="txn.id">
+            <tr v-for="(txn, index) in filteredTransactions" :key="txn.id">
+              <td class="text-center text-sm text-slate-500 font-medium">{{ index + 1 }}</td>
               <td>
                 <span class="font-mono font-medium text-slate-900">{{ txn.invoice_number }}</span>
               </td>
