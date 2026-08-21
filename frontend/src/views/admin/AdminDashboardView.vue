@@ -4,15 +4,17 @@ import {
   Users, 
   Package, 
   ShoppingCart,
-  DollarSign
+  DollarSign,
+  ArrowRightLeft
 } from 'lucide-vue-next';
+import { ref, onMounted } from 'vue';
+import api from '@/plugins/axios';
 
-// Placeholder data
-const stats = [
+const stats = ref([
   {
     title: 'Total Revenue',
-    value: 'Rp 45,231.89',
-    change: '+20.1%',
+    value: 'Rp 0',
+    change: 'Live',
     isPositive: true,
     icon: DollarSign,
     color: 'text-emerald-500',
@@ -20,8 +22,8 @@ const stats = [
   },
   {
     title: 'Orders',
-    value: '+2350',
-    change: '+15.2%',
+    value: '0',
+    change: 'Live',
     isPositive: true,
     icon: ShoppingCart,
     color: 'text-blue-500',
@@ -29,23 +31,64 @@ const stats = [
   },
   {
     title: 'Products',
-    value: '1,245',
-    change: '-2.4%',
-    isPositive: false,
+    value: '0',
+    change: 'Live',
+    isPositive: true,
     icon: Package,
     color: 'text-orange-500',
     bg: 'bg-orange-100'
   },
   {
     title: 'Active Users',
-    value: '+573',
-    change: '+10.5%',
+    value: '0',
+    change: 'Live',
     isPositive: true,
     icon: Users,
     color: 'text-purple-500',
     bg: 'bg-purple-100'
+  },
+  {
+    title: 'Total Movement',
+    value: '0',
+    change: 'Live',
+    isPositive: true,
+    icon: ArrowRightLeft,
+    color: 'text-indigo-500',
+    bg: 'bg-indigo-100'
   }
-];
+]);
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+const formatNumber = (value: number) => {
+  return new Intl.NumberFormat('id-ID').format(value);
+};
+
+const fetchDashboardStats = async () => {
+  try {
+    const res = await api.get('/reports/dashboard');
+    const data = res.data.data;
+    
+    stats.value[0].value = formatCurrency(data.total_revenue);
+    stats.value[1].value = formatNumber(data.total_orders);
+    stats.value[2].value = formatNumber(data.total_products);
+    stats.value[3].value = formatNumber(data.active_users);
+    stats.value[4].value = formatNumber(data.total_movement);
+  } catch (error) {
+    console.error('Failed to fetch dashboard stats', error);
+  }
+};
+
+onMounted(() => {
+  fetchDashboardStats();
+});
 </script>
 
 <template>
@@ -169,6 +212,9 @@ const stats = [
 
 .text-purple-500 { color: #a855f7; }
 .bg-purple-100 { background-color: #f3e8ff; }
+
+.text-indigo-500 { color: #6366f1; }
+.bg-indigo-100 { background-color: #e0e7ff; }
 
 .change-badge {
   display: flex;
