@@ -57,9 +57,9 @@ export const useInventoryStore = defineStore('inventory', () => {
         notes: notes || 'Manual adjustment'
       });
       
-      // Update local product store stock sum
+      // Update local product store stock sum (Optimistic UI)
       const newStockSum = (product.stock_quantity || 0) + actualQuantity;
-      product.stock_quantity = newStockSum; // Optimistic UI update
+      product.stock_quantity = newStockSum;
 
       // Refetch history
       await fetchStockHistory();

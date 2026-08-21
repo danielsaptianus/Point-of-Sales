@@ -5,7 +5,7 @@ import { RequirePermissions } from '@common/decorators/permissions.decorator';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
-@Controller('api/v1/reports')
+@Controller({ path: 'reports', version: '1' })
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
