@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { CartItem, Product, Transaction } from '@/types';
-import { posService } from '@/services/api';
+import api from '@/plugins/axios';
 import { useAuthStore } from './auth';
 
 export const useCartStore = defineStore('cart', () => {
@@ -96,38 +96,25 @@ export const useCartStore = defineStore('cart', () => {
     method: 'CASH' | 'QRIS' | 'TRANSFER';
     amountPaid: number;
     change: number;
-  }): Promise<Transaction> {
-    const invoiceNum = `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(
-      1000 + Math.random() * 9000
-    )}`;
-
-    const transactionData: Transaction = {
-      invoice_number: invoiceNum,
-      subtotal: subtotal.value,
+  }): Promise<any> {
+    const payload = {
+      payment_method: paymentData.method === 'CASH' ? 'CASH' : 'MIDTRANS_REDIRECT',
       tax: taxAmount.value,
       discount: discountAmount.value,
-      total: grandTotal.value,
-      status: 'PAID',
-      user_id: authStore.user?.id || 1,
-      cashier_name: authStore.cashierName,
-      created_at: new Date().toISOString(),
       items: items.value.map((i) => ({
         product_id: i.product.id,
-        product_name: i.product.name,
-        price: i.product.price,
         quantity: i.quantity,
-        subtotal: i.product.price * i.quantity,
       })),
-      payment: {
-        payment_method: paymentData.method,
-        amount_paid: paymentData.amountPaid,
-        change: paymentData.change,
-      },
     };
 
-    await posService.createTransaction(transactionData);
-    clearCart();
-    return transactionData;
+    try {
+      const response = await api.post('/sales', payload);
+      clearCart();
+      return response.data.data;
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      throw error;
+    }
   }
 
   return {

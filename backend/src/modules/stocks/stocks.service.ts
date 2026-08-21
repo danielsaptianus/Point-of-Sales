@@ -27,29 +27,13 @@ export class StocksService {
   async create(createStockDto: CreateStockDto): Promise<any> {
     const { product_id, type } = createStockDto;
 
-    // 1. Pembuatan stok awal hanya boleh bertipe IN
-    if (type !== 'IN') {
-      throw new BadRequestException('Pembuatan stok awal hanya diperbolehkan dengan tipe IN');
-    }
-
-    // 2. Validate Product exists
+    // Validate Product exists
     const product = await this.prisma.product.findFirst({
       where: { id: product_id, deleted_at: null },
     });
 
     if (!product) {
       throw new BadRequestException('Invalid product ID');
-    }
-
-    // 3. Hanya boleh ada 1 catatan stok awal per produk
-    const existingStock = await this.prisma.stock.findFirst({
-      where: { product_id },
-    });
-
-    if (existingStock) {
-      throw new ConflictException(
-        'Stok awal untuk produk ini sudah terdaftar. Gunakan metode PATCH untuk memperbarui stok.',
-      );
     }
 
     const stock = await this.prisma.stock.create({

@@ -33,7 +33,14 @@ const handleLogin = async () => {
 
   try {
     await authStore.login(email.value, password.value);
-    router.push('/pos');
+    
+    // Redirect based on role/position
+    const positionName = authStore.user?.position?.name?.toLowerCase() || '';
+    if (positionName.includes('admin') || positionName.includes('manager')) {
+      router.push('/admin');
+    } else {
+      router.push('/pos');
+    }
   } catch (err: any) {
     errorMessage.value = err.message || 'Login gagal, periksa email & password';
   } finally {
@@ -43,11 +50,11 @@ const handleLogin = async () => {
 
 const fillDemo = (role: 'cashier' | 'admin') => {
   if (role === 'cashier') {
-    email.value = 'kasir@arto-pos.id';
-    password.value = 'kasir123';
+    email.value = 'member@kulidigital.com';
+    password.value = 'password123';
   } else {
-    email.value = 'admin@arto-pos.id';
-    password.value = 'admin123';
+    email.value = 'admin@kulidigital.com';
+    password.value = 'password123';
   }
 };
 </script>

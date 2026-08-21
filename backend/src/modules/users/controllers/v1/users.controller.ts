@@ -17,8 +17,6 @@ import { ApiTags, ApiOperation, ApiCookieAuth, ApiParam } from '@nestjs/swagger'
 import { UsersService } from '../../users.service';
 import { CreateUserDto } from '@modules/users/core/dto/create-user.dto';
 import { UpdateUserDto } from '@modules/users/core/dto/update-user.dto';
-import { ChangePositionDto } from '@modules/users/core/dto/change-position.dto';
-import { ManagePermissionsDto } from '@modules/users/core/dto/manage-permissions.dto';
 import { UserQueryDto } from '@modules/users/core/dto/user-query.dto';
 import { Permissions } from '@common/decorators/permissions.decorator';
 import { PERMISSIONS } from '@common/constants/permissions.constant';
@@ -82,39 +80,4 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
-  @Patch(':id/position')
-  @Permissions(PERMISSIONS.USER.CHANGE_POSITION)
-  @ApiOperation({ summary: 'Change user position/role' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(UserResponseDto)
-  async changePosition(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() changePositionDto: ChangePositionDto,
-  ): Promise<UserResponseDto> {
-    return this.usersService.changePosition(id, changePositionDto);
-  }
-
-  @Post(':id/permissions/assign')
-  @Permissions(PERMISSIONS.USER.MANAGE_PERMISSION)
-  @ApiOperation({ summary: 'Assign permissions to user position' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(UserResponseDto)
-  async assignPermissions(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() managePermissionsDto: ManagePermissionsDto,
-  ): Promise<UserResponseDto> {
-    return this.usersService.assignPermissions(id, managePermissionsDto);
-  }
-
-  @Post(':id/permissions/revoke')
-  @Permissions(PERMISSIONS.USER.MANAGE_PERMISSION)
-  @ApiOperation({ summary: 'Revoke permissions from user position' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiSuccessResponse(UserResponseDto)
-  async revokePermissions(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() managePermissionsDto: ManagePermissionsDto,
-  ): Promise<UserResponseDto> {
-    return this.usersService.revokePermissions(id, managePermissionsDto);
-  }
 }

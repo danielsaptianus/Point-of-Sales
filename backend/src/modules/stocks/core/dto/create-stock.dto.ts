@@ -9,7 +9,6 @@ export class CreateStockDto {
 
   @ApiProperty({ example: 50, description: 'Quantity of stock transaction' })
   @IsInt({ message: 'Quantity must be an integer' })
-  @Min(1, { message: 'Quantity must be at least 1' })
   quantity: number;
 
   @ApiProperty({

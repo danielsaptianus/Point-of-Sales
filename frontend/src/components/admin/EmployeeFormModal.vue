@@ -21,10 +21,19 @@ const formData = ref({
   first_name: '',
   last_name: '',
   gender: 'L',
-  position_id: 2,
+  birth_date: '',
+  marital_status: '',
+  email: '',
   phone: '',
   address: '',
   hire_date: new Date().toISOString().split('T')[0],
+  termination_date: '',
+  employment_type: '',
+  salary: 0,
+  bank_name: '',
+  bank_account_number: '',
+  bank_account_name: '',
+  position_id: 2,
   is_active: true
 });
 
@@ -35,12 +44,21 @@ watch(
       formData.value = {
         employee_number: newVal.employee_number,
         first_name: newVal.first_name,
-        last_name: newVal.last_name,
+        last_name: newVal.last_name || '',
         gender: newVal.gender,
-        position_id: newVal.position_id,
+        birth_date: newVal.birth_date ? newVal.birth_date.split('T')[0] : '',
+        marital_status: newVal.marital_status || '',
+        email: newVal.email || '',
         phone: newVal.phone || '',
         address: newVal.address || '',
         hire_date: newVal.hire_date ? newVal.hire_date.split('T')[0] : new Date().toISOString().split('T')[0],
+        termination_date: newVal.termination_date ? newVal.termination_date.split('T')[0] : '',
+        employment_type: newVal.employment_type || '',
+        salary: newVal.salary ? Number(newVal.salary) : 0,
+        bank_name: newVal.bank_name || '',
+        bank_account_number: newVal.bank_account_number || '',
+        bank_account_name: newVal.bank_account_name || '',
+        position_id: newVal.position_id,
         is_active: newVal.is_active,
       };
     } else {
@@ -56,19 +74,36 @@ function resetForm() {
     first_name: '',
     last_name: '',
     gender: 'L',
-    position_id: employeeStore.positions.length > 0 ? employeeStore.positions[0].id : 2,
+    birth_date: '',
+    marital_status: '',
+    email: '',
     phone: '',
     address: '',
     hire_date: new Date().toISOString().split('T')[0],
+    termination_date: '',
+    employment_type: '',
+    salary: 0,
+    bank_name: '',
+    bank_account_number: '',
+    bank_account_name: '',
+    position_id: employeeStore.positions.length > 0 ? employeeStore.positions[0].id : 2,
     is_active: true
   };
 }
 
 async function handleSave() {
-  const dataToSave = {
+  const dataToSave: any = {
     ...formData.value,
-    hire_date: new Date(formData.value.hire_date).toISOString()
+    hire_date: formData.value.hire_date ? new Date(formData.value.hire_date).toISOString() : undefined,
+    birth_date: formData.value.birth_date ? new Date(formData.value.birth_date).toISOString() : undefined,
+    termination_date: formData.value.termination_date ? new Date(formData.value.termination_date).toISOString() : undefined,
   };
+
+  if (!dataToSave.marital_status) delete dataToSave.marital_status;
+  if (!dataToSave.employment_type) delete dataToSave.employment_type;
+  if (!dataToSave.salary) delete dataToSave.salary;
+  if (!dataToSave.last_name) delete dataToSave.last_name;
+  if (!dataToSave.email) delete dataToSave.email;
 
   if (props.employeeToEdit) {
     await employeeStore.updateEmployee(props.employeeToEdit.id, dataToSave);
@@ -99,6 +134,7 @@ function closeModal() {
         <!-- Modal Body -->
         <div class="modal-body">
           <form @submit.prevent="handleSave" class="employee-form">
+            <h3 class="section-title">Personal Information</h3>
             <div class="form-row">
               <div class="form-group">
                 <label>First Name</label>
@@ -106,22 +142,7 @@ function closeModal() {
               </div>
               <div class="form-group">
                 <label>Last Name</label>
-                <input v-model="formData.last_name" type="text" required placeholder="Last Name" />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label>Employee ID (NIP)</label>
-                <input v-model="formData.employee_number" type="text" required placeholder="EMP-XXX" />
-              </div>
-              <div class="form-group">
-                <label>Position</label>
-                <select v-model="formData.position_id" required>
-                  <option v-for="pos in employeeStore.positions" :key="pos.id" :value="pos.id">
-                    {{ pos.name }}
-                  </option>
-                </select>
+                <input v-model="formData.last_name" type="text" placeholder="Last Name" />
               </div>
             </div>
 
@@ -140,17 +161,100 @@ function closeModal() {
                 </div>
               </div>
               <div class="form-group">
-                <label>Phone Number</label>
-                <input v-model="formData.phone" type="tel" placeholder="08..." />
+                <label>Birth Date</label>
+                <input v-model="formData.birth_date" type="date" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
+                <label>Marital Status</label>
+                <select v-model="formData.marital_status">
+                  <option value="">-- Select Status --</option>
+                  <option value="SINGLE">Single</option>
+                  <option value="MARRIED">Married</option>
+                  <option value="DIVORCED">Divorced</option>
+                  <option value="WIDOWED">Widowed</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 class="section-title">Contact Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email</label>
+                <input v-model="formData.email" type="email" placeholder="example@email.com" />
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input v-model="formData.phone" type="tel" placeholder="08..." />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Address</label>
+              <textarea v-model="formData.address" rows="2" placeholder="Full address..."></textarea>
+            </div>
+
+            <h3 class="section-title">Employment Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Employee ID (NIP)</label>
+                <input v-model="formData.employee_number" type="text" required placeholder="EMP-XXX" />
+              </div>
+              <div class="form-group">
+                <label>Position</label>
+                <select v-model="formData.position_id" required>
+                  <option v-for="pos in employeeStore.positions" :key="pos.id" :value="pos.id">
+                    {{ pos.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Employment Type</label>
+                <select v-model="formData.employment_type">
+                  <option value="">-- Select Type --</option>
+                  <option value="FULL_TIME">Full Time</option>
+                  <option value="PART_TIME">Part Time</option>
+                  <option value="CONTRACT">Contract</option>
+                  <option value="INTERN">Intern</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Base Salary (Rp)</label>
+                <input v-model.number="formData.salary" type="number" min="0" placeholder="e.g 5000000" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
                 <label>Hire Date</label>
                 <input v-model="formData.hire_date" type="date" required />
               </div>
-              <div class="form-group toggle-group">
+              <div class="form-group">
+                <label>Termination Date</label>
+                <input v-model="formData.termination_date" type="date" />
+              </div>
+            </div>
+
+            <h3 class="section-title">Bank Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Bank Name</label>
+                <input v-model="formData.bank_name" type="text" placeholder="e.g. BCA, Mandiri" />
+              </div>
+              <div class="form-group">
+                <label>Account Number</label>
+                <input v-model="formData.bank_account_number" type="text" placeholder="Account Number" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Account Holder Name</label>
+              <input v-model="formData.bank_account_name" type="text" placeholder="Name on bank account" />
+            </div>
+
+            <div class="form-row" style="margin-top: 16px;">
+              <div class="form-group toggle-group" style="justify-content: flex-start;">
                 <label>Account Status</label>
                 <div class="toggle-container">
                   <span class="status-text" :class="{ 'active': formData.is_active }">
@@ -162,11 +266,6 @@ function closeModal() {
                   </label>
                 </div>
               </div>
-            </div>
-
-            <div class="form-group">
-              <label>Address</label>
-              <textarea v-model="formData.address" rows="2" placeholder="Full address..."></textarea>
             </div>
 
             <!-- Modal Footer -->
@@ -249,7 +348,16 @@ function closeModal() {
 .employee-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+}
+
+.section-title {
+  margin: 16px 0 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3b82f6;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
 }
 
 .form-row {
@@ -383,7 +491,7 @@ input:checked + .slider:before {
 }
 
 .modal-footer {
-  margin-top: 8px;
+  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;

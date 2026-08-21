@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsBoolean,
   IsInt,
+  IsNumber,
   IsEnum,
   IsDateString,
 } from 'class-validator';
@@ -20,15 +21,30 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'First name is required' })
   first_name: string;
 
-  @ApiProperty({ example: 'Smith' })
+  @ApiPropertyOptional({ example: 'Smith' })
   @IsString()
-  @IsNotEmpty({ message: 'Last name is required' })
-  last_name: string;
+  @IsOptional()
+  last_name?: string;
 
-  @ApiProperty({ example: 'Female', enum: ['Male', 'Female'] })
-  @IsEnum(['Male', 'Female'], { message: 'Gender must be either Male or Female' })
+  @ApiProperty({ example: 'P', enum: ['L', 'P'] })
+  @IsEnum(['L', 'P', 'Male', 'Female'], { message: 'Gender must be valid' })
   @IsNotEmpty({ message: 'Gender is required' })
   gender: string;
+
+  @ApiPropertyOptional({ example: '1990-01-01T00:00:00.000Z' })
+  @IsDateString({}, { message: 'Birth date must be a valid ISO date string' })
+  @IsOptional()
+  birth_date?: string;
+
+  @ApiPropertyOptional({ example: 'SINGLE', enum: ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'] })
+  @IsEnum(['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'])
+  @IsOptional()
+  marital_status?: string;
+
+  @ApiPropertyOptional({ example: 'jane@example.com' })
+  @IsString()
+  @IsOptional()
+  email?: string;
 
   @ApiPropertyOptional({ example: '+628123456789' })
   @IsString()
@@ -44,6 +60,36 @@ export class CreateEmployeeDto {
   @IsDateString({}, { message: 'Hire date must be a valid ISO date string' })
   @IsOptional()
   hire_date?: string;
+
+  @ApiPropertyOptional({ example: '2030-01-01T00:00:00.000Z' })
+  @IsDateString({}, { message: 'Termination date must be a valid ISO date string' })
+  @IsOptional()
+  termination_date?: string;
+
+  @ApiPropertyOptional({ example: 'FULL_TIME', enum: ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN'] })
+  @IsEnum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN'])
+  @IsOptional()
+  employment_type?: string;
+
+  @ApiPropertyOptional({ example: 5000000 })
+  @IsNumber()
+  @IsOptional()
+  salary?: number;
+
+  @ApiPropertyOptional({ example: 'BCA' })
+  @IsString()
+  @IsOptional()
+  bank_name?: string;
+
+  @ApiPropertyOptional({ example: '1234567890' })
+  @IsString()
+  @IsOptional()
+  bank_account_number?: string;
+
+  @ApiPropertyOptional({ example: 'Jane Smith' })
+  @IsString()
+  @IsOptional()
+  bank_account_name?: string;
 
   @ApiPropertyOptional({ example: true, default: true })
   @IsBoolean()

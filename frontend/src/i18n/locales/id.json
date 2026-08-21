@@ -1,0 +1,25 @@
+{
+  "menu": {
+    "dashboard": "Dasbor",
+    "categories": "Kategori",
+    "products": "Produk",
+    "inventory": "Inventaris",
+    "employees": "Karyawan",
+    "settings": "Pengaturan",
+    "logout": "Keluar"
+  },
+  "settings": {
+    "title": "Pengaturan Aplikasi",
+    "appearance": "Tampilan",
+    "dark_mode": "Mode Gelap",
+    "dark_mode_desc": "Ubah tema visual aplikasi",
+    "language": "Bahasa",
+    "select_language": "Pilih Bahasa",
+    "select_language_desc": "Pilih bahasa yang Anda inginkan untuk antarmuka",
+    "save": "Simpan Perubahan"
+  },
+  "common": {
+    "search": "Cari apa saja...",
+    "admin": "Administrator"
+  }
+}

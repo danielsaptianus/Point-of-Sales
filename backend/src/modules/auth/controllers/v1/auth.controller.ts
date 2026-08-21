@@ -53,6 +53,7 @@ export class AuthController {
     return { user };
   }
 
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User logout' })

@@ -63,12 +63,15 @@ function resetForm() {
 async function handleSave() {
   if (props.productToEdit) {
     // Edit mode
-    await productStore.updateProduct(props.productToEdit.id, formData.value);
+    const { name, sku, category_id, price, description, is_active } = formData.value;
+    await productStore.updateProduct(props.productToEdit.id, {
+      name, sku, category_id, price, description, is_active
+    });
   } else {
     // Add mode
+    const { name, sku, category_id, price, description, is_active } = formData.value;
     await productStore.addProduct({
-      ...formData.value,
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80', // Default placeholder
+      name, sku, category_id, price, description, is_active
     });
   }
   emit('save');
@@ -110,7 +113,7 @@ function closeModal() {
               <div class="form-group">
                 <label>Category</label>
                 <select v-model="formData.category_id" required>
-                  <option v-for="category in productStore.categories.filter(c => c.id !== 1)" :key="category.id" :value="category.id">
+                  <option v-for="category in productStore.categories.filter(c => c.id !== 0)" :key="category.id" :value="category.id">
                     {{ category.name }}
                   </option>
                 </select>

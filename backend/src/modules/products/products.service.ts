@@ -21,7 +21,7 @@ export class ProductsService {
       price: product.price,
       category_id: product.category_id,
       is_active: product.is_active,
-      stock,
+      stock_quantity: stock,
       category: product.category
         ? {
             id: product.category.id,

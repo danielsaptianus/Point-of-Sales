@@ -27,7 +27,7 @@ const router = createRouter({
     {
       path: '/admin',
       component: AdminLayout,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, requiresAdmin: true },
       children: [
         {
           path: '',
@@ -37,6 +37,11 @@ const router = createRouter({
           path: 'dashboard',
           name: 'admin-dashboard',
           component: AdminDashboardView
+        },
+        {
+          path: 'categories',
+          name: 'admin-categories',
+          component: () => import('@/views/admin/AdminCategoriesView.vue')
         },
         {
           path: 'products',
@@ -58,12 +63,15 @@ const router = createRouter({
           name: 'admin-reports',
           component: AdminReportsView
         }
-        // Future admin routes will go here (settings, etc.)
       ]
     },
     {
       path: '/',
-      redirect: '/pos',
+      redirect: () => {
+        const authStore = useAuthStore();
+        const positionName = authStore.user?.position?.name?.toLowerCase() || '';
+        return (positionName.includes('admin') || positionName.includes('manager')) ? '/admin' : '/pos';
+      },
     },
     {
       path: '/:pathMatch(.*)*',
@@ -74,10 +82,16 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
+  const positionName = authStore.user?.position?.name?.toLowerCase() || '';
+  const isAdmin = positionName.includes('admin') || positionName.includes('manager');
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login');
-  } else if (to.path === '/login' && authStore.isAuthenticated) {
+  } else if (to.meta.requiresAdmin && !isAdmin) {
+    // Block non-admins from accessing admin routes
     next('/pos');
+  } else if (to.path === '/login' && authStore.isAuthenticated) {
+    next(isAdmin ? '/admin' : '/pos');
   } else {
     next();
   }

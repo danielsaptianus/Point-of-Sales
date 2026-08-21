@@ -1,0 +1,25 @@
+{
+  "menu": {
+    "dashboard": "Dashboard",
+    "categories": "Categories",
+    "products": "Products",
+    "inventory": "Inventory",
+    "employees": "Employees",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "settings": {
+    "title": "Application Settings",
+    "appearance": "Appearance",
+    "dark_mode": "Dark Mode",
+    "dark_mode_desc": "Toggle the application's visual theme",
+    "language": "Language",
+    "select_language": "Select Language",
+    "select_language_desc": "Choose your preferred language for the interface",
+    "save": "Save Changes"
+  },
+  "common": {
+    "search": "Search anything...",
+    "admin": "Administrator"
+  }
+}

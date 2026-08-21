@@ -1,22 +1,47 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useAppStore } from '@/stores/app';
 import {
   LayoutDashboard,
   Package,
   Users,
   ShoppingCart,
-  Settings,
   LogOut,
   Menu,
   Bell,
   Search,
+  LayoutGrid,
+  ChevronDown,
+  Moon,
+  Sun
 } from 'lucide-vue-next';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const appStore = useAppStore();
 const isSidebarOpen = ref(true);
+const isDropdownOpen = ref(false);
+
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+const closeDropdown = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  if (!target.closest('.user-profile-container')) {
+    isDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', closeDropdown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown);
+});
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
@@ -29,10 +54,10 @@ const handleLogout = () => {
 
 const menuItems = [
   { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Categories', path: '/admin/categories', icon: LayoutGrid },
   { name: 'Products', path: '/admin/products', icon: Package },
   { name: 'Inventory', path: '/admin/inventory', icon: ShoppingCart },
   { name: 'Employees', path: '/admin/employees', icon: Users },
-  { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 </script>
 
@@ -59,19 +84,13 @@ const menuItems = [
           :to="item.path"
           class="nav-item"
           active-class="nav-item--active"
-          :title="!isSidebarOpen ? item.name : ''"
+          :title="!isSidebarOpen ? $t(`menu.${item.name.toLowerCase()}`) : ''"
         >
           <component :is="item.icon" class="nav-icon" :size="20" />
-          <span class="nav-label" v-if="isSidebarOpen">{{ item.name }}</span>
+          <span class="nav-label" v-if="isSidebarOpen">{{ $t(`menu.${item.name.toLowerCase()}`) }}</span>
         </router-link>
       </nav>
 
-      <div class="sidebar-footer">
-        <button class="nav-item logout-btn" @click="handleLogout" :title="!isSidebarOpen ? 'Logout' : ''">
-          <LogOut class="nav-icon" :size="20" />
-          <span class="nav-label" v-if="isSidebarOpen">Logout</span>
-        </button>
-      </div>
     </aside>
 
     <!-- Main Content -->
@@ -85,7 +104,7 @@ const menuItems = [
           
           <div class="search-bar">
             <Search class="search-icon" :size="18" />
-            <input type="text" placeholder="Search anything..." class="search-input" />
+            <input type="text" :placeholder="$t('common.search')" class="search-input" />
           </div>
         </div>
 
@@ -95,14 +114,72 @@ const menuItems = [
             <span class="notification-badge"></span>
           </button>
           
-          <div class="user-profile">
-            <div class="avatar">
-              {{ authStore.user?.email?.charAt(0).toUpperCase() || 'U' }}
+          <div class="user-profile-container">
+            <div class="user-profile" @click="toggleDropdown">
+              <div class="avatar">
+                {{ authStore.user?.email?.charAt(0).toUpperCase() || 'U' }}
+              </div>
+              <div class="user-info">
+                <p class="user-name">{{ authStore.user?.email || 'User' }}</p>
+                <p class="user-role">{{ $t('common.admin') }}</p>
+              </div>
+              <ChevronDown :size="16" class="dropdown-icon" :class="{ 'dropdown-icon--open': isDropdownOpen }" />
             </div>
-            <div class="user-info">
-              <p class="user-name">{{ authStore.user?.email || 'User' }}</p>
-              <p class="user-role">Administrator</p>
-            </div>
+
+            <!-- Dropdown Menu -->
+            <transition name="dropdown-fade">
+              <div class="profile-dropdown glass-panel" v-if="isDropdownOpen">
+                <div class="dropdown-header">
+                  <p class="dropdown-name">{{ authStore.user?.email || 'User' }}</p>
+                  <p class="dropdown-email">{{ authStore.user?.employee?.employee_number || 'Administrator' }}</p>
+                </div>
+                
+                <div class="dropdown-divider"></div>
+                
+                <div class="dropdown-item">
+                  <span class="dropdown-item-label">{{ $t('settings.dark_mode') }}</span>
+                  <button 
+                    class="theme-toggle" 
+                    :class="{ 'theme-toggle--active': appStore.theme === 'dark' }"
+                    @click.stop="appStore.toggleTheme"
+                  >
+                    <div class="toggle-track">
+                      <div class="toggle-thumb">
+                        <Moon :size="12" v-if="appStore.theme === 'dark'" />
+                        <Sun :size="12" v-else />
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <div class="dropdown-item">
+                  <span class="dropdown-item-label">{{ $t('settings.language') }}</span>
+                  <div class="lang-selector">
+                    <button 
+                      class="lang-btn" 
+                      :class="{ active: appStore.locale === 'en' }"
+                      @click.stop="appStore.setLocale('en')"
+                    >
+                      EN
+                    </button>
+                    <button 
+                      class="lang-btn" 
+                      :class="{ active: appStore.locale === 'id' }"
+                      @click.stop="appStore.setLocale('id')"
+                    >
+                      ID
+                    </button>
+                  </div>
+                </div>
+
+                <div class="dropdown-divider"></div>
+                
+                <button class="dropdown-item dropdown-logout" @click="handleLogout">
+                  <LogOut :size="16" />
+                  <span>{{ $t('menu.logout') }}</span>
+                </button>
+              </div>
+            </transition>
           </div>
         </div>
       </header>
@@ -124,16 +201,16 @@ const menuItems = [
   display: flex;
   height: 100vh;
   width: 100%;
-  background-color: #f8fafc;
+  background-color: var(--bg-dark);
   overflow: hidden;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 /* SIDEBAR */
 .sidebar {
   width: 260px;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -149,7 +226,7 @@ const menuItems = [
   display: flex;
   align-items: center;
   padding: 0 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
 }
 
 .logo-container {
@@ -184,7 +261,7 @@ const menuItems = [
 .brand-name {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
   margin: 0;
   white-space: nowrap;
 }
@@ -204,7 +281,7 @@ const menuItems = [
   gap: 12px;
   padding: 12px;
   border-radius: 8px;
-  color: #64748b;
+  color: var(--text-muted);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -212,17 +289,17 @@ const menuItems = [
 }
 
 .nav-item:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
 }
 
 .nav-item--active {
-  background-color: #eff6ff;
-  color: #2563eb;
+  background-color: var(--primary-light);
+  color: var(--primary);
 }
 
 .nav-item--active .nav-icon {
-  color: #2563eb;
+  color: var(--primary);
 }
 
 .nav-icon {
@@ -231,7 +308,7 @@ const menuItems = [
 
 .sidebar-footer {
   padding: 16px 12px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border);
 }
 
 .logout-btn {
@@ -260,8 +337,8 @@ const menuItems = [
 /* TOPBAR */
 .topbar {
   height: 72px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -277,7 +354,7 @@ const menuItems = [
 .icon-btn {
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--text-muted);
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
@@ -289,14 +366,14 @@ const menuItems = [
 }
 
 .icon-btn:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
 }
 
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: #f1f5f9;
+  background-color: var(--bg-input);
   border-radius: 20px;
   padding: 8px 16px;
   width: 300px;
@@ -304,12 +381,12 @@ const menuItems = [
 }
 
 .search-bar:focus-within {
-  background-color: #ffffff;
-  box-shadow: 0 0 0 2px #bfdbfe;
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 2px var(--primary-light);
 }
 
 .search-icon {
-  color: #94a3b8;
+  color: var(--text-dim);
   margin-right: 8px;
 }
 
@@ -319,11 +396,11 @@ const menuItems = [
   outline: none;
   width: 100%;
   font-size: 0.875rem;
-  color: #334155;
+  color: var(--text-main);
 }
 
 .search-input::placeholder {
-  color: #94a3b8;
+  color: var(--text-dim);
 }
 
 .topbar-right {
@@ -343,12 +420,22 @@ const menuItems = [
   border: 2px solid #ffffff;
 }
 
+.user-profile-container {
+  position: relative;
+}
+
 .user-profile {
   display: flex;
   align-items: center;
   gap: 12px;
   padding-left: 20px;
-  border-left: 1px solid #e2e8f0;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+
+.user-profile:hover .user-name {
+  color: var(--primary);
 }
 
 .avatar {
@@ -372,14 +459,173 @@ const menuItems = [
 .user-name {
   margin: 0;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-main);
   font-size: 0.875rem;
+  transition: color 0.2s;
 }
 
 .user-role {
   margin: 0;
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-muted);
+}
+
+.dropdown-icon {
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.dropdown-icon--open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 12px;
+  width: 240px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 8px 0;
+  z-index: 50;
+  transform-origin: top right;
+}
+
+.dropdown-header {
+  padding: 12px 16px;
+}
+
+.dropdown-name {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.dropdown-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border);
+  margin: 4px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  color: var(--text-main);
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item-label {
+  font-weight: 500;
+}
+
+.dropdown-logout {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--danger);
+  justify-content: flex-start;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.dropdown-logout:hover {
+  background-color: var(--danger-light);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggle-track {
+  width: 44px;
+  height: 24px;
+  background-color: var(--border-light);
+  border-radius: 24px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.theme-toggle--active .toggle-track {
+  background-color: var(--primary);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle--active .toggle-thumb {
+  transform: translateX(20px);
+  color: var(--bg-dark);
+}
+
+/* Language Selector */
+.lang-selector {
+  display: flex;
+  background-color: var(--bg-input);
+  padding: 2px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.lang-btn {
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-btn.active {
+  background-color: var(--bg-card);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Dropdown Animation */
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.dropdown-fade-enter-from,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
 }
 
 /* PAGE CONTENT */
@@ -387,7 +633,7 @@ const menuItems = [
   flex: 1;
   padding: 32px;
   overflow-y: auto;
-  background-color: #f8fafc;
+  background-color: var(--bg-dark);
 }
 
 /* TRANSITIONS */

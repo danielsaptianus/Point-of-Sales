@@ -75,24 +75,45 @@ model PositionPermission {
 
 
 model Employee {
-  id              Int       @id @default(autoincrement())
-  employee_number String    @unique // NIP
-  first_name      String
-  last_name       String
-  gender          String
-  phone           String?
-  address         String?
-  hire_date       DateTime?
-  is_active       Boolean   @default(true)
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
-  deleted_at      DateTime?
+  id                  Int       @id @default(autoincrement())
+  employee_number     String    @unique
 
-  user_id         Int?      @unique
-  user            User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  // Personal Information
+  first_name          String
+  last_name           String?
+  gender              String
+  birth_date          DateTime?
+  marital_status      String?   // SINGLE, MARRIED, DIVORCED, WIDOWED
 
-  position_id     Int
-  position        Position  @relation(fields: [position_id], references: [id])
+  // Contact Information
+  email               String?
+  phone               String?
+  address             String?
+
+  // Employment Information
+  hire_date           DateTime?
+  termination_date    DateTime?
+  employment_type     String?   // FULL_TIME, PART_TIME, CONTRACT, INTERN
+  salary              Decimal?  @db.Decimal(15, 2)
+
+  // Bank Information
+  bank_name           String?
+  bank_account_number String?
+  bank_account_name   String?
+
+  // Status & Audit
+  is_active           Boolean   @default(true)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+
+  // Authentication
+  user_id             Int?      @unique
+  user                User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // Position
+  position_id         Int
+  position            Position  @relation(fields: [position_id], references: [id])
 
   @@map("employees")
 }

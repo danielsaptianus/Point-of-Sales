@@ -2,10 +2,33 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { StockTransaction } from '@/types';
 import { useProductStore } from '@/stores/products';
+import api from '@/plugins/axios';
 
 export const useInventoryStore = defineStore('inventory', () => {
   const stockHistory = ref<StockTransaction[]>([]);
   const productStore = useProductStore();
+
+  async function fetchStockHistory() {
+    try {
+      const res = await api.get('/stocks');
+      const stocks = res.data.data || [];
+      
+      // We map it to StockTransaction for the UI
+      stockHistory.value = stocks.map((s: any) => ({
+        id: s.id,
+        product_id: s.product_id,
+        // The backend transformStock doesn't return product_name directly, but we can look it up from productStore
+        product_name: productStore.products.find(p => p.id === s.product_id)?.name || 'Unknown',
+        quantity: s.quantity,
+        type: s.type,
+        notes: s.notes,
+        status: 'SUCCESS',
+        created_at: s.created_at,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch stock history:', error);
+    }
+  }
 
   async function recordStockMovement(
     productId: number,
@@ -16,76 +39,46 @@ export const useInventoryStore = defineStore('inventory', () => {
     const product = productStore.products.find((p) => p.id === productId);
     if (!product) throw new Error('Product not found');
 
-    // Calculate new stock quantity
-    let newQuantity = product.stock_quantity || 0;
-    if (type === 'IN') {
-      newQuantity += quantity;
-    } else if (type === 'OUT') {
-      newQuantity -= quantity;
-      if (newQuantity < 0) throw new Error('Insufficient stock');
+    let actualQuantity = quantity;
+    if (type === 'OUT') {
+      actualQuantity = -quantity; // Backend sums up the stocks, so OUT should be negative
     } else if (type === 'ADJUSTMENT') {
-      // For adjustment, the quantity provided is the explicit new total stock,
-      // but in the history we might want to record the difference.
-      // Or we just record it as adjustment. Let's assume quantity = new total.
-      const diff = quantity - newQuantity;
-      newQuantity = quantity;
-      // Re-assign quantity as the difference for the transaction record if desired,
-      // but let's keep it as the absolute value the user entered, and handle diff locally.
+      // Backend sums up the stock logs.
+      // An adjustment meant to set the stock to `quantity` requires us to insert the difference.
+      const currentStock = product.stock_quantity || 0;
+      actualQuantity = quantity - currentStock; 
     }
 
-    // Update product stock via product store
-    await productStore.updateProduct(productId, { stock_quantity: newQuantity });
+    try {
+      const res = await api.post('/stocks', {
+        product_id: productId,
+        quantity: actualQuantity,
+        type: type,
+        notes: notes || 'Manual adjustment'
+      });
+      
+      // Update local product store stock sum
+      const newStockSum = (product.stock_quantity || 0) + actualQuantity;
+      await productStore.updateProduct(productId, { stock_quantity: newStockSum } as any); // Optimistic UI update
 
-    // Record the transaction
-    const newTransaction: StockTransaction = {
-      id: stockHistory.value.length + 1,
-      product_id: productId,
-      product_name: product.name,
-      quantity: quantity, // Amount moved (or new total for adjustment)
-      type: type,
-      notes: notes,
-      status: 'SUCCESS',
-      created_at: new Date().toISOString(),
-    };
-
-    stockHistory.value.unshift(newTransaction); // Add to beginning of history
-    return newTransaction;
+      // Refetch history
+      await fetchStockHistory();
+      
+      return res.data.data;
+    } catch (error) {
+      console.error('Failed to record stock movement:', error);
+      throw error;
+    }
   }
 
-  // Generate some initial mock data for the UI
   function initMockData() {
-    if (stockHistory.value.length === 0 && productStore.products.length > 0) {
-      const p1 = productStore.products[0];
-      const p2 = productStore.products[1] || p1;
-      
-      stockHistory.value = [
-        {
-          id: 2,
-          product_id: p2.id,
-          product_name: p2.name,
-          quantity: 20,
-          type: 'IN',
-          notes: 'Restock from supplier',
-          status: 'SUCCESS',
-          created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        },
-        {
-          id: 1,
-          product_id: p1.id,
-          product_name: p1.name,
-          quantity: 50,
-          type: 'IN',
-          notes: 'Initial inventory',
-          status: 'SUCCESS',
-          created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-        }
-      ];
-    }
+    fetchStockHistory();
   }
 
   return {
     stockHistory,
     recordStockMovement,
-    initMockData
+    initMockData,
+    fetchStockHistory
   };
 });

@@ -16,6 +16,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiParam } from '@ne
 import { EmployeesService } from '../../employees.service';
 import { CreateEmployeeDto } from '@modules/employees/core/dto/create-employee.dto';
 import { UpdateEmployeeDto } from '@modules/employees/core/dto/update-employee.dto';
+import { ChangePositionDto } from '@modules/employees/core/dto/change-position.dto';
+import { ManagePermissionsDto } from '@modules/employees/core/dto/manage-permissions.dto';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -93,5 +95,41 @@ export class EmployeesController {
   @ApiResponse({ status: 404, description: 'Employee not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.employeesService.remove(id);
+  }
+
+  @Patch(':id/position')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Change employee position/role' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiSuccessResponse(CreateEmployeeDto)
+  async changePosition(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() changePositionDto: ChangePositionDto,
+  ): Promise<any> {
+    return this.employeesService.changePosition(id, changePositionDto);
+  }
+
+  @Post(':id/permissions/assign')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Assign permissions to employee position' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiSuccessResponse(CreateEmployeeDto)
+  async assignPermissions(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() managePermissionsDto: ManagePermissionsDto,
+  ): Promise<any> {
+    return this.employeesService.assignPermissions(id, managePermissionsDto);
+  }
+
+  @Post(':id/permissions/revoke')
+  @Roles('Admin')
+  @ApiOperation({ summary: 'Revoke permissions from employee position' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiSuccessResponse(CreateEmployeeDto)
+  async revokePermissions(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() managePermissionsDto: ManagePermissionsDto,
+  ): Promise<any> {
+    return this.employeesService.revokePermissions(id, managePermissionsDto);
   }
 }

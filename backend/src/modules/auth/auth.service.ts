@@ -8,10 +8,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { PasswordUtil } from '@common/utils/password.util';
-import { LoginDto } from '@common/dto/login.dto';
-import { RegisterDto } from '@common/dto/register.dto';
-import { AuthResponseDto } from '@common/dto/auth-response.dto';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { LoginDto } from '@modules/auth/core/dto/login.dto';
+import { RegisterDto } from '@modules/auth/core/dto/register.dto';
+import { AuthResponseDto } from '@modules/auth/core/dto/auth-response.dto';
+import { JwtPayload } from './core/interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +21,7 @@ export class AuthService {
     private configService: ConfigService,
   ) { }
 
-  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(loginDto: LoginDto): Promise<{ access_token: string, user: AuthResponseDto['user'] }> {
     const { email, password } = loginDto;
 
     // Find user with employee, position, and permissions
@@ -99,7 +99,7 @@ export class AuthService {
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+  async register(registerDto: RegisterDto): Promise<{ access_token: string, user: AuthResponseDto['user'] }> {
     const { email, password, first_name, last_name, gender, employee_number, position_id } =
       registerDto;
 
@@ -200,6 +200,45 @@ export class AuthService {
         },
         permissions,
       },
+    };
+  }
+
+  async getProfile(userId: number): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        employee: {
+          include: {
+            position: {
+              include: {
+                position_permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const permissions = user.employee?.position?.position_permissions.map((pp) => pp.permission.name) || [];
+
+    return {
+      id: user.id,
+      email: user.email,
+      first_name: user.employee?.first_name,
+      last_name: user.employee?.last_name,
+      position: {
+        id: user.employee?.position?.id,
+        name: user.employee?.position?.name,
+      },
+      permissions,
     };
   }
 }

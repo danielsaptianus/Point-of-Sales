@@ -1,48 +1,63 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { User } from '@/types';
-import { MOCK_USER } from '@/services/api';
+import api from '@/plugins/axios';
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  position: {
+    id: number;
+    name: string;
+  };
+  permissions: string[];
+}
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<User | null>(
+  const user = ref<AuthUser | null>(
     localStorage.getItem('arto_user')
       ? JSON.parse(localStorage.getItem('arto_user')!)
-      : MOCK_USER
+      : null
   );
-  const token = ref<string | null>(localStorage.getItem('arto_token') || 'demo_jwt_token');
 
   const isAuthenticated = computed(() => !!user.value);
+  
   const cashierName = computed(() => {
-    if (!user.value) return 'Kasir Demo';
-    if (user.value.employee) {
-      return `${user.value.employee.first_name} ${user.value.employee.last_name}`;
-    }
-    return user.value.email;
+    if (!user.value) return 'Kasir';
+    return `${user.value.first_name} ${user.value.last_name}`;
   });
 
-  async function login(email: string, _pass: string): Promise<boolean> {
-    // In demo / integrated mode, save session
-    const loggedUser: User = {
-      ...MOCK_USER,
-      email: email || MOCK_USER.email,
-    };
-    user.value = loggedUser;
-    token.value = 'jwt_token_' + Date.now();
-    localStorage.setItem('arto_user', JSON.stringify(loggedUser));
-    localStorage.setItem('arto_token', token.value);
-    return true;
+  async function login(email: string, pass: string): Promise<boolean> {
+    try {
+      const response = await api.post('/auth/login', {
+        email,
+        password: pass,
+      });
+      const userData = response.data.data.user;
+      user.value = userData;
+      localStorage.setItem('arto_user', JSON.stringify(userData));
+      return true;
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      throw new Error(error.response?.data?.message || 'Email atau password salah');
+    }
   }
 
-  function logout() {
-    user.value = null;
-    token.value = null;
-    localStorage.removeItem('arto_user');
-    localStorage.removeItem('arto_token');
+  async function logout() {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      user.value = null;
+      localStorage.removeItem('arto_user');
+      window.location.href = '/login';
+    }
   }
 
   return {
     user,
-    token,
     isAuthenticated,
     cashierName,
     login,
