@@ -26,12 +26,18 @@ const filteredHistory = computed(() => {
   return inventoryStore.stockHistory.filter(h => h.type === filterType.value);
 });
 
-function formatDate(isoString: string) {
+function formatJustDate(isoString: string) {
   const date = new Date(isoString);
   return date.toLocaleDateString('id-ID', { 
     year: 'numeric', 
     month: 'short', 
-    day: 'numeric',
+    day: 'numeric'
+  });
+}
+
+function formatTime(isoString: string) {
+  const date = new Date(isoString);
+  return date.toLocaleTimeString('id-ID', {
     hour: '2-digit',
     minute: '2-digit'
   });
@@ -98,6 +104,7 @@ function getProductName(id: number, fallback?: string) {
           <thead>
             <tr>
               <th>Date</th>
+              <th>Time</th>
               <th>Product</th>
               <th>Type</th>
               <th>Qty</th>
@@ -106,10 +113,11 @@ function getProductName(id: number, fallback?: string) {
           </thead>
           <tbody>
             <tr v-if="filteredHistory.length === 0">
-              <td colspan="5" class="empty-state">No stock movements found.</td>
+              <td colspan="6" class="empty-state">No stock movements found.</td>
             </tr>
             <tr v-for="txn in filteredHistory" :key="txn.id">
-              <td class="text-slate-500 text-sm">{{ formatDate(txn.created_at) }}</td>
+              <td class="text-slate-500 text-sm font-medium">{{ formatJustDate(txn.created_at) }}</td>
+              <td class="text-slate-400 text-sm">{{ formatTime(txn.created_at) }}</td>
               <td class="font-medium text-slate-900">{{ getProductName(txn.product_id, txn.product_name) }}</td>
               <td>
                 <span class="type-badge" :class="txn.type.toLowerCase()">
