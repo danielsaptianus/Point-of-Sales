@@ -18,6 +18,7 @@ import { UsersService } from '../../users.service';
 import { CreateUserDto } from '@modules/users/core/dto/create-user.dto';
 import { UpdateUserDto } from '@modules/users/core/dto/update-user.dto';
 import { UserQueryDto } from '@modules/users/core/dto/user-query.dto';
+import { ResetEmployeePasswordDto } from '@modules/users/core/dto/reset-employee-password.dto';
 import { Permissions } from '@common/decorators/permissions.decorator';
 import { PERMISSIONS } from '@common/constants/permissions.constant';
 import {
@@ -27,6 +28,10 @@ import {
 import { PaginatedResponseDto } from '@common/dto/pagination.dto';
 import { PermissionsGuard } from '@common/guards/permissions.guard';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
+import { Request } from '@nestjs/common';
+import { Req } from '@nestjs/common';
 
 @ApiTags('Users')
 @Controller({ path: 'users', version: '1' })
@@ -80,4 +85,16 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
+  @Post('reset-employee-password')
+  @Roles('Admin')
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reset an employee password (Admin only)' })
+  async resetEmployeePassword(
+    @Req() req: any,
+    @Body() dto: ResetEmployeePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.usersService.resetEmployeePassword(req.user.id, dto);
+    return { message: 'Password reset successfully' };
+  }
 }

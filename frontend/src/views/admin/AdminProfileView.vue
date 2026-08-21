@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { User, Mail, Shield, AlertCircle } from 'lucide-vue-next';
+import { useEmployeeStore } from '@/stores/employees';
+import api from '@/plugins/axios';
+import { User, Mail, Shield, AlertCircle, Users, AlertTriangle } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
+const employeeStore = useEmployeeStore();
 const user = authStore.user;
+
+const isAdmin = computed(() => {
+  const positionName = user?.position?.name?.toLowerCase() || '';
+  return positionName.includes('admin') || positionName.includes('manager');
+});
 
 const activeTab = ref('profile');
 
@@ -20,16 +28,33 @@ const passwordForm = ref({
   confirm_password: ''
 });
 
+const employeePasswordForm = ref({
+  employee_id: '',
+  new_password: '',
+  confirm_password: '',
+  admin_password: ''
+});
+
 // Since we haven't created the backend endpoint for edit profile yet, this will just show a UI success state
 const isSaving = ref(false);
 const saveSuccess = ref(false);
+const successMessage = ref('Changes saved successfully!');
+const errorMessage = ref('');
+
+onMounted(async () => {
+  if (isAdmin.value && employeeStore.employees.length === 0) {
+    await employeeStore.fetchEmployees();
+  }
+});
 
 const handleProfileSave = () => {
   isSaving.value = true;
   saveSuccess.value = false;
+  errorMessage.value = '';
   
   setTimeout(() => {
     isSaving.value = false;
+    successMessage.value = 'Profile updated successfully!';
     saveSuccess.value = true;
     
     setTimeout(() => {
@@ -40,15 +65,17 @@ const handleProfileSave = () => {
 
 const handlePasswordSave = () => {
   if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
-    alert('Passwords do not match');
+    errorMessage.value = 'Passwords do not match';
     return;
   }
   
   isSaving.value = true;
   saveSuccess.value = false;
+  errorMessage.value = '';
   
   setTimeout(() => {
     isSaving.value = false;
+    successMessage.value = 'Password updated successfully!';
     saveSuccess.value = true;
     passwordForm.value = { current_password: '', new_password: '', confirm_password: '' };
     
@@ -56,6 +83,37 @@ const handlePasswordSave = () => {
       saveSuccess.value = false;
     }, 3000);
   }, 1000);
+};
+
+const handleEmployeePasswordSave = async () => {
+  if (employeePasswordForm.value.new_password !== employeePasswordForm.value.confirm_password) {
+    errorMessage.value = 'Passwords do not match';
+    return;
+  }
+  
+  isSaving.value = true;
+  saveSuccess.value = false;
+  errorMessage.value = '';
+  
+  try {
+    await api.post('/users/reset-employee-password', {
+      employee_id: Number(employeePasswordForm.value.employee_id),
+      new_password: employeePasswordForm.value.new_password,
+      admin_password: employeePasswordForm.value.admin_password
+    });
+    
+    successMessage.value = 'Employee password reset successfully!';
+    saveSuccess.value = true;
+    employeePasswordForm.value = { employee_id: '', new_password: '', confirm_password: '', admin_password: '' };
+    
+    setTimeout(() => {
+      saveSuccess.value = false;
+    }, 3000);
+  } catch (error: any) {
+    errorMessage.value = error.response?.data?.message || 'Failed to reset employee password';
+  } finally {
+    isSaving.value = false;
+  }
 };
 </script>
 
@@ -72,7 +130,7 @@ const handlePasswordSave = () => {
         <button 
           class="tab-btn" 
           :class="{ active: activeTab === 'profile' }"
-          @click="activeTab = 'profile'"
+          @click="activeTab = 'profile'; errorMessage = ''"
         >
           <User :size="18" />
           <span>Personal Info</span>
@@ -80,10 +138,19 @@ const handlePasswordSave = () => {
         <button 
           class="tab-btn" 
           :class="{ active: activeTab === 'security' }"
-          @click="activeTab = 'security'"
+          @click="activeTab = 'security'; errorMessage = ''"
         >
           <Shield :size="18" />
           <span>Security & Password</span>
+        </button>
+        <button 
+          v-if="isAdmin"
+          class="tab-btn" 
+          :class="{ active: activeTab === 'employee-password' }"
+          @click="activeTab = 'employee-password'; errorMessage = ''"
+        >
+          <Users :size="18" />
+          <span>Employee Passwords</span>
         </button>
       </div>
       
@@ -93,7 +160,15 @@ const handlePasswordSave = () => {
         <transition name="fade">
           <div v-if="saveSuccess" class="success-alert">
             <AlertCircle :size="18" />
-            <span>Changes saved successfully!</span>
+            <span>{{ successMessage }}</span>
+          </div>
+        </transition>
+
+        <!-- Error message -->
+        <transition name="fade">
+          <div v-if="errorMessage" class="error-alert">
+            <AlertTriangle :size="18" />
+            <span>{{ errorMessage }}</span>
           </div>
         </transition>
         
@@ -165,17 +240,62 @@ const handlePasswordSave = () => {
             
             <div class="form-group">
               <label>New Password</label>
-              <input type="password" v-model="passwordForm.new_password" required />
+              <input type="password" v-model="passwordForm.new_password" required minlength="6" />
             </div>
             
             <div class="form-group">
               <label>Confirm New Password</label>
-              <input type="password" v-model="passwordForm.confirm_password" required />
+              <input type="password" v-model="passwordForm.confirm_password" required minlength="6" />
             </div>
             
             <div class="form-actions">
               <button type="submit" class="btn-primary" :disabled="isSaving">
                 {{ isSaving ? 'Updating...' : 'Update Password' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Employee Passwords Tab -->
+        <div v-if="activeTab === 'employee-password' && isAdmin" class="tab-pane">
+          <h2 class="section-title">Reset Employee Password</h2>
+          <p class="section-desc">Reset a staff member's password. Requires your Admin password to authorize.</p>
+          
+          <div class="divider"></div>
+          
+          <form @submit.prevent="handleEmployeePasswordSave" class="settings-form">
+            <div class="form-group">
+              <label>Select Employee</label>
+              <select v-model="employeePasswordForm.employee_id" required class="select-input">
+                <option value="" disabled>-- Select Employee --</option>
+                <option v-for="emp in employeeStore.employees" :key="emp.id" :value="emp.id">
+                  {{ emp.first_name }} {{ emp.last_name }} ({{ emp.employee_number }})
+                  {{ !emp.user_id ? ' - ⚠️ No registered account' : '' }}
+                </option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>New Password for Employee</label>
+              <input type="password" v-model="employeePasswordForm.new_password" required minlength="6" />
+            </div>
+            
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <input type="password" v-model="employeePasswordForm.confirm_password" required minlength="6" />
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="form-group">
+              <label>Your Admin Password (Authorization)</label>
+              <input type="password" v-model="employeePasswordForm.admin_password" required />
+              <span class="help-text">Enter your own password to authorize this action.</span>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" :disabled="isSaving">
+                {{ isSaving ? 'Processing...' : 'Reset Password' }}
               </button>
             </div>
           </form>
@@ -363,7 +483,7 @@ const handlePasswordSave = () => {
   color: var(--text-main);
 }
 
-.form-group input {
+.form-group input, .select-input {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -374,7 +494,7 @@ const handlePasswordSave = () => {
   transition: all 0.2s;
 }
 
-.form-group input:focus {
+.form-group input:focus, .select-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-light);
 }
@@ -440,6 +560,23 @@ const handlePasswordSave = () => {
   background-color: #ecfdf5;
   color: #065f46;
   border: 1px solid #a7f3d0;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 10;
+}
+
+.error-alert {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
   padding: 12px 16px;
   border-radius: var(--radius-md);
   display: flex;

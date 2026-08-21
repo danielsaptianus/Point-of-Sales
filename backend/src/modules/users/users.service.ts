@@ -12,6 +12,7 @@ import { UpdateUserDto } from '@modules/users/core/dto/update-user.dto';
 import { UserQueryDto } from '@modules/users/core/dto/user-query.dto';
 import { UserTransformHelper } from './core/helpers/user-transform.helper';
 import { PaginatedResponseDto } from '@common/dto/pagination.dto';
+import { ResetEmployeePasswordDto } from './core/dto/reset-employee-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -257,4 +258,40 @@ export class UsersService {
     });
   }
 
+  async resetEmployeePassword(adminId: number, dto: ResetEmployeePasswordDto): Promise<void> {
+    const { employee_id, new_password, admin_password } = dto;
+
+    // 1. Fetch admin user
+    const admin = await this.prisma.user.findUnique({ where: { id: adminId } });
+    if (!admin) {
+      throw new NotFoundException('Admin user not found');
+    }
+
+    // 2. Verify admin password
+    const isPasswordValid = await PasswordUtil.compare(admin_password, admin.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid admin password');
+    }
+
+    // 3. Find employee and their linked user_id
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employee_id },
+      include: { user: true },
+    });
+
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${employee_id} not found`);
+    }
+
+    if (!employee.user_id || !employee.user) {
+      throw new BadRequestException('This employee does not have a linked user account');
+    }
+
+    // 4. Hash new password and update
+    const hashedPassword = await PasswordUtil.hash(new_password);
+    await this.prisma.user.update({
+      where: { id: employee.user_id },
+      data: { password: hashedPassword },
+    });
+  }
 }

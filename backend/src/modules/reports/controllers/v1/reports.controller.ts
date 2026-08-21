@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ReportsService } from '../../reports.service';
-import { RequirePermissions } from '@common/decorators/permissions.decorator';
+import { Permissions } from '@common/decorators/permissions.decorator';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
