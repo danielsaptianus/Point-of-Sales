@@ -44,7 +44,7 @@ export class CategoriesController {
   }
 
   @Get()
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get all categories (Admin & Staff)' })
   @ApiSuccessArrayResponse(CreateCategoryDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -53,7 +53,7 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get category by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiSuccessResponse(CreateCategoryDto)

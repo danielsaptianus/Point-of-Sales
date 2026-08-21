@@ -26,6 +26,9 @@ model User {
 
   // Transactions recorded by this user (cashier)
   transactions Transaction[]
+  
+  // Shifts
+  shifts Shift[]
 
   @@map("users")
 }
@@ -175,8 +178,28 @@ model Stock {
 }
 
 // ============================================
-// 4. SALES & TRANSACTION SCHEMA (Milestone 4)
+// 4. SALES, SHIFT & TRANSACTION SCHEMA (Milestone 4)
 // ============================================
+
+model Shift {
+  id                   Int       @id @default(autoincrement())
+  user_id              Int
+  start_time           DateTime  @default(now())
+  end_time             DateTime?
+  starting_cash        Float
+  expected_ending_cash Float?
+  actual_ending_cash   Float?
+  difference           Float?
+  status               String    @default("OPEN") // "OPEN", "CLOSED"
+  notes                String?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  user         User          @relation(fields: [user_id], references: [id])
+  transactions Transaction[]
+
+  @@map("shifts")
+}
 
 model Transaction {
   id             Int       @id @default(autoincrement())
@@ -193,6 +216,9 @@ model Transaction {
   // Relations
   user_id Int // Cashier user ID
   user    User @relation(fields: [user_id], references: [id])
+
+  shift_id Int? // Link to the active shift
+  shift    Shift? @relation(fields: [shift_id], references: [id])
 
   applied_voucher_id Int? // Track voucher ID applied (especially for PENDING online payments)
 

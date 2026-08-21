@@ -36,17 +36,6 @@ export class CreateSaleDto {
   @IsNotEmpty({ message: 'Payment method is required' })
   payment_method: string;
 
-  @ApiPropertyOptional({ example: 1000, description: 'Tax amount' })
-  @IsNumber({}, { message: 'Tax must be a number' })
-  @Min(0, { message: 'Tax cannot be negative' })
-  @IsOptional()
-  tax?: number = 0;
-
-  @ApiPropertyOptional({ example: 5000, description: 'Discount amount' })
-  @IsNumber({}, { message: 'Discount must be a number' })
-  @Min(0, { message: 'Discount cannot be negative' })
-  @IsOptional()
-  discount?: number = 0;
 
   @ApiPropertyOptional({ example: 'DISC20', description: 'Voucher code' })
   @IsString()

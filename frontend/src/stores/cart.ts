@@ -38,9 +38,14 @@ export const useCartStore = defineStore('cart', () => {
 
   // Actions
   function addItem(product: Product) {
+    const maxStock = product.stock_quantity ?? 0;
+    if (maxStock <= 0) return;
+
     const existingIndex = items.value.findIndex((i) => i.product.id === product.id);
     if (existingIndex > -1) {
-      items.value[existingIndex].quantity += 1;
+      if (items.value[existingIndex].quantity < maxStock) {
+        items.value[existingIndex].quantity += 1;
+      }
     } else {
       items.value.push({
         product,
@@ -60,7 +65,8 @@ export const useCartStore = defineStore('cart', () => {
     }
     const item = items.value.find((i) => i.product.id === productId);
     if (item) {
-      item.quantity = qty;
+      const maxStock = item.product.stock_quantity ?? 0;
+      item.quantity = Math.min(qty, maxStock);
     }
   }
 
@@ -97,15 +103,16 @@ export const useCartStore = defineStore('cart', () => {
     amountPaid: number;
     change: number;
   }): Promise<any> {
-    const payload = {
+    const payload: any = {
       payment_method: paymentData.method === 'CASH' ? 'CASH' : 'MIDTRANS_REDIRECT',
-      tax: taxAmount.value,
-      discount: discountAmount.value,
       items: items.value.map((i) => ({
         product_id: i.product.id,
         quantity: i.quantity,
       })),
     };
+
+    // If there is a way to set a voucher code in the future, we will attach it here
+    // payload.voucher_code = 'XYZ';
 
     try {
       const response = await api.post('/sales', payload);

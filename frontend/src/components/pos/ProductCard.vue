@@ -26,12 +26,13 @@ const stockStatus = computed(() => {
 });
 
 const handleAddToCart = () => {
+  if ((props.product.stock_quantity ?? 0) <= 0) return;
   cartStore.addItem(props.product);
 };
 </script>
 
 <template>
-  <div class="product-card" @click="handleAddToCart">
+  <div class="product-card" :class="{'out-of-stock': stockStatus.type === 'danger'}" @click="handleAddToCart">
     <div class="card-header">
       <span class="sku-badge mono">{{ product.sku }}</span>
       <span
@@ -64,7 +65,7 @@ const handleAddToCart = () => {
         <span class="price-val mono">{{ formatPrice(product.price) }}</span>
       </div>
 
-      <button class="add-btn" title="Tambah ke keranjang" @click.stop="handleAddToCart">
+      <button class="add-btn" :disabled="stockStatus.type === 'danger'" title="Tambah ke keranjang" @click.stop="handleAddToCart">
         <Plus :size="18" />
       </button>
     </div>
@@ -87,7 +88,12 @@ const handleAddToCart = () => {
   user-select: none;
 }
 
-.product-card:hover {
+.product-card.out-of-stock {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.product-card:not(.out-of-stock):hover {
   background: var(--bg-card-hover);
   border-color: rgba(16, 185, 129, 0.4);
   transform: translateY(-3px);
@@ -244,7 +250,12 @@ const handleAddToCart = () => {
   transition: all var(--transition-fast);
 }
 
-.add-btn:hover {
+.add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-btn:not(:disabled):hover {
   background: var(--primary-gradient);
   color: #ffffff;
   border-color: transparent;

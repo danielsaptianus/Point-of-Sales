@@ -44,7 +44,7 @@ export class ProductsController {
   }
 
   @Get()
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get all products (Admin & Staff)' })
   @ApiSuccessArrayResponse(CreateProductDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -53,7 +53,7 @@ export class ProductsController {
   }
 
   @Get(':id')
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get product by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiSuccessResponse(CreateProductDto)

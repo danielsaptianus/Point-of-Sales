@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { Transaction } from '@/types';
-import { Printer, PlusCircle, CheckCircle2 } from 'lucide-vue-next';
+import { Printer, PlusCircle, CheckCircle2, Clock, CreditCard } from 'lucide-vue-next';
+
+import { ref, watch, onUnmounted } from 'vue';
+import api from '@/plugins/axios';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -10,6 +13,69 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'new-transaction'): void;
 }>();
+
+const localTx = ref<Transaction | null>(null);
+let pollInterval: any = null;
+
+const checkStatus = async () => {
+  if (!localTx.value || localTx.value.status !== 'PENDING') {
+    stopPolling();
+    return;
+  }
+  try {
+    const res = await api.get(`/sales/${localTx.value.id}`);
+    const updated = res.data.data;
+    if (updated && updated.status !== 'PENDING') {
+      localTx.value = updated;
+      stopPolling();
+    }
+  } catch (error) {
+    console.error('Failed to poll status', error);
+  }
+};
+
+const startPolling = () => {
+  stopPolling();
+  if (localTx.value && localTx.value.status === 'PENDING') {
+    pollInterval = setInterval(checkStatus, 3000);
+  }
+};
+
+const stopPolling = () => {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+};
+
+watch(
+  () => props.transaction,
+  (newTx) => {
+    if (newTx) {
+      localTx.value = JSON.parse(JSON.stringify(newTx));
+      if (props.isOpen) startPolling();
+    } else {
+      localTx.value = null;
+      stopPolling();
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (!open) {
+      stopPolling();
+    } else if (localTx.value && localTx.value.status === 'PENDING') {
+      startPolling();
+    }
+  }
+);
+
+onUnmounted(() => {
+  stopPolling();
+});
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -33,12 +99,14 @@ const handlePrint = () => {
 </script>
 
 <template>
-  <div v-if="isOpen && transaction" class="modal-overlay">
+  <div v-if="isOpen && localTx" class="modal-overlay">
     <div class="modal-card receipt-modal">
       <div class="success-top-badge">
-        <CheckCircle2 :size="28" class="success-icon" />
-        <h3>Transaksi Berhasil!</h3>
-        <p>Pembayaran telah diterima dan dicatat ke sistem</p>
+        <CheckCircle2 v-if="localTx.status === 'PAID'" :size="28" class="success-icon" />
+        <Clock v-else :size="28" class="warning-icon" />
+        
+        <h3>{{ localTx.status === 'PAID' ? 'Transaksi Berhasil!' : 'Menunggu Pembayaran' }}</h3>
+        <p>{{ localTx.status === 'PAID' ? 'Pembayaran telah diterima dan dicatat ke sistem' : 'Silakan selesaikan pembayaran online via Midtrans' }}</p>
       </div>
 
       <!-- Printable Thermal Paper Receipt -->
@@ -53,13 +121,16 @@ const handlePrint = () => {
 
         <div class="receipt-meta mono">
           <div class="meta-row">
-            <span>No: {{ transaction.invoice_number }}</span>
+            <span>No: {{ localTx.invoice_number }}</span>
           </div>
           <div class="meta-row">
-            <span>Tgl: {{ formatDate(transaction.created_at) }}</span>
+            <span>Tgl: {{ formatDate(localTx.created_at) }}</span>
           </div>
           <div class="meta-row">
-            <span>Kasir: {{ transaction.cashier_name }}</span>
+            <span>Kasir: {{ localTx.cashier_name }}</span>
+          </div>
+          <div class="meta-row">
+            <span>Status: <strong>{{ localTx.status }}</strong></span>
           </div>
         </div>
 
@@ -67,7 +138,7 @@ const handlePrint = () => {
 
         <!-- Items -->
         <div class="receipt-items mono">
-          <div v-for="item in transaction.items" :key="item.product_id" class="receipt-item">
+          <div v-for="item in localTx.transaction_items" :key="item.product_id" class="receipt-item">
             <div class="item-line-1">{{ item.product_name }}</div>
             <div class="item-line-2">
               <span>{{ item.quantity }} x {{ formatPrice(item.price) }}</span>
@@ -82,32 +153,32 @@ const handlePrint = () => {
         <div class="receipt-totals mono">
           <div class="total-row">
             <span>Subtotal:</span>
-            <span>{{ formatPrice(transaction.subtotal) }}</span>
+            <span>{{ formatPrice(localTx.subtotal) }}</span>
           </div>
-          <div v-if="transaction.discount > 0" class="total-row">
+          <div v-if="localTx.discount > 0" class="total-row">
             <span>Diskon:</span>
-            <span>-{{ formatPrice(transaction.discount) }}</span>
+            <span>-{{ formatPrice(localTx.discount) }}</span>
           </div>
           <div class="total-row">
             <span>PPN (11%):</span>
-            <span>{{ formatPrice(transaction.tax) }}</span>
+            <span>{{ formatPrice(localTx.tax) }}</span>
           </div>
           <div class="receipt-divider-thin"></div>
           <div class="total-row grand-total">
             <span>TOTAL:</span>
-            <span>{{ formatPrice(transaction.total) }}</span>
+            <span>{{ formatPrice(localTx.total) }}</span>
           </div>
           <div class="total-row">
             <span>Metode:</span>
-            <span>{{ transaction.payment?.payment_method || 'CASH' }}</span>
+            <span>{{ localTx.payment?.payment_method || 'CASH' }}</span>
           </div>
-          <div v-if="transaction.payment?.payment_method === 'CASH'" class="total-row">
+          <div v-if="localTx.payment?.payment_method === 'CASH'" class="total-row">
             <span>Bayar:</span>
-            <span>{{ formatPrice(transaction.payment.amount_paid) }}</span>
+            <span>{{ formatPrice(localTx.payment?.amount_paid || 0) }}</span>
           </div>
-          <div v-if="transaction.payment?.payment_method === 'CASH'" class="total-row">
+          <div v-if="localTx.payment?.payment_method === 'CASH'" class="total-row">
             <span>Kembali:</span>
-            <span>{{ formatPrice(transaction.payment.change) }}</span>
+            <span>{{ formatPrice(localTx.payment?.change || 0) }}</span>
           </div>
         </div>
 
@@ -121,13 +192,23 @@ const handlePrint = () => {
 
       <!-- Modal Footer -->
       <div class="modal-actions">
+        <a 
+          v-if="localTx.payment?.checkout_url && localTx.status === 'PENDING'"
+          :href="localTx.payment.checkout_url"
+          target="_blank"
+          class="btn btn-warning midtrans-btn"
+        >
+          <CreditCard :size="18" />
+          <span>Buka Midtrans</span>
+        </a>
+        
         <button class="btn btn-secondary" @click="handlePrint">
           <Printer :size="18" />
-          <span>Cetak Struk</span>
+          <span>Cetak</span>
         </button>
         <button class="btn btn-primary" @click="emit('new-transaction')">
           <PlusCircle :size="18" />
-          <span>Transaksi Baru</span>
+          <span>Selesai</span>
         </button>
       </div>
     </div>
@@ -147,6 +228,11 @@ const handlePrint = () => {
 
 .success-icon {
   color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.warning-icon {
+  color: #f59e0b;
   margin-bottom: 8px;
 }
 

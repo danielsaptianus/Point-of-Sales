@@ -32,7 +32,7 @@ export class StocksController {
   constructor(private readonly stocksService: StocksService) {}
 
   @Post()
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Create a new stock mutation (Admin & Staff)' })
   @ApiSuccessResponse(CreateStockDto)
   @ApiResponse({ status: 400, description: 'Validation failed' })
@@ -42,7 +42,7 @@ export class StocksController {
   }
 
   @Get()
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get all stock mutations (Admin & Staff)' })
   @ApiSuccessArrayResponse(CreateStockDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -51,7 +51,7 @@ export class StocksController {
   }
 
   @Get(':id')
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get stock mutation by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiSuccessResponse(CreateStockDto)

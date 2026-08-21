@@ -38,6 +38,8 @@ const handleLogin = async () => {
     const positionName = authStore.user?.position?.name?.toLowerCase() || '';
     if (positionName.includes('admin') || positionName.includes('manager')) {
       router.push('/admin');
+    } else if (positionName.includes('gudang')) {
+      router.push('/admin/inventory');
     } else {
       router.push('/pos');
     }
@@ -48,12 +50,15 @@ const handleLogin = async () => {
   }
 };
 
-const fillDemo = (role: 'cashier' | 'admin') => {
-  if (role === 'cashier') {
-    email.value = 'member@kulidigital.com';
-    password.value = 'password123';
-  } else {
+const fillDemo = (role: 'admin' | 'kasir' | 'gudang') => {
+  if (role === 'admin') {
     email.value = 'admin@kulidigital.com';
+    password.value = 'password123';
+  } else if (role === 'kasir') {
+    email.value = 'kasir@kulidigital.com';
+    password.value = 'password123';
+  } else if (role === 'gudang') {
+    email.value = 'gudang@kulidigital.com';
     password.value = 'password123';
   }
 };
@@ -130,11 +135,14 @@ const fillDemo = (role: 'cashier' | 'admin') => {
           <!-- Quick Demo Buttons -->
           <div class="demo-shortcuts">
             <span class="demo-label">Akun Cepat:</span>
-            <button type="button" class="demo-chip" @click="fillDemo('cashier')">
-              Kasir Budi
-            </button>
             <button type="button" class="demo-chip" @click="fillDemo('admin')">
-              Admin Pusat
+              Admin
+            </button>
+            <button type="button" class="demo-chip" @click="fillDemo('kasir')">
+              Kasir
+            </button>
+            <button type="button" class="demo-chip" @click="fillDemo('gudang')">
+              Gudang
             </button>
           </div>
 

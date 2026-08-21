@@ -41,7 +41,7 @@ export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
   @Post()
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Create a new POS transaction (checkout)' })
   @ApiSuccessResponse(CreateSaleDto)
   @ApiResponse({ status: 400, description: 'Validation failed or insufficient stock' })
@@ -54,7 +54,7 @@ export class SalesController {
   }
 
   @Get()
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get all sales history' })
   @ApiSuccessArrayResponse(CreateSaleDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -63,7 +63,7 @@ export class SalesController {
   }
 
   @Get(':id')
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get sales transaction by ID' })
   @ApiParam({ name: 'id', type: Number })
   @ApiSuccessResponse(CreateSaleDto)

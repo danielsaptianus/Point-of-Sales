@@ -26,6 +26,7 @@ const cartStore = useCartStore();
 const paymentMethod = ref<'CASH' | 'QRIS' | 'TRANSFER'>('CASH');
 const cashPaid = ref<number>(0);
 const isProcessing = ref<boolean>(false);
+const errorMessage = ref<string>('');
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -43,6 +44,7 @@ watch(
       cashPaid.value = cartStore.grandTotal;
       paymentMethod.value = 'CASH';
       isProcessing.value = false;
+      errorMessage.value = '';
     }
   }
 );
@@ -80,6 +82,7 @@ const handleConfirmPayment = async () => {
   if (!isSufficient.value || isProcessing.value) return;
 
   isProcessing.value = true;
+  errorMessage.value = '';
   try {
     const tx = await cartStore.checkout({
       method: paymentMethod.value,
@@ -88,6 +91,8 @@ const handleConfirmPayment = async () => {
     });
 
     emit('success', tx);
+  } catch (error: any) {
+    errorMessage.value = error.response?.data?.message || error.message || 'Terjadi kesalahan saat memproses pembayaran.';
   } finally {
     isProcessing.value = false;
   }
@@ -230,6 +235,12 @@ const handleConfirmPayment = async () => {
             <span>a/n Arto Point of Sales</span>
           </div>
         </div>
+      </div>
+
+      <!-- Error Message -->
+      <div v-if="errorMessage" class="error-banner">
+        <AlertCircle :size="18" />
+        <span>{{ errorMessage }}</span>
       </div>
 
       <!-- Modal Footer -->
@@ -498,6 +509,20 @@ const handleConfirmPayment = async () => {
   justify-content: space-between;
   font-size: 0.82rem;
   color: var(--text-muted);
+}
+
+.error-banner {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: var(--danger);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .modal-footer {

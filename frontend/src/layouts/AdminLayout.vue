@@ -165,6 +165,7 @@ const menuItems = computed(() => {
     { name: 'Inventory', path: '/admin/inventory', icon: ShoppingCart },
     { name: 'Vouchers', path: '/admin/vouchers', icon: Ticket },
     { name: 'Employees', path: '/admin/employees', icon: Users },
+    { name: 'Shifts', path: '/admin/shifts', icon: Store },
     { name: 'Reports', path: '/admin/reports', icon: BarChart3 },
     { name: 'POS', path: '/pos', icon: Store },
   ];

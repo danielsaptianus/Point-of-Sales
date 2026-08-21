@@ -69,10 +69,10 @@ async function handleSave() {
     });
   } else {
     // Add mode
-    const { name, sku, category_id, price, description, is_active } = formData.value;
+    const { name, sku, category_id, price, description, is_active, stock_quantity } = formData.value;
     await productStore.addProduct({
-      name, sku, category_id, price, description, is_active
-    });
+      name, sku, category_id, price, description, is_active, initial_stock: stock_quantity
+    } as any);
   }
   emit('save');
   closeModal();

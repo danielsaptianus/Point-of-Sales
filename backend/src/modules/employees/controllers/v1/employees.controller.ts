@@ -46,7 +46,7 @@ export class EmployeesController {
   }
 
   @Get()
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get all employees (Admin & Staff)' })
   @ApiSuccessArrayResponse(CreateEmployeeDto)
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -56,7 +56,7 @@ export class EmployeesController {
   }
 
   @Get(':id')
-  @Roles('Admin', 'Staff')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get employee by ID (Admin & Staff)' })
   @ApiParam({ name: 'id', type: Number })
   @ApiSuccessResponse(CreateEmployeeDto)

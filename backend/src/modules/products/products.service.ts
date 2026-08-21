@@ -52,10 +52,35 @@ export class ProductsService {
       throw new BadRequestException('Invalid category ID');
     }
 
+    const { initial_stock, ...productData } = createProductDto;
+
     const product = await this.prisma.product.create({
-      data: createProductDto,
+      data: productData,
       include: { category: true, stocks: true },
     });
+
+    if (initial_stock && initial_stock > 0) {
+      await this.prisma.stock.create({
+        data: {
+          product_id: product.id,
+          quantity: initial_stock,
+          type: 'IN',
+          notes: 'Initial stock',
+        },
+      });
+
+      await this.prisma.inventoryBatch.create({
+        data: {
+          product_id: product.id,
+          cost_per_unit: 0,
+          initial_quantity: initial_stock,
+          remaining_quantity: initial_stock,
+        },
+      });
+      
+      // Update local product object for response
+      product.stocks.push({ quantity: initial_stock } as any);
+    }
 
     return this.transformProduct(product);
   }

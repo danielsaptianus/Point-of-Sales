@@ -7,6 +7,7 @@ import {
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 import cookieParser = require('cookie-parser');
 import { AppModule } from './app.module';
 
@@ -27,6 +28,9 @@ async function bootstrap() {
     origin: corsOrigin,
     credentials: true,
   });
+
+  // Enable Helmet for security headers
+  app.use(helmet());
 
   app.use(cookieParser());
 

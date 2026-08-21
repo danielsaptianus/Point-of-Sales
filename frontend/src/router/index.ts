@@ -74,6 +74,11 @@ const router = createRouter({
           component: AdminReportsView
         },
         {
+          path: 'shifts',
+          name: 'admin-shifts',
+          component: () => import('@/views/admin/AdminShiftsView.vue')
+        },
+        {
           path: 'vouchers',
           name: 'admin-vouchers',
           component: () => import('@/views/admin/AdminVouchersView.vue')

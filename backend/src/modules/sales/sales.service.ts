@@ -55,10 +55,19 @@ export class SalesService {
   }
 
   async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<any> {
-    const { payment_method, tax = 0, discount = 0, voucher_code, items } = createSaleDto;
+    const { payment_method, voucher_code, items } = createSaleDto;
 
     // Menjalankan sekelompok operasi database dalam satu blok $transaction (atomik)
     return this.prisma.$transaction(async (tx) => {
+      // 0. Cek apakah ada shift aktif
+      const activeShift = await tx.shift.findFirst({
+        where: { user_id: userId, status: 'OPEN' },
+      });
+
+      if (!activeShift) {
+        throw new BadRequestException('Tidak ada shift kasir yang aktif. Harap buka shift terlebih dahulu.');
+      }
+
       let subtotal = 0;
       const transactionItemsData = [];
 
@@ -100,7 +109,7 @@ export class SalesService {
         });
       }
 
-      let finalDiscount = discount;
+      let finalDiscount = 0;
       let appliedVoucherId = null;
 
       // Validate and apply voucher if provided
@@ -109,15 +118,16 @@ export class SalesService {
           code: voucher_code,
           subtotal,
         });
-        // Override or add to existing discount. Based on the requirements: 
-        // "Voucher discount harus masuk ke field discount transaction."
-        finalDiscount = finalDiscount + voucherResult.discount_amount;
-        // ensure discount doesn't exceed subtotal
+        
+        finalDiscount = voucherResult.discount_amount;
         if (finalDiscount > subtotal) {
           finalDiscount = subtotal;
         }
         appliedVoucherId = voucherResult.voucher.id;
       }
+
+      const taxableAmount = Math.max(0, subtotal - finalDiscount);
+      const tax = Math.round(taxableAmount * 0.11); // 11% PPN
 
       const total = subtotal + tax - finalDiscount;
       if (total < 0) {
@@ -137,6 +147,7 @@ export class SalesService {
           total,
           status: 'PENDING',
           user_id: userId,
+          shift_id: activeShift.id,
           applied_voucher_id: appliedVoucherId,
         },
       });
@@ -475,6 +486,18 @@ export class SalesService {
         await tx.payment.update({
           where: { id: transaction.payment.id },
           data: { status: 'CANCELLED' },
+        });
+      }
+
+      // 4b. Revert voucher usage if applied
+      if (transaction.applied_voucher_id && (originalStatus === 'PAID' || originalStatus === 'PENDING')) {
+        await tx.voucher.update({
+          where: { id: transaction.applied_voucher_id },
+          data: { used_count: { decrement: 1 } },
+        });
+        
+        await tx.transactionVoucher.deleteMany({
+          where: { transaction_id: transaction.id }
         });
       }
 
