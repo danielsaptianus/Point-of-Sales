@@ -20,7 +20,7 @@ const formData = ref({
   code: '',
   name: '',
   description: '',
-  discount_type: 'PERCENTAGE',
+  discount_type: 'PERCENTAGE' as 'PERCENTAGE' | 'FIXED',
   discount_value: 0,
   max_discount: null as number | null,
   min_transaction: null as number | null,

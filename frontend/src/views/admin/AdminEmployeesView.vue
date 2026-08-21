@@ -28,7 +28,7 @@ const filteredEmployees = computed(() => {
     const q = searchQuery.value.toLowerCase();
     result = result.filter(e => 
       e.first_name.toLowerCase().includes(q) || 
-      e.last_name.toLowerCase().includes(q) ||
+      (e.last_name || '').toLowerCase().includes(q) ||
       e.employee_number.toLowerCase().includes(q)
     );
   }
@@ -116,7 +116,7 @@ async function handleDelete(emp: Employee) {
             <td>
               <div class="employee-info">
                 <div class="avatar">
-                  {{ emp.first_name.charAt(0).toUpperCase() }}{{ emp.last_name.charAt(0).toUpperCase() }}
+                  {{ emp.first_name.charAt(0).toUpperCase() }}{{ (emp.last_name || '').charAt(0).toUpperCase() }}
                 </div>
                 <div class="employee-details">
                   <span class="employee-name">{{ emp.first_name }} {{ emp.last_name }}</span>

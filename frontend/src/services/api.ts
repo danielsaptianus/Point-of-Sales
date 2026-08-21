@@ -132,9 +132,12 @@ export const MOCK_USER: User = {
     first_name: 'Budi',
     last_name: 'Santoso',
     gender: 'MALE',
+    is_active: true,
+    position_id: 1,
     position: {
       id: 1,
       name: 'Cashier Staff',
+      is_active: true,
     },
   },
 };

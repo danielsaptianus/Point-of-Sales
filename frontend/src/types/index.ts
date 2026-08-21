@@ -86,6 +86,7 @@ export interface Transaction {
     amount_paid: number;
     change: number;
     reference_id?: string;
+    checkout_url?: string;
   };
 }
 

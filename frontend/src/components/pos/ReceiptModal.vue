@@ -138,7 +138,7 @@ const handlePrint = () => {
 
         <!-- Items -->
         <div class="receipt-items mono">
-          <div v-for="item in localTx.transaction_items" :key="item.product_id" class="receipt-item">
+          <div v-for="item in localTx.items" :key="item.product_id" class="receipt-item">
             <div class="item-line-1">{{ item.product_name }}</div>
             <div class="item-line-2">
               <span>{{ item.quantity }} x {{ formatPrice(item.price) }}</span>

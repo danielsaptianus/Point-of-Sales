@@ -17,8 +17,8 @@ const isAdmin = computed(() => {
 const activeTab = ref('profile');
 
 const profileForm = ref({
-  first_name: user?.employee?.first_name || '',
-  last_name: user?.employee?.last_name || '',
+  first_name: user?.first_name || '',
+  last_name: user?.last_name || '',
   email: user?.email || '',
 });
 

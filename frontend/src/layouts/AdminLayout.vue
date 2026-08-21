@@ -257,9 +257,9 @@ const menuItems = computed(() => {
                 {{ authStore.user?.email?.charAt(0).toUpperCase() || 'U' }}
               </div>
               <div class="user-info">
-                <p class="user-name">{{ authStore.user?.email || 'User' }}</p>
-                <p class="user-role">{{ $t('common.admin') }}</p>
-              </div>
+            <span class="user-name">{{ authStore.user?.first_name || 'Admin' }} {{ authStore.user?.last_name || '' }}</span>
+            <span class="user-role">{{ authStore.user?.position?.name || 'Administrator' }}</span>
+          </div>
               <ChevronDown :size="16" class="dropdown-icon" :class="{ 'dropdown-icon--open': isDropdownOpen }" />
             </div>
 
@@ -268,7 +268,7 @@ const menuItems = computed(() => {
               <div class="profile-dropdown glass-panel" v-if="isDropdownOpen">
                 <div class="dropdown-header">
                   <p class="dropdown-name">{{ authStore.user?.email || 'User' }}</p>
-                  <p class="dropdown-email">{{ authStore.user?.employee?.employee_number || 'Administrator' }}</p>
+                  <p class="dropdown-email">{{ authStore.user?.position?.name || 'Administrator' }}</p>
                 </div>
                 
                 <div class="dropdown-divider"></div>

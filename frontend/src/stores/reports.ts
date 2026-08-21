@@ -10,12 +10,12 @@ export const useReportsStore = defineStore('reports', () => {
   // Computed Metrics
   const totalRevenue = computed(() => {
     return transactions.value
-      .filter(t => t.status === 'PAID' || t.status === 'SETTLEMENT')
+      .filter(t => t.status === 'PAID')
       .reduce((sum, t) => sum + t.total, 0);
   });
 
   const totalTransactionsCount = computed(() => {
-    return transactions.value.filter(t => t.status === 'PAID' || t.status === 'SETTLEMENT').length;
+    return transactions.value.filter(t => t.status === 'PAID').length;
   });
 
   const averageOrderValue = computed(() => {
@@ -39,7 +39,7 @@ export const useReportsStore = defineStore('reports', () => {
     });
 
     transactions.value.forEach(t => {
-      if (t.status !== 'PAID' && t.status !== 'SETTLEMENT') return;
+      if (t.status !== 'PAID') return;
       const txDate = new Date(t.created_at);
       const dayData = last7Days.find(d => 
         d.rawDate.getDate() === txDate.getDate() && 
