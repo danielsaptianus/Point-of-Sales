@@ -15,7 +15,8 @@ import {
   LayoutGrid,
   ChevronDown,
   Moon,
-  Sun
+  Sun,
+  BarChart3
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -58,6 +59,7 @@ const menuItems = [
   { name: 'Products', path: '/admin/products', icon: Package },
   { name: 'Inventory', path: '/admin/inventory', icon: ShoppingCart },
   { name: 'Employees', path: '/admin/employees', icon: Users },
+  { name: 'Reports', path: '/admin/reports', icon: BarChart3 },
 ];
 </script>
 

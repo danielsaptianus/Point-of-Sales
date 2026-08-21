@@ -5,6 +5,7 @@
     "products": "Products",
     "inventory": "Inventory",
     "employees": "Employees",
+    "reports": "Reports",
     "settings": "Settings",
     "logout": "Logout"
   },
