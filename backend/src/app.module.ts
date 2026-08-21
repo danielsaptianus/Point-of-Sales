@@ -26,39 +26,6 @@ import { StocksModule } from './modules/stocks/stocks.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { ReportsModule } from './modules/reports/reports.module';
 
-@Module({
-  imports: [
-    // Configuration
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validationSchema,
-      load: [appConfig, databaseConfig, jwtConfig, swaggerConfig],
-    }),
-
-    // Common modules
-    PrismaModule,
-
-    // Feature modules
-    AuthModule,
-    UsersModule,
-    EmployeesModule,
-    CategoriesModule,
-    ProductsModule,
-    StocksModule,
-    SalesModule,
-    HealthModule,
-    ReportsModule,
-  ],
-  providers: [
-    // Global guards
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: PermissionsGuard,
-    },
 
 
 @Module({
