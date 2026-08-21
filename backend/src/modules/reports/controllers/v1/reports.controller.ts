@@ -20,4 +20,28 @@ export class ReportsController {
       data,
     };
   }
+
+  @Get('revenue-analytics')
+  @ApiOperation({ summary: 'Get revenue analytics for the last 7 days' })
+  @ApiResponse({ status: 200, description: 'Revenue analytics retrieved successfully.' })
+  async getRevenueAnalytics() {
+    const data = await this.reportsService.getRevenueAnalytics();
+    return {
+      statusCode: 200,
+      message: 'Revenue analytics retrieved successfully',
+      data,
+    };
+  }
+
+  @Get('recent-transactions')
+  @ApiOperation({ summary: 'Get recent transactions' })
+  @ApiResponse({ status: 200, description: 'Recent transactions retrieved successfully.' })
+  async getRecentTransactions() {
+    const data = await this.reportsService.getRecentTransactions();
+    return {
+      statusCode: 200,
+      message: 'Recent transactions retrieved successfully',
+      data,
+    };
+  }
 }

@@ -49,4 +49,58 @@ export class ReportsService {
       total_movement: totalMovement,
     };
   }
+
+  async getRevenueAnalytics() {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const transactions = await this.prisma.transaction.findMany({
+      where: {
+        status: { in: ['PAID', 'SETTLEMENT'] },
+        deleted_at: null,
+        created_at: { gte: sevenDaysAgo },
+      },
+      select: {
+        total: true,
+        created_at: true,
+      },
+    });
+
+    // Group by date
+    const dailyRevenue = new Map<string, number>();
+    
+    // Initialize last 7 days with 0
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      dailyRevenue.set(dateStr, 0);
+    }
+
+    transactions.forEach(t => {
+      const dateStr = t.created_at.toISOString().split('T')[0];
+      if (dailyRevenue.has(dateStr)) {
+        dailyRevenue.set(dateStr, dailyRevenue.get(dateStr)! + t.total);
+      }
+    });
+
+    return Array.from(dailyRevenue, ([date, revenue]) => ({ date, revenue }));
+  }
+
+  async getRecentTransactions() {
+    return this.prisma.transaction.findMany({
+      where: { deleted_at: null },
+      orderBy: { created_at: 'desc' },
+      take: 5,
+      include: {
+        user: {
+          select: {
+            email: true,
+            employee: { select: { first_name: true, last_name: true } }
+          }
+        }
+      }
+    });
+  }
 }
