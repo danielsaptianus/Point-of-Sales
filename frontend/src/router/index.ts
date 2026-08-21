@@ -62,6 +62,11 @@ const router = createRouter({
           path: 'reports',
           name: 'admin-reports',
           component: AdminReportsView
+        },
+        {
+          path: 'profile',
+          name: 'admin-profile',
+          component: () => import('@/views/admin/AdminProfileView.vue')
         }
       ]
     },

@@ -16,7 +16,8 @@ import {
   ChevronDown,
   Moon,
   Sun,
-  BarChart3
+  BarChart3,
+  UserPen
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -137,6 +138,11 @@ const menuItems = [
                 </div>
                 
                 <div class="dropdown-divider"></div>
+
+                <div class="dropdown-item" style="cursor: pointer" @click="isDropdownOpen = false; router.push('/admin/profile')">
+                  <span class="dropdown-item-label">{{ $t('settings.edit_profile') }}</span>
+                  <UserPen :size="16" class="dropdown-icon" />
+                </div>
                 
                 <div class="dropdown-item">
                   <span class="dropdown-item-label">{{ $t('settings.dark_mode') }}</span>

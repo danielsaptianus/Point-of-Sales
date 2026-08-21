@@ -11,6 +11,7 @@
   },
   "settings": {
     "title": "Pengaturan Aplikasi",
+    "edit_profile": "Edit Profil",
     "appearance": "Tampilan",
     "dark_mode": "Mode Gelap",
     "dark_mode_desc": "Ubah tema visual aplikasi",
