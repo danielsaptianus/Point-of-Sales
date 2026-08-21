@@ -18,10 +18,14 @@ async function bootstrap() {
 
   // Get configurations
   const swaggerEnabled = configService.get<boolean>('swagger.enabled');
-  const corsOrigin = configService.get<string>('app.corsOrigin');
   const swaggerPath = configService.get<string>('swagger.path');
   const apiPrefix = configService.get<string>('app.apiPrefix');
   const port = configService.get<number>('app.port');
+
+  const rawCorsOrigin = configService.get<string>('app.corsOrigin');
+  const corsOrigin = rawCorsOrigin && rawCorsOrigin.includes(',') 
+    ? rawCorsOrigin.split(',').map(o => o.trim()) 
+    : rawCorsOrigin;
 
   // Enable CORS
   app.enableCors({

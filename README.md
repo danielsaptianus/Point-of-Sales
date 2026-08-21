@@ -41,5 +41,18 @@ Backend akan berjalan di: `http://localhost:3000` (Dokumentasi Swagger di: `http
 cd frontend
 npm install
 npm run dev
-```
 Frontend akan berjalan di: `http://localhost:5173`.
+
+---
+
+## 🧪 Pengujian End-to-End (E2E)
+
+Proyek ini telah dikonfigurasi untuk pengujian E2E guna memastikan integrasi antar komponen berjalan dengan baik.
+
+### Backend E2E Tests (NestJS / Jest)
+Pengujian E2E pada backend akan melakukan test simulasi *request* ke *endpoint* API (seperti Auth, CRUD, dan Kalkulasi Transaksi Kasir) di dalam lingkungan yang terisolasi.
+
+```bash
+cd backend
+npm run test:e2e
+```
