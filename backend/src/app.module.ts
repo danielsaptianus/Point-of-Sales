@@ -24,6 +24,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { ProductsModule } from './modules/products/products.module';
 import { StocksModule } from './modules/stocks/stocks.module';
 import { SalesModule } from './modules/sales/sales.module';
+import { VouchersModule } from './modules/vouchers/vouchers.module';
 import { ReportsModule } from './modules/reports/reports.module';
 
 
@@ -48,6 +49,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     ProductsModule,
     StocksModule,
     SalesModule,
+    VouchersModule,
     HealthModule,
     ReportsModule,
   ],

@@ -74,6 +74,11 @@ const router = createRouter({
           component: AdminReportsView
         },
         {
+          path: 'vouchers',
+          name: 'admin-vouchers',
+          component: () => import('@/views/admin/AdminVouchersView.vue')
+        },
+        {
           path: 'profile',
           name: 'admin-profile',
           component: () => import('@/views/admin/AdminProfileView.vue')
@@ -85,7 +90,9 @@ const router = createRouter({
       redirect: () => {
         const authStore = useAuthStore();
         const positionName = authStore.user?.position?.name?.toLowerCase() || '';
-        return (positionName.includes('admin') || positionName.includes('manager')) ? '/admin' : '/pos';
+        if (positionName.includes('admin') || positionName.includes('manager')) return '/admin';
+        if (positionName.includes('gudang')) return '/admin/inventory';
+        return '/pos';
       },
     },
     {
@@ -99,14 +106,27 @@ router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
   const positionName = authStore.user?.position?.name?.toLowerCase() || '';
   const isAdmin = positionName.includes('admin') || positionName.includes('manager');
+  const isGudang = positionName.includes('gudang');
+  const isKasir = positionName.includes('kasir');
+
+  const hasAdminAccess = isAdmin || isGudang;
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login');
-  } else if (to.meta.requiresAdmin && !isAdmin) {
-    // Block non-admins from accessing admin routes
+  } else if (to.meta.requiresAdmin && !hasAdminAccess) {
+    // Block non-admins/gudang from accessing admin routes
     next('/pos');
+  } else if (to.path.startsWith('/admin') && isGudang) {
+    // Gudang only allowed on products and inventory
+    if (to.path === '/admin/products' || to.path === '/admin/inventory') {
+      next();
+    } else {
+      next('/admin/inventory');
+    }
   } else if (to.path === '/login' && authStore.isAuthenticated) {
-    next(isAdmin ? '/admin' : '/pos');
+    if (isAdmin) next('/admin');
+    else if (isGudang) next('/admin/inventory');
+    else next('/pos');
   } else {
     next();
   }

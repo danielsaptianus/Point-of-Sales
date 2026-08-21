@@ -2,7 +2,8 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmployeeStore } from '@/stores/employees';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft, UserPlus, KeyRound, ShieldCheck } from 'lucide-vue-next';
+import AccountManagementModal from '@/components/admin/AccountManagementModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -10,6 +11,12 @@ const employeeStore = useEmployeeStore();
 
 const isEditMode = ref(false);
 const isSaving = ref(false);
+const employeeData = ref<any>(null);
+
+const isAccountModalOpen = ref(false);
+const accountModalMode = ref<'create' | 'reset'>('create');
+const accountError = ref('');
+const accountSuccess = ref('');
 
 const formData = ref({
   employee_number: '',
@@ -64,6 +71,7 @@ onMounted(async () => {
         position_id: emp.position_id,
         is_active: emp.is_active,
       };
+      employeeData.value = emp;
     } else {
       router.push('/admin/employees'); // not found
     }
@@ -106,6 +114,36 @@ async function handleSave() {
 
 function handleCancel() {
   router.push('/admin/employees');
+}
+
+function openAccountModal(mode: 'create' | 'reset') {
+  accountModalMode.value = mode;
+  isAccountModalOpen.value = true;
+  accountError.value = '';
+  accountSuccess.value = '';
+}
+
+async function handleAccountAction(payload: any) {
+  try {
+    accountError.value = '';
+    accountSuccess.value = '';
+    
+    if (accountModalMode.value === 'create') {
+      await employeeStore.createEmployeeUser(payload);
+      accountSuccess.value = 'User account created successfully! Employee is now linked.';
+      // Refresh employee data to show the new user
+      await employeeStore.fetchEmployees();
+      const emp = employeeStore.employees.find(e => e.id === Number(route.params.id));
+      if (emp) employeeData.value = emp;
+    } else {
+      await employeeStore.resetEmployeePassword(payload);
+      accountSuccess.value = 'Password reset successfully!';
+    }
+    
+    isAccountModalOpen.value = false;
+  } catch (error: any) {
+    accountError.value = error.response?.data?.message || 'An error occurred during account management.';
+  }
 }
 </script>
 
@@ -264,7 +302,68 @@ function handleCancel() {
           </button>
         </div>
       </form>
+
+      <!-- Account Management Section (Only in Edit Mode) -->
+      <div v-if="isEditMode && employeeData" class="account-section">
+        <h3 class="section-title account-title">
+          <ShieldCheck :size="20" /> User Account & Credentials
+        </h3>
+        
+        <div v-if="accountError" class="alert-box error">{{ accountError }}</div>
+        <div v-if="accountSuccess" class="alert-box success">{{ accountSuccess }}</div>
+
+        <div class="account-card">
+          <div class="account-status">
+            <template v-if="employeeData.user_id">
+              <div class="status-indicator active"></div>
+              <div class="status-info">
+                <h4>Account Linked</h4>
+                <p>Email: <strong>{{ employeeData.user?.email || 'Unknown Email' }}</strong></p>
+              </div>
+            </template>
+            <template v-else>
+              <div class="status-indicator inactive"></div>
+              <div class="status-info">
+                <h4>No Account</h4>
+                <p>This employee cannot log into the system yet.</p>
+              </div>
+            </template>
+          </div>
+
+          <div class="account-actions">
+            <button 
+              v-if="!employeeData.user_id" 
+              type="button" 
+              class="btn-create-account" 
+              @click="openAccountModal('create')"
+            >
+              <UserPlus :size="18" /> Create Account
+            </button>
+            
+            <button 
+              v-else 
+              type="button" 
+              class="btn-reset-password" 
+              @click="openAccountModal('reset')"
+            >
+              <KeyRound :size="18" /> Reset Password
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Modals -->
+    <AccountManagementModal
+      :is-open="isAccountModalOpen"
+      :mode="accountModalMode"
+      :employee-id="employeeData?.id || 0"
+      :employee-name="employeeData?.first_name + ' ' + (employeeData?.last_name || '')"
+      @close="isAccountModalOpen = false"
+      @submit="handleAccountAction"
+    />
+
   </div>
 </template>
 
@@ -527,5 +626,125 @@ input:checked + .slider:before {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* Account Section Styles */
+.account-section {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.account-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f172a;
+}
+
+.account-card {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-indicator.active {
+  background-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.status-indicator.inactive {
+  background-color: #94a3b8;
+}
+
+.status-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.status-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.account-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-create-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-create-account:hover {
+  background-color: #2563eb;
+}
+
+.btn-reset-password {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reset-password:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.alert-box {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.alert-box.error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.alert-box.success {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 </style>

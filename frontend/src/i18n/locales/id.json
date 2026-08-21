@@ -6,6 +6,8 @@
     "inventory": "Inventaris",
     "employees": "Karyawan",
     "reports": "Laporan",
+    "vouchers": "Voucher",
+    "pos": "Kasir",
     "settings": "Pengaturan",
     "logout": "Keluar"
   },

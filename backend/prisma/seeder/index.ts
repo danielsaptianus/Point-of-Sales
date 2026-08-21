@@ -27,12 +27,13 @@ async function main() {
   await prisma.position.deleteMany();
 
   // Run seeders
-  const { adminPosition, memberPosition } = await seedPositions(prisma);
-  await seedPermissions(prisma, adminPosition.id, memberPosition.id);
-  const { adminUser, memberUser, defaultPassword } = await seedUsers(
+  const { adminPosition, kasirPosition, gudangPosition } = await seedPositions(prisma);
+  await seedPermissions(prisma, adminPosition.id, kasirPosition.id, gudangPosition.id);
+  const { adminUser, kasirUser, gudangUser, defaultPassword } = await seedUsers(
     prisma,
     adminPosition.id,
-    memberPosition.id,
+    kasirPosition.id,
+    gudangPosition.id,
   );
 
   // Summary
@@ -47,7 +48,8 @@ async function main() {
 
   console.log('🔑 Default Users:');
   console.log(`   Admin: ${adminUser.email} / ${defaultPassword}`);
-  console.log(`   Member: ${memberUser.email} / ${defaultPassword}\n`);
+  console.log(`   Kasir: ${kasirUser.email} / ${defaultPassword}`);
+  console.log(`   Gudang: ${gudangUser.email} / ${defaultPassword}\n`);
 }
 
 main()

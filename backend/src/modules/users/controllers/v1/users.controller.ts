@@ -19,6 +19,7 @@ import { CreateUserDto } from '@modules/users/core/dto/create-user.dto';
 import { UpdateUserDto } from '@modules/users/core/dto/update-user.dto';
 import { UserQueryDto } from '@modules/users/core/dto/user-query.dto';
 import { ResetEmployeePasswordDto } from '@modules/users/core/dto/reset-employee-password.dto';
+import { CreateEmployeeUserDto } from '@modules/users/core/dto/create-employee-user.dto';
 import { Permissions } from '@common/decorators/permissions.decorator';
 import { PERMISSIONS } from '@common/constants/permissions.constant';
 import {
@@ -94,7 +95,20 @@ export class UsersController {
     @Req() req: any,
     @Body() dto: ResetEmployeePasswordDto,
   ): Promise<{ message: string }> {
-    await this.usersService.resetEmployeePassword(req.user.id, dto);
+    await this.usersService.resetEmployeePassword(req.user.userId, dto);
     return { message: 'Password reset successfully' };
+  }
+
+  @Post('create-employee-user')
+  @Roles('Admin')
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a user account for an existing employee (Admin only)' })
+  @ApiSuccessResponse(UserResponseDto)
+  async createEmployeeUser(
+    @Req() req: any,
+    @Body() dto: CreateEmployeeUserDto,
+  ): Promise<UserResponseDto> {
+    return this.usersService.createEmployeeUser(req.user.userId, dto);
   }
 }

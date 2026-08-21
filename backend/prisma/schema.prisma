@@ -14,7 +14,7 @@ model User {
   id                  Int       @id @default(autoincrement())
   email               String    @unique
   password            String
-  last_password_reset DateTime? 
+  last_password_reset DateTime?
   last_login          DateTime?
   is_active           Boolean   @default(true)
   created_at          DateTime  @default(now())
@@ -22,10 +22,10 @@ model User {
   deleted_at          DateTime?
 
   // Relasi One-to-One ke Employee
-  employee            Employee?
-  
+  employee Employee?
+
   // Transactions recorded by this user (cashier)
-  transactions        Transaction[]
+  transactions Transaction[]
 
   @@map("users")
 }
@@ -73,28 +73,27 @@ model PositionPermission {
   @@map("position_permissions")
 }
 
-
 model Employee {
-  id                  Int       @id @default(autoincrement())
-  employee_number     String    @unique
+  id              Int    @id @default(autoincrement())
+  employee_number String @unique
 
   // Personal Information
-  first_name          String
-  last_name           String?
-  gender              String
-  birth_date          DateTime?
-  marital_status      String?   // SINGLE, MARRIED, DIVORCED, WIDOWED
+  first_name     String
+  last_name      String?
+  gender         String
+  birth_date     DateTime?
+  marital_status String? // SINGLE, MARRIED, DIVORCED, WIDOWED
 
   // Contact Information
-  email               String?
-  phone               String?
-  address             String?
+  email   String?
+  phone   String?
+  address String?
 
   // Employment Information
-  hire_date           DateTime?
-  termination_date    DateTime?
-  employment_type     String?   // FULL_TIME, PART_TIME, CONTRACT, INTERN
-  salary              Decimal?  @db.Decimal(15, 2)
+  hire_date        DateTime?
+  termination_date DateTime?
+  employment_type  String? // FULL_TIME, PART_TIME, CONTRACT, INTERN
+  salary           Decimal?  @db.Decimal(15, 2)
 
   // Bank Information
   bank_name           String?
@@ -102,18 +101,18 @@ model Employee {
   bank_account_name   String?
 
   // Status & Audit
-  is_active           Boolean   @default(true)
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
-  deleted_at          DateTime?
+  is_active  Boolean   @default(true)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   // Authentication
-  user_id             Int?      @unique
-  user                User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id Int?  @unique
+  user    User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   // Position
-  position_id         Int
-  position            Position  @relation(fields: [position_id], references: [id])
+  position_id Int
+  position    Position @relation(fields: [position_id], references: [id])
 
   @@map("employees")
 }
@@ -129,8 +128,8 @@ model Category {
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   deleted_at  DateTime?
-  
-  products    Product[]
+
+  products Product[]
 
   @@map("categories")
 }
@@ -147,26 +146,27 @@ model Product {
   deleted_at  DateTime?
 
   category_id Int
-  category    Category  @relation(fields: [category_id], references: [id], onDelete: Restrict)
-  
-  stocks      Stock[]
+  category    Category @relation(fields: [category_id], references: [id], onDelete: Restrict)
+
+  stocks            Stock[]
   transaction_items TransactionItem[]
+  inventory_batches InventoryBatch[]
 
   @@map("products")
 }
 
 model Stock {
-  id             Int       @id @default(autoincrement())
-  quantity       Int
-  type           String    // "IN", "OUT", "ADJUSTMENT"
-  notes          String?
-  status         String    @default("SUCCESS") // "SUCCESS", "PENDING", "FAILED"
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @updatedAt
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  type       String // "IN", "OUT", "ADJUSTMENT"
+  notes      String?
+  status     String   @default("SUCCESS") // "SUCCESS", "PENDING", "FAILED"
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  product_id     Int
-  product        Product   @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  
+  product_id Int
+  product    Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
   // Linkage to transaction if stock change is caused by a sale
   transaction_id Int?
   transaction    Transaction? @relation(fields: [transaction_id], references: [id], onDelete: SetNull)
@@ -181,55 +181,129 @@ model Stock {
 model Transaction {
   id             Int       @id @default(autoincrement())
   invoice_number String    @unique // e.g. "INV-20260720-XXXX"
-  subtotal       Float     // Total before discount & tax
+  subtotal       Float // Total before discount & tax
   tax            Float     @default(0)
   discount       Float     @default(0)
-  total          Float     // Net total to pay
+  total          Float // Net total to pay
   status         String    @default("PENDING") // "PENDING", "PAID", "CANCELLED", "FAILED"
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
   deleted_at     DateTime?
 
   // Relations
-  user_id        Int       // Cashier user ID
-  user           User      @relation(fields: [user_id], references: [id])
-  
-  transaction_items TransactionItem[]
-  payment           Payment?
-  stocks            Stock[] // Records stock reduction for this transaction
+  user_id Int // Cashier user ID
+  user    User @relation(fields: [user_id], references: [id])
+
+  applied_voucher_id Int? // Track voucher ID applied (especially for PENDING online payments)
+
+  transaction_items    TransactionItem[]
+  payment              Payment?
+  stocks               Stock[] // Records stock reduction for this transaction
+  transaction_vouchers TransactionVoucher[]
 
   @@map("transactions")
 }
 
 model TransactionItem {
-  id             Int         @id @default(autoincrement())
-  quantity       Int
-  price          Float       // Price at checkout time
-  subtotal       Float       // quantity * price
-  
+  id       Int   @id @default(autoincrement())
+  quantity Int
+  price    Float // Price at checkout time
+  subtotal Float // quantity * price
+
   // Relations
   transaction_id Int
   transaction    Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
   product_id     Int
   product        Product     @relation(fields: [product_id], references: [id], onDelete: Restrict)
 
+  transaction_item_batches TransactionItemBatch[]
+
   @@map("transaction_items")
+}
+
+model InventoryBatch {
+  id                 Int      @id @default(autoincrement())
+  received_date      DateTime @default(now())
+  cost_per_unit      Float    
+  initial_quantity   Int      
+  remaining_quantity Int      
+  
+  product_id         Int
+  product            Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  transaction_item_batches TransactionItemBatch[]
+
+  @@map("inventory_batches")
+}
+
+model TransactionItemBatch {
+  id                  Int      @id @default(autoincrement())
+  quantity_deducted   Int
+  
+  transaction_item_id Int
+  transaction_item    TransactionItem @relation(fields: [transaction_item_id], references: [id], onDelete: Cascade)
+
+  inventory_batch_id  Int
+  inventory_batch     InventoryBatch  @relation(fields: [inventory_batch_id], references: [id], onDelete: Cascade)
+
+  @@map("transaction_item_batches")
 }
 
 model Payment {
   id              Int       @id @default(autoincrement())
-  payment_method  String    // "CASH", "IPAYMU_REDIRECT"
-  payment_gateway String?   // "IPAYMU"
+  payment_method  String // "CASH", "IPAYMU_REDIRECT"
+  payment_gateway String? // "IPAYMU"
   reference_id    String?   @unique // SessionID or Transaction ID from iPaymu
   status          String    @default("PENDING") // "PENDING", "PAID", "EXPIRED", "FAILED"
-  checkout_url    String?   // Redirect url for iPaymu
+  checkout_url    String? // Redirect url for iPaymu
   paid_at         DateTime?
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
   // Relations
-  transaction_id  Int       @unique
-  transaction     Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  transaction_id Int         @unique
+  transaction    Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
 
   @@map("payments")
+}
+
+// ============================================
+// 5. VOUCHER SCHEMA (Milestone 5)
+// ============================================
+
+model Voucher {
+  id              Int       @id @default(autoincrement())
+  code            String    @unique
+  name            String
+  description     String?
+  discount_type   String // "PERCENTAGE" or "FIXED"
+  discount_value  Decimal   @db.Decimal(15, 2)
+  max_discount    Decimal?  @db.Decimal(15, 2)
+  min_transaction Decimal?  @db.Decimal(15, 2)
+  usage_limit     Int?
+  used_count      Int       @default(0)
+  start_date      DateTime
+  end_date        DateTime
+  is_active       Boolean   @default(true)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  transaction_vouchers TransactionVoucher[]
+
+  @@map("vouchers")
+}
+
+model TransactionVoucher {
+  id              Int      @id @default(autoincrement())
+  transaction_id  Int
+  voucher_id      Int
+  discount_amount Decimal  @db.Decimal(15, 2)
+  created_at      DateTime @default(now())
+
+  transaction Transaction @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  voucher     Voucher     @relation(fields: [voucher_id], references: [id], onDelete: Restrict)
+
+  @@unique([transaction_id, voucher_id])
+  @@map("transaction_vouchers")
 }

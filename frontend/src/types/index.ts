@@ -99,3 +99,21 @@ export interface StockTransaction {
   status: 'SUCCESS' | 'PENDING' | 'FAILED';
   created_at: string;
 }
+
+export interface Voucher {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  discount_type: 'PERCENTAGE' | 'FIXED';
+  discount_value: number;
+  max_discount?: number;
+  min_transaction?: number;
+  usage_limit?: number;
+  used_count: number;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}

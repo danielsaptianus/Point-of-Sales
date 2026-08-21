@@ -3,7 +3,8 @@ import { PrismaClient } from '@prisma/client';
 export const seedPermissions = async (
   prisma: PrismaClient,
   adminPositionId: number,
-  memberPositionId: number,
+  kasirPositionId: number,
+  gudangPositionId: number,
 ) => {
   console.log('🔐 Seeding permissions...');
 
@@ -52,12 +53,22 @@ export const seedPermissions = async (
     data: adminPermissions,
   });
 
-  // Member gets only VIEW_USER permission
+  // Kasir gets VIEW_USER, POS related (we just simulate since no product permissions yet)
   const viewUserPermission = permissions.find((p) => p.name === 'VIEW_USER');
   if (viewUserPermission) {
     await prisma.positionPermission.create({
       data: {
-        position_id: memberPositionId,
+        position_id: kasirPositionId,
+        permission_id: viewUserPermission.id,
+      },
+    });
+  }
+
+  // Gudang gets VIEW_USER
+  if (viewUserPermission) {
+    await prisma.positionPermission.create({
+      data: {
+        position_id: gudangPositionId,
         permission_id: viewUserPermission.id,
       },
     });

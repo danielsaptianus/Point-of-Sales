@@ -41,6 +41,17 @@ export class StocksService {
       include: { product: { include: { category: true } } },
     });
 
+    if (type === 'IN') {
+      await this.prisma.inventoryBatch.create({
+        data: {
+          product_id: product_id,
+          cost_per_unit: 0, // Placeholder, normally comes from DTO
+          initial_quantity: createStockDto.quantity,
+          remaining_quantity: createStockDto.quantity,
+        }
+      });
+    }
+
     return this.transformStock(stock);
   }
 

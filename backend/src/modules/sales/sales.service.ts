@@ -3,12 +3,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '@common/prisma/prisma.service';
 import { MidtransService } from './core/helpers/midtrans.service';
 import { CreateSaleDto } from '@modules/sales/core/dto/create-sale.dto';
+import { VouchersService } from '@modules/vouchers/vouchers.service';
 
 @Injectable()
 export class SalesService {
   constructor(
     private prisma: PrismaService,
     private midtransService: MidtransService,
+    private vouchersService: VouchersService,
   ) {}
 
   private transformTransactionList(t: any) {
@@ -53,7 +55,7 @@ export class SalesService {
   }
 
   async checkout(userId: number, createSaleDto: CreateSaleDto): Promise<any> {
-    const { payment_method, tax = 0, discount = 0, items } = createSaleDto;
+    const { payment_method, tax = 0, discount = 0, voucher_code, items } = createSaleDto;
 
     // Menjalankan sekelompok operasi database dalam satu blok $transaction (atomik)
     return this.prisma.$transaction(async (tx) => {
@@ -98,7 +100,26 @@ export class SalesService {
         });
       }
 
-      const total = subtotal + tax - discount;
+      let finalDiscount = discount;
+      let appliedVoucherId = null;
+
+      // Validate and apply voucher if provided
+      if (voucher_code) {
+        const voucherResult = await this.vouchersService.validateAndCalculateVoucher({
+          code: voucher_code,
+          subtotal,
+        });
+        // Override or add to existing discount. Based on the requirements: 
+        // "Voucher discount harus masuk ke field discount transaction."
+        finalDiscount = finalDiscount + voucherResult.discount_amount;
+        // ensure discount doesn't exceed subtotal
+        if (finalDiscount > subtotal) {
+          finalDiscount = subtotal;
+        }
+        appliedVoucherId = voucherResult.voucher.id;
+      }
+
+      const total = subtotal + tax - finalDiscount;
       if (total < 0) {
         throw new BadRequestException('Total transaksi tidak boleh bernilai negatif');
       }
@@ -112,17 +133,64 @@ export class SalesService {
           invoice_number: invoiceNumber,
           subtotal,
           tax,
-          discount,
+          discount: finalDiscount,
           total,
           status: 'PENDING',
           user_id: userId,
-          transaction_items: {
-            createMany: {
-              data: transactionItemsData,
-            },
-          },
+          applied_voucher_id: appliedVoucherId,
         },
       });
+
+      // 2b. Buat TransactionItems dan lakukan pemotongan stok FIFO pada InventoryBatch
+      for (const item of transactionItemsData) {
+        const txItem = await tx.transactionItem.create({
+          data: {
+            transaction_id: transaction.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price,
+            subtotal: item.subtotal,
+          }
+        });
+
+        let qtyToDeduct = item.quantity;
+        const batches = await tx.inventoryBatch.findMany({
+          where: { product_id: item.product_id, remaining_quantity: { gt: 0 } },
+          orderBy: { received_date: 'asc' }
+        });
+
+        for (const batch of batches) {
+          if (qtyToDeduct <= 0) break;
+          
+          const deduct = Math.min(batch.remaining_quantity, qtyToDeduct);
+          
+          await tx.inventoryBatch.update({
+            where: { id: batch.id },
+            data: { remaining_quantity: batch.remaining_quantity - deduct }
+          });
+          
+          await tx.transactionItemBatch.create({
+            data: {
+              quantity_deducted: deduct,
+              transaction_item_id: txItem.id,
+              inventory_batch_id: batch.id
+            }
+          });
+          
+          qtyToDeduct -= deduct;
+        }
+
+        // 4. Mutasi Stok Keluar dibuat langsung saat checkout (untuk log history / umum)
+        await tx.stock.create({
+          data: {
+            product_id: item.product_id,
+            quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
+            type: 'OUT',
+            notes: `Stock reserved from sale checkout ${invoiceNumber}`,
+            transaction_id: transaction.id,
+          },
+        });
+      }
 
       // 3. Proses Pembayaran
       if (payment_method === 'CASH') {
@@ -140,6 +208,24 @@ export class SalesService {
             transaction_id: transaction.id,
           },
         });
+
+        // 3a. Record Voucher Usage for CASH (since it's paid immediately)
+        if (appliedVoucherId) {
+          await tx.transactionVoucher.create({
+            data: {
+              transaction_id: transaction.id,
+              voucher_id: appliedVoucherId,
+              // Calculate specific voucher discount applied (this is a simplified approach, 
+              // assuming finalDiscount is primarily the voucher discount if present)
+              discount_amount: finalDiscount, 
+            },
+          });
+          
+          await tx.voucher.update({
+            where: { id: appliedVoucherId },
+            data: { used_count: { increment: 1 } },
+          });
+        }
       } else if (payment_method === 'MIDTRANS_REDIRECT') {
         // Panggil custom Midtrans Snap API service untuk pembayaran online
         const midtransResponse = await this.midtransService.createSnapTransaction({
@@ -155,19 +241,6 @@ export class SalesService {
             reference_id: midtransResponse.token,
             status: 'PENDING',
             checkout_url: midtransResponse.redirect_url,
-            transaction_id: transaction.id,
-          },
-        });
-      }
-
-      // 4. Mutasi Stok Keluar dibuat langsung saat checkout (untuk CASH & PENDING)
-      for (const item of transactionItemsData) {
-        await tx.stock.create({
-          data: {
-            product_id: item.product_id,
-            quantity: -item.quantity, // Nilai negatif untuk pengurangan stok
-            type: 'OUT',
-            notes: `Stock reserved from sale checkout ${invoiceNumber}`,
             transaction_id: transaction.id,
           },
         });
@@ -303,6 +376,29 @@ export class SalesService {
             where: { id: transaction.payment.id },
             data: { status: 'PAID', paid_at: new Date() },
           });
+        }
+
+        // Apply voucher usage if one was applied
+        if (transaction.applied_voucher_id) {
+          // Check if already created just in case
+          const existingUsage = await tx.transactionVoucher.findFirst({
+            where: { transaction_id: transaction.id, voucher_id: transaction.applied_voucher_id },
+          });
+
+          if (!existingUsage) {
+            await tx.transactionVoucher.create({
+              data: {
+                transaction_id: transaction.id,
+                voucher_id: transaction.applied_voucher_id,
+                discount_amount: transaction.discount,
+              },
+            });
+
+            await tx.voucher.update({
+              where: { id: transaction.applied_voucher_id },
+              data: { used_count: { increment: 1 } },
+            });
+          }
         }
       });
       console.log('Transaction status updated to PAID successfully.');

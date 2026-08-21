@@ -4,10 +4,11 @@ import type { Employee, Position } from '@/types';
 import api from '@/plugins/axios';
 
 export const useEmployeeStore = defineStore('employees', () => {
-  // Hardcode positions to match DB seeds (1: Admin, 2: Member) since we don't have a /positions endpoint yet
+  // We hardcode positions to match DB seeds for simplicity
   const positions = ref<Position[]>([
-    { id: 1, name: 'Admin', description: 'Administrator', is_active: true },
-    { id: 2, name: 'Staff / Member', description: 'Regular Staff', is_active: true }
+    { id: 1, name: 'Admin', description: 'Administrator with full system access', is_active: true },
+    { id: 2, name: 'Staff Kasir', description: 'Cashier with access to POS and Sales', is_active: true },
+    { id: 3, name: 'Staff Gudang', description: 'Warehouse staff with access to Inventory and Products', is_active: true }
   ]);
 
   const employees = ref<Employee[]>([]);
@@ -83,6 +84,16 @@ export const useEmployeeStore = defineStore('employees', () => {
     }
   }
 
+  async function createEmployeeUser(payload: any) {
+    const res = await api.post('/users/create-employee-user', payload);
+    return res.data.data;
+  }
+
+  async function resetEmployeePassword(payload: any) {
+    const res = await api.post('/users/reset-employee-password', payload);
+    return res.data;
+  }
+
   return {
     positions,
     employees,
@@ -90,6 +101,8 @@ export const useEmployeeStore = defineStore('employees', () => {
     fetchEmployees,
     addEmployee,
     updateEmployee,
-    deleteEmployee
+    deleteEmployee,
+    createEmployeeUser,
+    resetEmployeePassword
   };
 });

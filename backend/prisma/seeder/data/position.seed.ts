@@ -9,13 +9,20 @@ export const seedPositions = async (prisma: PrismaClient) => {
     },
   });
 
-  const memberPosition = await prisma.position.create({
+  const kasirPosition = await prisma.position.create({
     data: {
-      name: 'Staff',
-      description: 'Staff member with limited permissions',
+      name: 'Staff Kasir',
+      description: 'Cashier with access to POS and Sales',
+    },
+  });
+
+  const gudangPosition = await prisma.position.create({
+    data: {
+      name: 'Staff Gudang',
+      description: 'Warehouse staff with access to Inventory and Products',
     },
   });
 
   console.log('✅ Positions seeded');
-  return { adminPosition, memberPosition };
+  return { adminPosition, kasirPosition, gudangPosition };
 };

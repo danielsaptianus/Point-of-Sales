@@ -6,6 +6,8 @@
     "inventory": "Inventory",
     "employees": "Employees",
     "reports": "Reports",
+    "vouchers": "Vouchers",
+    "pos": "POS",
     "settings": "Settings",
     "logout": "Logout"
   },

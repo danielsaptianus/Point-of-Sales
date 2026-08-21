@@ -8,6 +8,7 @@ import {
   IsOptional,
   ValidateNested,
   ArrayMinSize,
+  IsString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -46,6 +47,11 @@ export class CreateSaleDto {
   @Min(0, { message: 'Discount cannot be negative' })
   @IsOptional()
   discount?: number = 0;
+
+  @ApiPropertyOptional({ example: 'DISC20', description: 'Voucher code' })
+  @IsString()
+  @IsOptional()
+  voucher_code?: string;
 
   @ApiProperty({ type: [SaleItemDto] })
   @ValidateNested({ each: true })

@@ -13,6 +13,7 @@ import { UserQueryDto } from '@modules/users/core/dto/user-query.dto';
 import { UserTransformHelper } from './core/helpers/user-transform.helper';
 import { PaginatedResponseDto } from '@common/dto/pagination.dto';
 import { ResetEmployeePasswordDto } from './core/dto/reset-employee-password.dto';
+import { CreateEmployeeUserDto } from './core/dto/create-employee-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -293,5 +294,60 @@ export class UsersService {
       where: { id: employee.user_id },
       data: { password: hashedPassword },
     });
+  }
+
+  async createEmployeeUser(adminId: number, dto: CreateEmployeeUserDto): Promise<UserResponseDto> {
+    const { employee_id, email, new_password, admin_password } = dto;
+
+    // 1. Fetch admin user
+    const admin = await this.prisma.user.findUnique({ where: { id: adminId } });
+    if (!admin) {
+      throw new NotFoundException('Admin user not found');
+    }
+
+    // 2. Verify admin password
+    const isPasswordValid = await PasswordUtil.compare(admin_password, admin.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid admin password');
+    }
+
+    // 3. Find employee
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employee_id },
+    });
+
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${employee_id} not found`);
+    }
+
+    if (employee.user_id) {
+      throw new BadRequestException('This employee already has a linked user account');
+    }
+
+    // 4. Check email uniqueness
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email is already in use by another account');
+    }
+
+    // 5. Create user and link to employee
+    const hashedPassword = await PasswordUtil.hash(new_password);
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        is_active: true,
+      },
+    });
+
+    await this.prisma.employee.update({
+      where: { id: employee_id },
+      data: { user_id: user.id },
+    });
+
+    return this.findOne(user.id);
   }
 }
