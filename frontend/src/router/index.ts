@@ -59,6 +59,16 @@ const router = createRouter({
           component: AdminEmployeesView
         },
         {
+          path: 'employees/new',
+          name: 'admin-employee-new',
+          component: () => import('@/views/admin/AdminEmployeeFormView.vue')
+        },
+        {
+          path: 'employees/edit/:id',
+          name: 'admin-employee-edit',
+          component: () => import('@/views/admin/AdminEmployeeFormView.vue')
+        },
+        {
           path: 'reports',
           name: 'admin-reports',
           component: AdminReportsView

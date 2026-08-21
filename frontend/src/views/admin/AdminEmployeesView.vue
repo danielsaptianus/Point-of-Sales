@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { UserPlus, Search, Edit2, Trash2, Users, Briefcase } from 'lucide-vue-next';
 import { useEmployeeStore } from '@/stores/employees';
-import EmployeeFormModal from '@/components/admin/EmployeeFormModal.vue';
 import type { Employee } from '@/types';
 
+const router = useRouter();
 const employeeStore = useEmployeeStore();
-
-const isModalOpen = ref(false);
-const editingEmployee = ref<Employee | null>(null);
 
 const searchQuery = ref('');
 const selectedPosition = ref<number | 'ALL'>('ALL');
@@ -39,23 +37,17 @@ const filteredEmployees = computed(() => {
 });
 
 function openAddModal() {
-  editingEmployee.value = null;
-  isModalOpen.value = true;
+  router.push('/admin/employees/new');
 }
 
 function openEditModal(emp: Employee) {
-  editingEmployee.value = emp;
-  isModalOpen.value = true;
+  router.push(`/admin/employees/edit/${emp.id}`);
 }
 
 async function handleDelete(emp: Employee) {
   if (confirm(`Are you sure you want to delete ${emp.first_name} ${emp.last_name}?`)) {
     await employeeStore.deleteEmployee(emp.id);
   }
-}
-
-function handleSave() {
-  // Modal automatically closes, state handles updates
 }
 </script>
 
@@ -164,13 +156,6 @@ function handleSave() {
         </tbody>
       </table>
     </div>
-
-    <EmployeeFormModal 
-      :is-open="isModalOpen" 
-      :employee-to-edit="editingEmployee"
-      @close="isModalOpen = false"
-      @save="handleSave"
-    />
   </div>
 </template>
 
