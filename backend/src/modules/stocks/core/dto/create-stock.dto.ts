@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsInt, Min, IsEnum, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsInt, Min, IsIn, IsString, IsOptional } from 'class-validator';
 
 export class CreateStockDto {
   @ApiProperty({ example: 1, description: 'Product ID' })
@@ -16,7 +16,7 @@ export class CreateStockDto {
     enum: ['IN', 'OUT', 'ADJUSTMENT'],
     description: 'Transaction type',
   })
-  @IsEnum(['IN', 'OUT', 'ADJUSTMENT'], { message: 'Type must be either IN, OUT or ADJUSTMENT' })
+  @IsIn(['IN', 'OUT', 'ADJUSTMENT'], { message: 'Type must be either IN, OUT or ADJUSTMENT' })
   @IsNotEmpty({ message: 'Type is required' })
   type: string;
 

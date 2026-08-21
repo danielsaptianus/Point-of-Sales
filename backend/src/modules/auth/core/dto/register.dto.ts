@@ -5,7 +5,7 @@ import {
   IsString,
   MinLength,
   IsInt,
-  IsEnum,
+  IsIn,
   IsOptional,
 } from 'class-validator';
 
@@ -32,7 +32,7 @@ export class RegisterDto {
   last_name: string;
 
   @ApiProperty({ example: 'Male', enum: ['Male', 'Female'] })
-  @IsEnum(['Male', 'Female'], { message: 'Gender must be either Male or Female' })
+  @IsIn(['Male', 'Female'], { message: 'Gender must be either Male or Female' })
   @IsNotEmpty({ message: 'Gender is required' })
   gender: string;
 

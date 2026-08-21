@@ -4,7 +4,7 @@ import {
   IsNumber,
   IsInt,
   Min,
-  IsEnum,
+  IsIn,
   IsOptional,
   ValidateNested,
   ArrayMinSize,
@@ -29,7 +29,7 @@ export class CreateSaleDto {
     enum: ['CASH', 'MIDTRANS_REDIRECT'],
     description: 'Payment method',
   })
-  @IsEnum(['CASH', 'MIDTRANS_REDIRECT'], {
+  @IsIn(['CASH', 'MIDTRANS_REDIRECT'], {
     message: 'Payment method must be CASH or MIDTRANS_REDIRECT',
   })
   @IsNotEmpty({ message: 'Payment method is required' })

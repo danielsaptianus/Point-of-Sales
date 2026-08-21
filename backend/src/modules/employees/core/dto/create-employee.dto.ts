@@ -6,7 +6,7 @@ import {
   IsBoolean,
   IsInt,
   IsNumber,
-  IsEnum,
+  IsIn,
   IsDateString,
 } from 'class-validator';
 
@@ -27,7 +27,7 @@ export class CreateEmployeeDto {
   last_name?: string;
 
   @ApiProperty({ example: 'P', enum: ['L', 'P'] })
-  @IsEnum(['L', 'P', 'Male', 'Female'], { message: 'Gender must be valid' })
+  @IsIn(['L', 'P', 'Male', 'Female'], { message: 'Gender must be valid' })
   @IsNotEmpty({ message: 'Gender is required' })
   gender: string;
 
@@ -37,7 +37,7 @@ export class CreateEmployeeDto {
   birth_date?: string;
 
   @ApiPropertyOptional({ example: 'SINGLE', enum: ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'] })
-  @IsEnum(['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'])
+  @IsIn(['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'])
   @IsOptional()
   marital_status?: string;
 
@@ -67,7 +67,7 @@ export class CreateEmployeeDto {
   termination_date?: string;
 
   @ApiPropertyOptional({ example: 'FULL_TIME', enum: ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN'] })
-  @IsEnum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN'])
+  @IsIn(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN'])
   @IsOptional()
   employment_type?: string;
 
