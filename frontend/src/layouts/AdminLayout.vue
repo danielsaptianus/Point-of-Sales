@@ -515,21 +515,23 @@ const menuItems = computed(() => {
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: var(--bg-input);
-  border-radius: 20px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
   padding: 8px 16px;
-  width: 300px;
-  transition: all 0.3s ease;
+  width: 320px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .search-bar:focus-within {
-  background-color: var(--bg-card);
-  box-shadow: 0 0 0 2px var(--primary-light);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
 .search-icon {
   color: var(--text-dim);
-  margin-right: 8px;
+  margin-right: 10px;
 }
 
 .search-input {
@@ -543,6 +545,7 @@ const menuItems = computed(() => {
 
 .search-input::placeholder {
   color: var(--text-dim);
+  font-weight: 400;
 }
 
 .topbar-right {
