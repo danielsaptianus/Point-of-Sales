@@ -7,6 +7,8 @@ import { Pool } from 'pg';
 import { seedPositions } from './data/position.seed';
 import { seedPermissions } from './data/permission.seed';
 import { seedUsers } from './data/user.seed';
+import { seedProductsAndCategories } from './data/product.seed';
+import { seedVouchers } from './data/voucher.seed';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool as any);
@@ -17,6 +19,13 @@ async function main() {
 
   // Clear existing data
   console.log('🗑️  Clearing existing data...');
+  await prisma.transactionItemBatch.deleteMany();
+  await prisma.transactionVoucher.deleteMany();
+  await prisma.stock.deleteMany();
+  await prisma.inventoryBatch.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.voucher.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.transactionItem.deleteMany();
   await prisma.transaction.deleteMany();
@@ -35,6 +44,9 @@ async function main() {
     kasirPosition.id,
     gudangPosition.id,
   );
+  
+  await seedProductsAndCategories(prisma);
+  await seedVouchers(prisma);
 
   // Summary
   console.log('\n✨ Database seeding completed!\n');
