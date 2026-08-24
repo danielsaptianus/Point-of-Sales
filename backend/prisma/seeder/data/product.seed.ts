@@ -1,109 +1,129 @@
 import { PrismaClient } from '@prisma/client';
 
 export async function seedProductsAndCategories(prisma: PrismaClient) {
-  console.log('📋 Seeding categories and products...');
+  console.log('📋 Seeding minimarket categories and products...');
 
   // Categories
-  const catFoods = await prisma.category.create({
-    data: { name: 'Foods', description: 'Main course meals' },
+  const catMinuman = await prisma.category.create({
+    data: { name: 'Minuman Ringan', description: 'Air mineral, soda, susu, teh, dll' },
   });
   
-  const catDrinks = await prisma.category.create({
-    data: { name: 'Drinks', description: 'Beverages and juices' },
+  const catSnack = await prisma.category.create({
+    data: { name: 'Makanan Ringan', description: 'Cemilan, keripik, biskuit' },
   });
   
-  const catSnacks = await prisma.category.create({
-    data: { name: 'Snacks', description: 'Light snacks and bites' },
+  const catKebutuhan = await prisma.category.create({
+    data: { name: 'Kebutuhan Dapur', description: 'Mie instan, beras, minyak goreng, dll' },
+  });
+
+  const catPerawatan = await prisma.category.create({
+    data: { name: 'Perawatan Diri & Rumah', description: 'Sabun, pasta gigi, deterjen' },
   });
 
   // Products
   const productsToCreate = [
     {
-      name: 'Nasi Goreng Spesial',
-      sku: 'FOOD-001',
-      description: 'Nasi goreng dengan telur, ayam suwir, dan udang',
-      price: 35000,
-      category_id: catFoods.id,
+      name: 'Indomie Goreng Spesial 85g',
+      sku: 'KBT-001',
+      description: 'Mie instan goreng favorit keluarga',
+      price: 3500,
+      category_id: catKebutuhan.id,
       is_active: true,
     },
     {
-      name: 'Mie Goreng Seafood',
-      sku: 'FOOD-002',
-      description: 'Mie goreng dengan topping udang dan cumi',
-      price: 38000,
-      category_id: catFoods.id,
+      name: 'Beras Ramos Setra 5kg',
+      sku: 'KBT-002',
+      description: 'Beras putih pulen berkualitas',
+      price: 68000,
+      category_id: catKebutuhan.id,
       is_active: true,
     },
     {
-      name: 'Sate Ayam Madura',
-      sku: 'FOOD-003',
-      description: '10 Tusuk sate ayam dengan bumbu kacang',
-      price: 30000,
-      category_id: catFoods.id,
+      name: 'Minyak Goreng Bimoli 2L',
+      sku: 'KBT-003',
+      description: 'Minyak goreng kelapa sawit refill',
+      price: 38500,
+      category_id: catKebutuhan.id,
       is_active: true,
     },
     {
-      name: 'Ayam Bakar Madu',
-      sku: 'FOOD-004',
-      description: 'Ayam bakar dengan lumuran madu manis gurih',
-      price: 28000,
-      category_id: catFoods.id,
+      name: 'Aqua Air Mineral 600ml',
+      sku: 'MNM-001',
+      description: 'Air minum dalam kemasan botol',
+      price: 3500,
+      category_id: catMinuman.id,
       is_active: true,
     },
     {
-      name: 'Es Teh Manis',
-      sku: 'DRINK-001',
-      description: 'Teh manis dingin menyegarkan',
-      price: 8000,
-      category_id: catDrinks.id,
+      name: 'Coca Cola 1.5L',
+      sku: 'MNM-002',
+      description: 'Minuman ringan berkarbonasi ukuran besar',
+      price: 15500,
+      category_id: catMinuman.id,
       is_active: true,
     },
     {
-      name: 'Kopi Susu Aren',
-      sku: 'DRINK-002',
-      description: 'Kopi espresso dengan susu dan gula aren murni',
+      name: 'Pocari Sweat 500ml',
+      sku: 'MNM-003',
+      description: 'Minuman isotonik pengganti ion tubuh',
+      price: 7500,
+      category_id: catMinuman.id,
+      is_active: true,
+    },
+    {
+      name: 'Susu Ultra Coklat 250ml',
+      sku: 'MNM-004',
+      description: 'Susu UHT rasa coklat',
+      price: 6000,
+      category_id: catMinuman.id,
+      is_active: true,
+    },
+    {
+      name: 'Chitato Sapi Panggang 68g',
+      sku: 'SNK-001',
+      description: 'Keripik kentang rasa sapi panggang',
+      price: 11500,
+      category_id: catSnack.id,
+      is_active: true,
+    },
+    {
+      name: 'Taro Net Seaweed 65g',
+      sku: 'SNK-002',
+      description: 'Snack chiki rasa rumput laut',
+      price: 9000,
+      category_id: catSnack.id,
+      is_active: true,
+    },
+    {
+      name: 'Sari Roti Tawar Kupas',
+      sku: 'SNK-003',
+      description: 'Roti tawar kupas lembut',
       price: 18000,
-      category_id: catDrinks.id,
+      category_id: catSnack.id,
       is_active: true,
     },
     {
-      name: 'Jus Alpukat',
-      sku: 'DRINK-003',
-      description: 'Jus alpukat kental dengan taburan cokelat',
-      price: 20000,
-      category_id: catDrinks.id,
+      name: 'Pepsodent White 190g',
+      sku: 'PRW-001',
+      description: 'Pasta gigi pencegah gigi berlubang',
+      price: 12500,
+      category_id: catPerawatan.id,
       is_active: true,
     },
     {
-      name: 'Matcha Latte',
-      sku: 'DRINK-004',
-      description: 'Premium matcha green tea dengan susu',
+      name: 'Rinso Anti Noda 700g',
+      sku: 'PRW-002',
+      description: 'Deterjen bubuk anti noda',
       price: 22000,
-      category_id: catDrinks.id,
+      category_id: catPerawatan.id,
       is_active: true,
     },
     {
-      name: 'Kentang Goreng',
-      sku: 'SNACK-001',
-      description: 'French fries krispi porsi besar',
-      price: 15000,
-      category_id: catSnacks.id,
-      is_active: true,
-    },
-    {
-      name: 'Tahu Cabe Garam',
-      sku: 'SNACK-002',
-      description: 'Tahu krispi dengan bumbu cabe garam pedas gurih',
-      price: 16000,
-      category_id: catSnacks.id,
-      is_active: true,
-    },
-    {
-      name: 'Pisang Goreng Keju',
-      sku: 'SNACK-003',
-      description: 'Pisang goreng renyah dengan taburan keju dan susu',
-      price: 18000,
-      category_id: catSnacks.id,
+      name: 'Sabun Lifebuoy Total 10 110g',
+      sku: 'PRW-003',
+      description: 'Sabun mandi batang antibakteri',
+      price: 4500,
+      category_id: catPerawatan.id,
       is_active: true,
     }
   ];
@@ -120,9 +140,9 @@ export async function seedProductsAndCategories(prisma: PrismaClient) {
       data: {
         product_id: product.id,
         received_date: new Date(),
-        initial_quantity: 100,
-        remaining_quantity: 100,
-        cost_per_unit: product.price * 0.4, // Assume 40% cost
+        initial_quantity: 150, // Lebih banyak stok untuk minimarket
+        remaining_quantity: 150,
+        cost_per_unit: product.price * 0.7, // Asumsi harga beli (HPP) 70% dari harga jual
       },
     });
 
@@ -130,13 +150,13 @@ export async function seedProductsAndCategories(prisma: PrismaClient) {
     await prisma.stock.create({
       data: {
         product_id: product.id,
-        quantity: 100,
+        quantity: 150,
         type: 'IN',
-        notes: 'Initial mockup stock',
+        notes: 'Initial minimarket stock mockup',
       },
     });
   }
 
-  console.log(`✅ ${createdProducts.length} products and 3 categories seeded`);
-  return { catFoods, catDrinks, catSnacks, createdProducts };
+  console.log(`✅ ${createdProducts.length} minimarket products and 4 categories seeded`);
+  return { catMinuman, catSnack, catKebutuhan, catPerawatan, createdProducts };
 }
