@@ -79,9 +79,9 @@ async function handleSave() {
     start_date: new Date(formData.value.start_date).toISOString(),
     end_date: new Date(formData.value.end_date).toISOString(),
     discount_value: Number(formData.value.discount_value),
-    max_discount: formData.value.max_discount ? Number(formData.value.max_discount) : undefined,
-    min_transaction: formData.value.min_transaction ? Number(formData.value.min_transaction) : undefined,
-    usage_limit: formData.value.usage_limit ? Number(formData.value.usage_limit) : undefined,
+    max_discount: formData.value.max_discount ? Number(formData.value.max_discount) : null,
+    min_transaction: formData.value.min_transaction ? Number(formData.value.min_transaction) : null,
+    usage_limit: formData.value.usage_limit ? Number(formData.value.usage_limit) : null,
   };
 
   try {
@@ -92,8 +92,10 @@ async function handleSave() {
     }
     emit('save');
     closeModal();
-  } catch (error) {
-    alert('Gagal menyimpan voucher. Silakan periksa kembali data Anda.');
+  } catch (error: any) {
+    let msg = error.response?.data?.message;
+    if (Array.isArray(msg)) msg = msg.join(', ');
+    alert(msg || 'Gagal menyimpan voucher. Silakan periksa kembali data Anda.');
   }
 }
 
