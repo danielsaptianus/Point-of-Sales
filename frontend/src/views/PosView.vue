@@ -266,6 +266,7 @@ const handleShiftClosed = () => {
 
 .pos-main {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -470,6 +471,7 @@ const handleShiftClosed = () => {
 .pos-workspace {
   display: flex;
   flex: 1;
+  min-width: 0;
   min-height: calc(100vh - 72px);
 }
 
