@@ -167,4 +167,40 @@ onMounted(() => {
 .py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
 .text-center { text-align: center; }
 .fw-bold { font-weight: 600; }
+
+/* Table Styles */
+.table-responsive {
+  overflow-x: auto;
+  width: 100%;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+.table th {
+  background: rgba(var(--primary-rgb), 0.03);
+  padding: 14px 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+.table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+.table tbody tr {
+  transition: background-color 0.2s;
+}
+.table tbody tr:hover {
+  background-color: rgba(var(--primary-rgb), 0.01);
+}
+.table tr:last-child td {
+  border-bottom: none;
+}
 </style>

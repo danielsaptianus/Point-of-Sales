@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import type { Product } from '@/types';
 import { useCartStore } from '@/stores/cart';
-import { Plus, ShoppingBag, AlertCircle } from 'lucide-vue-next';
+import { Plus } from 'lucide-vue-next';
 
 const props = defineProps<{
   product: Product;
@@ -23,6 +23,29 @@ const stockStatus = computed(() => {
   if (stock <= 0) return { label: 'Habis', type: 'danger' };
   if (stock < 10) return { label: `Sisa ${stock}`, type: 'warning' };
   return { label: `Stok ${stock}`, type: 'success' };
+});
+
+const initials = computed(() => {
+  const words = props.product.name.split(' ');
+  if (words.length > 1) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  return props.product.name.substring(0, 2).toUpperCase();
+});
+
+const avatarColor = computed(() => {
+  const colors = [
+    'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', // blue
+    'linear-gradient(135deg, #10b981 0%, #059669 100%)', // emerald
+    'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', // orange
+    'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)', // purple
+    'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', // pink
+  ];
+  let sum = 0;
+  for (let i = 0; i < props.product.name.length; i++) {
+    sum += props.product.name.charCodeAt(i);
+  }
+  return colors[sum % colors.length];
 });
 
 const handleAddToCart = () => {
@@ -49,8 +72,8 @@ const handleAddToCart = () => {
     </div>
 
     <div class="product-icon-wrap">
-      <div class="icon-avatar">
-        <ShoppingBag :size="28" class="icon-svg" />
+      <div class="icon-avatar" :style="{ background: avatarColor }">
+        <span class="avatar-text">{{ initials }}</span>
       </div>
     </div>
 
@@ -170,19 +193,23 @@ const handleAddToCart = () => {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-  border: 1px solid rgba(37, 99, 235, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   transition: all var(--transition-bounce);
 }
 
+.avatar-text {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
 .product-card:hover .icon-avatar {
-  transform: scale(1.08);
-  color: #ffffff;
-  background: var(--primary-gradient);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
 }
 
 .card-body {

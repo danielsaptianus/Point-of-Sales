@@ -41,7 +41,7 @@ const isCheckingShift = ref(true);
 const checkShift = async () => {
   try {
     const { data } = await api.get('/shifts/current');
-    currentShift.value = data.data || data;
+    currentShift.value = data && 'data' in data ? data.data : data;
     if (!currentShift.value) isShiftModalOpen.value = true;
   } catch (error) {
     isShiftModalOpen.value = true;
