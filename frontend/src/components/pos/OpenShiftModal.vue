@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Store, DollarSign } from 'lucide-vue-next';
+import { Store, DollarSign, LogOut } from 'lucide-vue-next';
 import api from '@/plugins/axios';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -14,6 +16,9 @@ const emit = defineEmits<{
 const startingCash = ref<number>(0);
 const isSubmitting = ref(false);
 const errorMessage = ref('');
+
+const authStore = useAuthStore();
+const router = useRouter();
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -43,6 +48,11 @@ const handleOpenShift = async () => {
   } finally {
     isSubmitting.value = false;
   }
+};
+
+const handleLogout = () => {
+  authStore.logout();
+  router.push('/login');
 };
 </script>
 
@@ -83,12 +93,16 @@ const handleOpenShift = async () => {
 
       <div class="modal-footer">
         <button 
-          class="btn btn-primary btn-block" 
+          class="btn btn-primary btn-block mb-3" 
           :disabled="isSubmitting || startingCash < 0"
           @click="handleOpenShift"
         >
           <span v-if="isSubmitting">Memproses...</span>
           <span v-else>Mulai Shift</span>
+        </button>
+        <button class="btn btn-ghost btn-block text-danger" @click="handleLogout">
+          <LogOut :size="16" class="mr-2" />
+          Logout Kasir
         </button>
       </div>
     </div>
@@ -181,7 +195,27 @@ const handleOpenShift = async () => {
   font-weight: 600;
 }
 
+.mb-3 { margin-bottom: 12px; }
 .mb-20 { margin-bottom: 20px; }
+.mr-2 { margin-right: 8px; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast, 0.2s);
+}
+
+.btn-ghost:hover {
+  background: rgba(244, 63, 94, 0.05);
+}
+
+.text-danger {
+  color: var(--danger, #f43f5e);
+}
 
 @keyframes modal-enter {
   from {
