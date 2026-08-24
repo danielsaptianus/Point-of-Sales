@@ -6,7 +6,7 @@ import { ValidateVoucherDto } from './core/dto/validate-voucher.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('vouchers')
-@Controller('api/v1/vouchers')
+@Controller({ path: 'vouchers', version: '1' })
 export class VouchersController {
   constructor(private readonly vouchersService: VouchersService) {}
 
