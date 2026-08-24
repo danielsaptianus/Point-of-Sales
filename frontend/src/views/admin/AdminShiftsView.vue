@@ -156,8 +156,21 @@ onMounted(() => {
   top: 10px;
   color: var(--text-muted);
 }
-.search-box input {
-  padding-left: 38px;
+.search-box .form-control {
+  padding-left: 40px;
+  padding-right: 16px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  background-color: var(--bg-input, #f8fafc);
+  outline: none;
+  transition: all 0.2s;
+}
+.search-box .form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
 }
 .badge-success { background: rgba(16, 185, 129, 0.15); color: #059669; }
 .badge-danger { background: rgba(244, 63, 94, 0.15); color: #e11d48; }
@@ -176,7 +189,6 @@ onMounted(() => {
 .table {
   width: 100%;
   border-collapse: collapse;
-  white-space: nowrap;
 }
 .table th {
   background: rgba(var(--primary-rgb), 0.03);
