@@ -86,7 +86,7 @@ async function handleSave() {
 
   try {
     if (props.voucherToEdit) {
-      await voucherStore.updateVoucher(props.voucherToEdit.id, payload);
+      await voucherStore.updateVoucher(props.voucherToEdit.id, payload as any);
     } else {
       await voucherStore.addVoucher(payload as any);
     }
