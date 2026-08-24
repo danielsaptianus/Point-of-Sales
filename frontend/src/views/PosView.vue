@@ -475,6 +475,7 @@ const handleShiftClosed = () => {
 
 .pos-catalog {
   flex: 1;
+  min-width: 0;
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
