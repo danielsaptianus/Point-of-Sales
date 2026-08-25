@@ -23,9 +23,13 @@ const checkStatus = async () => {
     return;
   }
   try {
-    const res = await api.get(`/sales/${localTx.value.id}`);
+    console.log(`Polling status for TX ${localTx.value.id}...`);
+    const res = await api.get(`/sales/${localTx.value.id}?t=${Date.now()}`);
     const updated = res.data.data;
+    console.log('Polled data:', updated);
+    
     if (updated && updated.status !== 'PENDING') {
+      console.log('Status changed to:', updated.status);
       localTx.value = updated;
       stopPolling();
     }
