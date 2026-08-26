@@ -105,6 +105,7 @@ export const useCartStore = defineStore('cart', () => {
   }): Promise<any> {
     const payload: any = {
       payment_method: paymentData.method === 'CASH' ? 'CASH' : 'MIDTRANS_REDIRECT',
+      online_payment_type: paymentData.method === 'CASH' ? undefined : paymentData.method,
       items: items.value.map((i) => ({
         product_id: i.product.id,
         quantity: i.quantity,

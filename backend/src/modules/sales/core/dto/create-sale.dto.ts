@@ -42,6 +42,11 @@ export class CreateSaleDto {
   @IsOptional()
   voucher_code?: string;
 
+  @ApiPropertyOptional({ example: 'QRIS', description: 'Specific online payment type like QRIS or TRANSFER' })
+  @IsString()
+  @IsOptional()
+  online_payment_type?: string;
+
   @ApiProperty({ type: [SaleItemDto] })
   @ValidateNested({ each: true })
   @Type(() => SaleItemDto)

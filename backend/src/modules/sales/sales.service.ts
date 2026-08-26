@@ -242,6 +242,7 @@ export class SalesService {
         const midtransResponse = await this.midtransService.createSnapTransaction({
           amount: total,
           referenceId: invoiceNumber,
+          onlinePaymentType: createSaleDto.online_payment_type,
         });
 
         // Buat record pembayaran dengan status PENDING dan simpan Snap redirect URL di checkout_url

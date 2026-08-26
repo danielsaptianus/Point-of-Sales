@@ -5,6 +5,7 @@ import * as crypto from 'crypto';
 interface CreateSnapTransactionPayload {
   amount: number;
   referenceId: string;
+  onlinePaymentType?: string;
 }
 
 interface MidtransSnapResponse {
@@ -54,6 +55,21 @@ export class MidtransService {
         secure: true,
       },
     };
+
+    if (payload.onlinePaymentType === 'QRIS') {
+      requestBody.enabled_payments = ['other_qris', 'gopay', 'shopeepay'];
+    } else if (payload.onlinePaymentType === 'TRANSFER') {
+      requestBody.enabled_payments = [
+        'bank_transfer',
+        'bca_va',
+        'bni_va',
+        'bri_va',
+        'permata_va',
+        'cimb_va',
+        'other_va',
+        'echannel',
+      ];
+    }
 
     if (this.finishUrl) {
       requestBody.callbacks = {
