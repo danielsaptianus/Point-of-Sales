@@ -98,7 +98,75 @@ const formatDate = (isoString?: string) => {
 };
 
 const handlePrint = () => {
-  window.print();
+  const receiptEl = document.getElementById('printable-receipt');
+  if (!receiptEl) return;
+  
+  const printContents = receiptEl.innerHTML;
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  
+  const iframeDoc = iframe.contentWindow?.document;
+  if (iframeDoc) {
+    iframeDoc.open();
+    iframeDoc.write(`
+      <html>
+        <head>
+          <title>Struk Pembayaran</title>
+          <style>
+            body { 
+              font-family: 'Courier New', Courier, monospace; 
+              font-size: 12px; 
+              margin: 0; 
+              padding: 0; 
+              color: #000;
+              width: 100%;
+              max-width: 300px; /* Lebar standar kertas thermal 80mm/58mm */
+            }
+            .receipt-header { text-align: center; margin-bottom: 10px; }
+            .store-name { font-size: 16px; font-weight: bold; margin: 0 0 2px 0; }
+            .store-info { font-size: 10px; margin: 0; }
+            .receipt-divider { 
+              border-bottom: 1px dashed #000; 
+              margin: 8px 0; 
+              color: transparent; 
+            }
+            .receipt-divider-thin { border-bottom: 1px solid #000; margin: 4px 0; }
+            .meta-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+            .receipt-items { margin: 10px 0; }
+            .receipt-item { margin-bottom: 6px; }
+            .item-line-1 { font-weight: bold; }
+            .item-line-2 { display: flex; justify-content: space-between; }
+            .receipt-totals { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+            .total-row { display: flex; justify-content: space-between; }
+            .grand-total { font-size: 14px; font-weight: bold; margin: 4px 0; }
+            .receipt-footer { text-align: center; font-size: 10px; margin-top: 15px; }
+            
+            /* Sembunyikan elemen yang tidak perlu dicetak jika terbawa */
+            .modal-actions, .success-top-badge, .btn { display: none !important; }
+            
+            @page { margin: 0; }
+          </style>
+        </head>
+        <body>
+          ${printContents}
+        </body>
+      </html>
+    `);
+    iframeDoc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      
+      // Hapus iframe setelah dialog print ditutup
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1000);
+    }, 300);
+  }
 };
 </script>
 
@@ -343,22 +411,5 @@ const handlePrint = () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-}
-
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #printable-receipt, #printable-receipt * {
-    visibility: visible;
-  }
-  #printable-receipt {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    box-shadow: none;
-    padding: 0;
-  }
 }
 </style>
