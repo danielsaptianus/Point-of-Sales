@@ -117,8 +117,8 @@ const handlePrint = () => {
             body { 
               font-family: 'Courier New', Courier, monospace; 
               font-size: 12px; 
-              margin: 0; 
-              padding: 0; 
+              margin: 0 auto; 
+              padding: 10px; 
               color: #000;
               width: 100%;
               max-width: 300px; /* Lebar standar kertas thermal 80mm/58mm */
