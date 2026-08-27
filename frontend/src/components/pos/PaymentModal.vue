@@ -150,7 +150,7 @@ const handleConfirmPayment = async () => {
       </div>
 
       <!-- Tab Content: CASH -->
-      <div v-if="paymentMethod === 'CASH'" class="tab-body">
+      <div v-if="activeTab === 'CASH'" class="tab-body">
         <div class="input-group">
           <label class="input-label">Nominal Uang Diterima (Rp)</label>
           <input
@@ -193,34 +193,33 @@ const handleConfirmPayment = async () => {
         </div>
       </div>
 
-      <!-- Tab Content: QRIS -->
-      <div v-else-if="paymentMethod === 'QRIS'" class="tab-body qris-tab">
-        <div class="qris-box">
-          <div class="qris-header">
-            <span class="qris-brand">QRIS ARTO POS</span>
-            <span class="badge badge-primary">Siap Scan</span>
-          </div>
-          <div class="qris-mock-qr">
-            <!-- Simulated QR code SVG -->
-            <svg viewBox="0 0 100 100" class="qr-svg">
-              <rect width="100" height="100" fill="#ffffff" rx="8" />
-              <rect x="10" y="10" width="25" height="25" fill="#000000" />
-              <rect x="15" y="15" width="15" height="15" fill="#ffffff" />
-              <rect x="18" y="18" width="9" height="9" fill="#000000" />
-              <rect x="65" y="10" width="25" height="25" fill="#000000" />
-              <rect x="70" y="15" width="15" height="15" fill="#ffffff" />
-              <rect x="73" y="18" width="9" height="9" fill="#000000" />
-              <rect x="10" y="65" width="25" height="25" fill="#000000" />
-              <rect x="15" y="70" width="15" height="15" fill="#ffffff" />
-              <rect x="18" y="73" width="9" height="9" fill="#000000" />
-              <rect x="42" y="15" width="16" height="6" fill="#000000" />
-              <rect x="42" y="28" width="16" height="6" fill="#000000" />
-              <rect x="42" y="42" width="16" height="16" fill="#10B981" />
-              <rect x="65" y="45" width="25" height="10" fill="#000000" />
-              <rect x="42" y="65" width="48" height="25" fill="#000000" rx="2" />
-            </svg>
-          </div>
-          <p class="qris-instructions">Arahkan kamera e-wallet / mobile banking pelanggan ke QR code di atas</p>
+      <!-- Tab Content: EWALLET -->
+      <div v-else-if="activeTab === 'EWALLET'" class="tab-body">
+        <div class="method-grid">
+          <button class="method-card" :class="{ active: selectedMethod === 'QRIS' }" @click="selectedMethod = 'QRIS'">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="method-logo" />
+            <span>QRIS Umum</span>
+          </button>
+          <button class="method-card" :class="{ active: selectedMethod === 'GOPAY' }" @click="selectedMethod = 'GOPAY'">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay" class="method-logo" />
+            <span>GoPay</span>
+          </button>
+          <button class="method-card" :class="{ active: selectedMethod === 'SHOPEEPAY' }" @click="selectedMethod = 'SHOPEEPAY'">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" alt="ShopeePay" class="method-logo" />
+            <span>ShopeePay</span>
+          </button>
+          <button class="method-card" :class="{ active: selectedMethod === 'OVO' }" @click="selectedMethod = 'OVO'">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/OVO_logo.svg" alt="OVO" class="method-logo" />
+            <span>OVO</span>
+          </button>
+          <button class="method-card" :class="{ active: selectedMethod === 'DANA' }" @click="selectedMethod = 'DANA'">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/72/Logo_dana_blue.svg" alt="DANA" class="method-logo" />
+            <span>DANA</span>
+          </button>
+          <button class="method-card" :class="{ active: selectedMethod === 'LINKAJA' }" @click="selectedMethod = 'LINKAJA'">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/83/LinkAja.svg" alt="LinkAja" class="method-logo" />
+            <span>LinkAja</span>
+          </button>
         </div>
       </div>
 
