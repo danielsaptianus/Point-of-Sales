@@ -56,19 +56,24 @@ export class MidtransService {
       },
     };
 
-    if (payload.onlinePaymentType === 'QRIS') {
-      requestBody.enabled_payments = ['other_qris', 'gopay', 'shopeepay'];
-    } else if (payload.onlinePaymentType === 'TRANSFER') {
-      requestBody.enabled_payments = [
-        'bank_transfer',
-        'bca_va',
-        'bni_va',
-        'bri_va',
-        'permata_va',
-        'cimb_va',
-        'other_va',
-        'echannel',
-      ];
+    const paymentMap: Record<string, string[]> = {
+      GOPAY: ['gopay'],
+      SHOPEEPAY: ['shopeepay'],
+      OVO: ['ovo'],
+      DANA: ['danamon_online', 'dana'], // usually dana is passed as dana if activated
+      LINKAJA: ['linkaja'],
+      QRIS: ['other_qris'],
+      BCA_VA: ['bca_va'],
+      MANDIRI_VA: ['echannel'],
+      BNI_VA: ['bni_va'],
+      BRI_VA: ['bri_va'],
+      PERMATA_VA: ['permata_va'],
+      CIMB_VA: ['cimb_va'],
+      SEABANK_VA: ['other_va']
+    };
+
+    if (payload.onlinePaymentType && paymentMap[payload.onlinePaymentType]) {
+      requestBody.enabled_payments = paymentMap[payload.onlinePaymentType];
     }
 
     if (this.finishUrl) {

@@ -99,7 +99,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   async function checkout(paymentData: {
-    method: 'CASH' | 'QRIS' | 'TRANSFER';
+    method: string;
     amountPaid: number;
     change: number;
   }): Promise<any> {
