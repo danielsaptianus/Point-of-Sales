@@ -241,7 +241,7 @@ export async function printReceiptBluetooth(transaction: any): Promise<boolean> 
   builder.init();
   
   // Header
-  builder.alignCenter().bold(true).doubleHeightWidth(true).textLine('NEXUS POS');
+  builder.alignCenter().bold(true).doubleHeightWidth(true).textLine('ARTO POS');
   builder.doubleHeightWidth(false).bold(false);
   builder.textLine('Jl. Jendral Sudirman No. 123');
   builder.textLine('Telp: 08123456789');
