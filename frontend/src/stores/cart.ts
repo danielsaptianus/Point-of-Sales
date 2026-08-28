@@ -8,6 +8,9 @@ export const useCartStore = defineStore('cart', () => {
   const authStore = useAuthStore();
   const items = ref<CartItem[]>([]);
   const discountPercent = ref<number>(0);
+  const appliedVoucher = ref<any>(null);
+  const voucherDiscountAmount = ref<number>(0);
+  const voucherError = ref<string>('');
   const taxRate = ref<number>(0.11); // 11% PPN standard
   const heldCarts = ref<{ id: string; name: string; items: CartItem[]; date: Date }[]>([]);
 
@@ -21,6 +24,9 @@ export const useCartStore = defineStore('cart', () => {
   });
 
   const discountAmount = computed(() => {
+    if (appliedVoucher.value) {
+      return voucherDiscountAmount.value;
+    }
     return (subtotal.value * discountPercent.value) / 100;
   });
 
@@ -72,11 +78,36 @@ export const useCartStore = defineStore('cart', () => {
 
   function setDiscount(percent: number) {
     discountPercent.value = Math.max(0, Math.min(100, percent));
+    removeVoucher(); // Reset voucher if manual percent is set
+  }
+
+  async function applyVoucher(code: string) {
+    try {
+      voucherError.value = '';
+      const response = await api.post('/vouchers/validate', {
+        code,
+        subtotal: subtotal.value,
+      });
+      appliedVoucher.value = response.data.data.voucher;
+      voucherDiscountAmount.value = response.data.data.discount_amount;
+      discountPercent.value = 0; // Reset manual discount
+      return true;
+    } catch (error: any) {
+      voucherError.value = error.response?.data?.message || 'Gagal menggunakan voucher';
+      return false;
+    }
+  }
+
+  function removeVoucher() {
+    appliedVoucher.value = null;
+    voucherDiscountAmount.value = 0;
+    voucherError.value = '';
   }
 
   function clearCart() {
     items.value = [];
     discountPercent.value = 0;
+    removeVoucher();
   }
 
   function holdCurrentCart(label?: string) {
@@ -112,8 +143,9 @@ export const useCartStore = defineStore('cart', () => {
       })),
     };
 
-    // If there is a way to set a voucher code in the future, we will attach it here
-    // payload.voucher_code = 'XYZ';
+    if (appliedVoucher.value) {
+      payload.voucher_code = appliedVoucher.value.code;
+    }
 
     try {
       const response = await api.post('/sales', payload);
@@ -135,11 +167,16 @@ export const useCartStore = defineStore('cart', () => {
     discountAmount,
     taxAmount,
     grandTotal,
+    appliedVoucher,
+    voucherDiscountAmount,
+    voucherError,
     addItem,
     removeItem,
     updateQuantity,
     setDiscount,
     clearCart,
+    applyVoucher,
+    removeVoucher,
     holdCurrentCart,
     restoreHeldCart,
     checkout,

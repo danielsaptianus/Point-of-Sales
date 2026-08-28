@@ -19,6 +19,8 @@ const emit = defineEmits<{
 const cartStore = useCartStore();
 const showDiscountInput = ref(false);
 const customDiscount = ref(cartStore.discountPercent);
+const voucherCodeInput = ref('');
+const applyingVoucher = ref(false);
 
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -31,6 +33,21 @@ const formatPrice = (price: number) => {
 const applyDiscount = (percent: number) => {
   cartStore.setDiscount(percent);
   customDiscount.value = percent;
+};
+
+const handleApplyVoucher = async () => {
+  if (!voucherCodeInput.value.trim()) return;
+  applyingVoucher.value = true;
+  const success = await cartStore.applyVoucher(voucherCodeInput.value.trim());
+  applyingVoucher.value = false;
+  if (success) {
+    voucherCodeInput.value = '';
+    showDiscountInput.value = false; // Hide manual input if open
+  }
+};
+
+const handleRemoveVoucher = () => {
+  cartStore.removeVoucher();
 };
 
 const handleHoldOrder = () => {
@@ -144,7 +161,7 @@ const handleHoldOrder = () => {
       <div class="discount-section">
         <div class="discount-header">
           <span class="section-label">
-            <Percent :size="13" /> Diskon
+            <Percent :size="13" /> Diskon & Voucher
           </span>
           <button
             class="toggle-discount-btn"
@@ -155,14 +172,45 @@ const handleHoldOrder = () => {
         </div>
 
         <div v-if="showDiscountInput" class="discount-pills">
+          <!-- Manual Discount Pills -->
           <button
             v-for="d in [0, 5, 10, 15, 20]"
             :key="d"
             class="discount-pill"
-            :class="{ active: cartStore.discountPercent === d }"
+            :class="{ active: cartStore.discountPercent === d && !cartStore.appliedVoucher }"
             @click="applyDiscount(d)"
           >
             {{ d === 0 ? '0%' : `${d}%` }}
+          </button>
+        </div>
+        
+        <!-- Voucher Input -->
+        <div v-if="showDiscountInput && !cartStore.appliedVoucher" class="voucher-input-group">
+          <input 
+            type="text" 
+            v-model="voucherCodeInput" 
+            placeholder="Masukkan kode voucher" 
+            class="voucher-input"
+            @keyup.enter="handleApplyVoucher"
+          />
+          <button class="btn-apply-voucher" @click="handleApplyVoucher" :disabled="applyingVoucher">
+            {{ applyingVoucher ? '...' : 'Terapkan' }}
+          </button>
+        </div>
+        
+        <!-- Voucher Error -->
+        <div v-if="cartStore.voucherError" class="voucher-error">
+          {{ cartStore.voucherError }}
+        </div>
+        
+        <!-- Applied Voucher Badge -->
+        <div v-if="cartStore.appliedVoucher" class="applied-voucher-badge">
+          <div class="voucher-info">
+            <Sparkles :size="14" class="voucher-icon" />
+            <span class="voucher-code">{{ cartStore.appliedVoucher.code }}</span>
+          </div>
+          <button class="btn-remove-voucher" @click="handleRemoveVoucher" title="Hapus Voucher">
+            <Trash2 :size="14" />
           </button>
         </div>
       </div>
@@ -175,7 +223,9 @@ const handleHoldOrder = () => {
         </div>
 
         <div v-if="cartStore.discountAmount > 0" class="summary-row text-discount">
-          <span class="summary-label">Diskon ({{ cartStore.discountPercent }}%)</span>
+          <span class="summary-label">
+            {{ cartStore.appliedVoucher ? `Voucher (${cartStore.appliedVoucher.code})` : `Diskon (${cartStore.discountPercent}%)` }}
+          </span>
           <span class="summary-val mono">-{{ formatPrice(cartStore.discountAmount) }}</span>
         </div>
 
@@ -563,6 +613,98 @@ const handleHoldOrder = () => {
   font-weight: 800;
   font-size: 1.25rem;
   color: var(--primary);
+}
+
+.btn-checkout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Voucher Styles */
+.voucher-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.voucher-input {
+  flex: 1;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.voucher-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.btn-apply-voucher {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-apply-voucher:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.voucher-error {
+  color: var(--danger);
+  font-size: 0.75rem;
+  margin-top: 8px;
+}
+
+.applied-voucher-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px dashed var(--success);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  margin-top: 12px;
+}
+
+.voucher-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--success);
+}
+
+.voucher-code {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.btn-remove-voucher {
+  background: transparent;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  opacity: 0.8;
+}
+
+.btn-remove-voucher:hover {
+  background: rgba(239, 68, 68, 0.1);
+  opacity: 1;
 }
 
 .btn-checkout {
