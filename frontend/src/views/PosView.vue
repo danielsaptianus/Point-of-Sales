@@ -12,6 +12,7 @@ import PaymentModal from '@/components/pos/PaymentModal.vue';
 import ReceiptModal from '@/components/pos/ReceiptModal.vue';
 import OpenShiftModal from '@/components/pos/OpenShiftModal.vue';
 import CloseShiftModal from '@/components/pos/CloseShiftModal.vue';
+import { isBluetoothConnected, connectedDeviceName, connectPrinter, disconnectPrinter } from '@/services/bluetoothPrinter';
 import {
   ShoppingBag,
   Search,
@@ -19,7 +20,9 @@ import {
   User as UserIcon,
   Clock,
   PackageOpen,
-  Power
+  Power,
+  Bluetooth,
+  BluetoothConnected
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -155,6 +158,25 @@ const handleShiftClosed = () => {
               <span class="cashier-role">Kasir Aktif</span>
             </div>
           </div>
+
+          <button 
+            v-if="!isBluetoothConnected"
+            class="btn-bluetooth" 
+            title="Hubungkan Printer Bluetooth" 
+            @click="connectPrinter"
+          >
+            <Bluetooth :size="16" />
+            <span>Connect Printer</span>
+          </button>
+          <button 
+            v-else
+            class="btn-bluetooth connected" 
+            :title="`Printer Terhubung: ${connectedDeviceName}`" 
+            @click="disconnectPrinter"
+          >
+            <BluetoothConnected :size="16" />
+            <span>{{ connectedDeviceName }}</span>
+          </button>
 
           <button class="btn-close-shift" title="Tutup Shift Kasir" @click="isCloseShiftModalOpen = true">
             <Power :size="16" />
@@ -397,6 +419,37 @@ const handleShiftClosed = () => {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
+}
+
+.btn-bluetooth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border-dark);
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-bluetooth:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: var(--border);
+}
+
+.btn-bluetooth.connected {
+  border-color: rgba(34, 197, 94, 0.5);
+  color: var(--success);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.btn-bluetooth.connected:hover {
+  background: rgba(34, 197, 94, 0.2);
 }
 
 .cashier-avatar {

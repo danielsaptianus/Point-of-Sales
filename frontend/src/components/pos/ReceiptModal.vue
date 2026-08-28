@@ -4,6 +4,7 @@ import { Printer, PlusCircle, CheckCircle2, Clock, CreditCard } from 'lucide-vue
 
 import { ref, watch, onUnmounted } from 'vue';
 import api from '@/plugins/axios';
+import { printReceiptBluetooth } from '@/services/bluetoothPrinter';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -95,6 +96,15 @@ const formatDate = (isoString?: string) => {
     dateStyle: 'medium',
     timeStyle: 'short',
   });
+};
+
+const handlePrintBluetooth = async () => {
+  if (!localTx.value) return;
+  const success = await printReceiptBluetooth(localTx.value);
+  if (success) {
+    // Optional: show a small toast or notification
+    console.log('Bluetooth print successful');
+  }
 };
 
 const handlePrint = () => {
@@ -274,9 +284,11 @@ const handlePrint = () => {
           <span>Buka Midtrans</span>
         </a>
         
-        <button class="btn btn-secondary" @click="handlePrint">
-          <Printer :size="18" />
-          <span>Cetak</span>
+        <button class="btn btn-outline" @click="handlePrintBluetooth">
+          <Printer :size="18" /> Cetak Bluetooth
+        </button>
+        <button class="btn btn-outline" @click="handlePrint">
+          <Printer :size="18" /> Print Web
         </button>
         <button class="btn btn-primary" @click="emit('new-transaction')">
           <PlusCircle :size="18" />
