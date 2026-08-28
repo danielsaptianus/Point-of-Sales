@@ -55,6 +55,14 @@ export class EmployeesController {
     return this.employeesService.findAll();
   }
 
+  @Get('positions')
+  @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
+  @ApiOperation({ summary: 'Get all employee positions' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getPositions(): Promise<any[]> {
+    return this.employeesService.getPositions();
+  }
+
   @Get(':id')
   @Roles('Admin', 'Staff Kasir', 'Staff Gudang')
   @ApiOperation({ summary: 'Get employee by ID (Admin & Staff)' })

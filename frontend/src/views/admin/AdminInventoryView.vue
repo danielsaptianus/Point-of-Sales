@@ -130,7 +130,7 @@ function getProductName(id: number, fallback?: string) {
                 </span>
               </td>
               <td class="font-mono font-bold" :class="txn.type === 'OUT' ? 'text-red' : 'text-slate-900'">
-                <span v-if="txn.type === 'IN'">+</span><span v-if="txn.type === 'OUT'">-</span>{{ txn.quantity }}
+                {{ Math.abs(txn.quantity) }}
               </td>
               <td class="text-sm text-slate-500">{{ txn.notes || '-' }}</td>
             </tr>

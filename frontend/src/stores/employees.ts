@@ -4,12 +4,7 @@ import type { Employee, Position } from '@/types';
 import api from '@/plugins/axios';
 
 export const useEmployeeStore = defineStore('employees', () => {
-  // We hardcode positions to match DB seeds for simplicity
-  const positions = ref<Position[]>([
-    { id: 1, name: 'Admin', description: 'Administrator with full system access', is_active: true },
-    { id: 2, name: 'Staff Kasir', description: 'Cashier with access to POS and Sales', is_active: true },
-    { id: 3, name: 'Staff Gudang', description: 'Warehouse staff with access to Inventory and Products', is_active: true }
-  ]);
+  const positions = ref<Position[]>([]);
 
   const employees = ref<Employee[]>([]);
   const isLoading = ref(false);
@@ -17,10 +12,18 @@ export const useEmployeeStore = defineStore('employees', () => {
   async function fetchEmployees() {
     isLoading.value = true;
     try {
+      // Fetch positions first if empty
+      if (positions.value.length === 0) {
+        const posRes = await api.get('/employees/positions');
+        // Backend might return raw array or { data: array } depending on interceptors/response formatting.
+        // Usually api.get returns { data: { data: [...] } } or { data: [...] }.
+        positions.value = posRes.data.data || posRes.data || [];
+      }
+      
       const res = await api.get('/employees');
       employees.value = res.data.data || [];
     } catch (error) {
-      console.error('Failed to fetch employees:', error);
+      console.error('Failed to fetch employees/positions:', error);
     } finally {
       isLoading.value = false;
     }

@@ -47,20 +47,36 @@ onMounted(async () => {
   }
 });
 
-const handleProfileSave = () => {
+const handleProfileSave = async () => {
   isSaving.value = true;
   saveSuccess.value = false;
   errorMessage.value = '';
   
-  setTimeout(() => {
-    isSaving.value = false;
+  try {
+    const response = await api.patch(`/users/${user?.id}`, {
+      first_name: profileForm.value.first_name,
+      last_name: profileForm.value.last_name,
+      email: profileForm.value.email,
+    });
+    
+    // Update local store if needed
+    if (authStore.user) {
+      authStore.user.first_name = profileForm.value.first_name;
+      authStore.user.last_name = profileForm.value.last_name;
+      authStore.user.email = profileForm.value.email;
+    }
+
     successMessage.value = 'Profile updated successfully!';
     saveSuccess.value = true;
     
     setTimeout(() => {
       saveSuccess.value = false;
     }, 3000);
-  }, 1000);
+  } catch (error: any) {
+    errorMessage.value = error.response?.data?.message || 'Failed to update profile';
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 const handlePasswordSave = () => {
@@ -83,37 +99,6 @@ const handlePasswordSave = () => {
       saveSuccess.value = false;
     }, 3000);
   }, 1000);
-};
-
-const handleEmployeePasswordSave = async () => {
-  if (employeePasswordForm.value.new_password !== employeePasswordForm.value.confirm_password) {
-    errorMessage.value = 'Passwords do not match';
-    return;
-  }
-  
-  isSaving.value = true;
-  saveSuccess.value = false;
-  errorMessage.value = '';
-  
-  try {
-    await api.post('/users/reset-employee-password', {
-      employee_id: Number(employeePasswordForm.value.employee_id),
-      new_password: employeePasswordForm.value.new_password,
-      admin_password: employeePasswordForm.value.admin_password
-    });
-    
-    successMessage.value = 'Employee password reset successfully!';
-    saveSuccess.value = true;
-    employeePasswordForm.value = { employee_id: '', new_password: '', confirm_password: '', admin_password: '' };
-    
-    setTimeout(() => {
-      saveSuccess.value = false;
-    }, 3000);
-  } catch (error: any) {
-    errorMessage.value = error.response?.data?.message || 'Failed to reset employee password';
-  } finally {
-    isSaving.value = false;
-  }
 };
 </script>
 
@@ -142,15 +127,6 @@ const handleEmployeePasswordSave = async () => {
         >
           <Shield :size="18" />
           <span>Security & Password</span>
-        </button>
-        <button 
-          v-if="isAdmin"
-          class="tab-btn" 
-          :class="{ active: activeTab === 'employee-password' }"
-          @click="activeTab = 'employee-password'; errorMessage = ''"
-        >
-          <Users :size="18" />
-          <span>Employee Passwords</span>
         </button>
       </div>
       
@@ -195,17 +171,15 @@ const handleEmployeePasswordSave = async () => {
                 <label>First Name</label>
                 <div class="input-with-icon">
                   <User class="input-icon" :size="18" />
-                  <input type="text" v-model="profileForm.first_name" required readonly />
+                  <input type="text" v-model="profileForm.first_name" required />
                 </div>
-                <span class="help-text">Managed by HR</span>
               </div>
               <div class="form-group">
                 <label>Last Name</label>
                 <div class="input-with-icon">
                   <User class="input-icon" :size="18" />
-                  <input type="text" v-model="profileForm.last_name" readonly />
+                  <input type="text" v-model="profileForm.last_name" />
                 </div>
-                <span class="help-text">Managed by HR</span>
               </div>
             </div>
             
@@ -256,50 +230,6 @@ const handleEmployeePasswordSave = async () => {
           </form>
         </div>
 
-        <!-- Employee Passwords Tab -->
-        <div v-if="activeTab === 'employee-password' && isAdmin" class="tab-pane">
-          <h2 class="section-title">Reset Employee Password</h2>
-          <p class="section-desc">Reset a staff member's password. Requires your Admin password to authorize.</p>
-          
-          <div class="divider"></div>
-          
-          <form @submit.prevent="handleEmployeePasswordSave" class="settings-form">
-            <div class="form-group">
-              <label>Select Employee</label>
-              <select v-model="employeePasswordForm.employee_id" required class="select-input">
-                <option value="" disabled>-- Select Employee --</option>
-                <option v-for="emp in employeeStore.employees" :key="emp.id" :value="emp.id">
-                  {{ emp.first_name }} {{ emp.last_name }} ({{ emp.employee_number }})
-                  {{ !emp.user_id ? ' - ⚠️ No registered account' : '' }}
-                </option>
-              </select>
-            </div>
-            
-            <div class="form-group">
-              <label>New Password for Employee</label>
-              <input type="password" v-model="employeePasswordForm.new_password" required minlength="6" />
-            </div>
-            
-            <div class="form-group">
-              <label>Confirm New Password</label>
-              <input type="password" v-model="employeePasswordForm.confirm_password" required minlength="6" />
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="form-group">
-              <label>Your Admin Password (Authorization)</label>
-              <input type="password" v-model="employeePasswordForm.admin_password" required />
-              <span class="help-text">Enter your own password to authorize this action.</span>
-            </div>
-            
-            <div class="form-actions">
-              <button type="submit" class="btn-primary" :disabled="isSaving">
-                {{ isSaving ? 'Processing...' : 'Reset Password' }}
-              </button>
-            </div>
-          </form>
-        </div>
       </div>
     </div>
   </div>

@@ -109,6 +109,10 @@ export class EmployeesService {
     return this.transformEmployee(employee);
   }
 
+  async getPositions(): Promise<any[]> {
+    return this.prisma.position.findMany();
+  }
+
   async findAll(): Promise<any[]> {
     const employees = await this.prisma.employee.findMany({
       where: { deleted_at: null },
