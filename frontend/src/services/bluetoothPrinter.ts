@@ -14,6 +14,13 @@ export const connectedDeviceName = ref('');
 let bluetoothDevice: BluetoothDevice | null = null;
 let writeCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
 
+// Extend Navigator interface to include getDevices
+declare global {
+  interface Bluetooth {
+    getDevices(): Promise<BluetoothDevice[]>;
+  }
+}
+
 /**
  * Request Bluetooth device from user and connect to it
  */
@@ -86,6 +93,62 @@ export async function connectPrinter(): Promise<boolean> {
     if (error.name !== 'NotFoundError') {
       alert('Gagal menghubungkan ke printer: ' + error.message);
     }
+    disconnectPrinter();
+    return false;
+  }
+}
+
+/**
+ * Automatically try to reconnect to a previously paired printer
+ * without requiring user gesture (popup)
+ */
+export async function autoConnectPrinter(): Promise<boolean> {
+  if (!navigator.bluetooth || typeof navigator.bluetooth.getDevices !== 'function') {
+    return false; // Not supported
+  }
+
+  try {
+    const devices = await navigator.bluetooth.getDevices();
+    if (devices.length === 0) return false;
+
+    // Try to connect to the first permitted device
+    bluetoothDevice = devices[0];
+    
+    // We can directly connect without requestDevice() since permission was already granted
+    const server = await bluetoothDevice.gatt?.connect();
+    if (!server) return false;
+
+    let service: BluetoothRemoteGATTService | null = null;
+    let foundUuid = '';
+    for (const uuid of PRINTER_SERVICE_UUIDS) {
+      try {
+        service = await server.getPrimaryService(uuid);
+        if (service) {
+          foundUuid = uuid;
+          break;
+        }
+      } catch (e) { }
+    }
+
+    if (!service) throw new Error('No valid service found');
+
+    const characteristics = await service.getCharacteristics();
+    for (const char of characteristics) {
+      if (char.properties.write || char.properties.writeWithoutResponse) {
+        writeCharacteristic = char;
+        break;
+      }
+    }
+
+    if (!writeCharacteristic) throw new Error('No valid characteristic');
+
+    bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
+    isBluetoothConnected.value = true;
+    connectedDeviceName.value = bluetoothDevice.name || 'Printer Bluetooth';
+    console.log('Successfully auto-reconnected to printer!');
+    return true;
+  } catch (error) {
+    console.warn('Auto-reconnect failed:', error);
     disconnectPrinter();
     return false;
   }

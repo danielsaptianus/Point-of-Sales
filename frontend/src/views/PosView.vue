@@ -12,7 +12,7 @@ import PaymentModal from '@/components/pos/PaymentModal.vue';
 import ReceiptModal from '@/components/pos/ReceiptModal.vue';
 import OpenShiftModal from '@/components/pos/OpenShiftModal.vue';
 import CloseShiftModal from '@/components/pos/CloseShiftModal.vue';
-import { isBluetoothConnected, connectedDeviceName, connectPrinter, disconnectPrinter } from '@/services/bluetoothPrinter';
+import { isBluetoothConnected, connectedDeviceName, connectPrinter, disconnectPrinter, autoConnectPrinter } from '@/services/bluetoothPrinter';
 import {
   ShoppingBag,
   Search,
@@ -62,6 +62,11 @@ onMounted(() => {
   checkShift();
   timerInterval = setInterval(() => {
     currentTime.value = new Date().toLocaleTimeString('id-ID');
+  }, 1000);
+  
+  // Attempt to auto-connect bluetooth printer if previously paired
+  setTimeout(() => {
+    autoConnectPrinter();
   }, 1000);
 });
 
