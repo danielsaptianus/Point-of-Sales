@@ -114,13 +114,24 @@ async function sendRawData(data: Uint8Array) {
     throw new Error('Printer belum terhubung.');
   }
 
-  const CHUNK_SIZE = 100; // Safe limit for most generic BLE printers
+  console.log(`Sending ${data.length} bytes to printer...`);
+  const CHUNK_SIZE = 20; // Safe limit for BLE (default MTU is 23 bytes)
   for (let i = 0; i < data.length; i += CHUNK_SIZE) {
     const chunk = data.slice(i, i + CHUNK_SIZE);
-    if (writeCharacteristic.properties.writeWithoutResponse) {
-      await writeCharacteristic.writeValueWithoutResponse(chunk);
-    } else {
-      await writeCharacteristic.writeValue(chunk);
+    try {
+      if (writeCharacteristic.properties.writeWithoutResponse) {
+        await writeCharacteristic.writeValueWithoutResponse(chunk);
+      } else {
+        await writeCharacteristic.writeValue(chunk);
+      }
+    } catch (e: any) {
+      console.warn(`Error writing chunk ${i}:`, e);
+      // Try fallback to the other write method
+      try {
+        await writeCharacteristic.writeValue(chunk);
+      } catch (err) {
+        console.error('Fallback write failed', err);
+      }
     }
     // Small delay to prevent overwhelming the printer buffer
     await new Promise(resolve => setTimeout(resolve, 20));
@@ -296,7 +307,9 @@ export async function printReceiptBluetooth(transaction: any): Promise<boolean> 
   const bytes = builder.build();
   
   try {
+    console.log('Starting print job...');
     await sendRawData(bytes);
+    console.log('Print job finished');
     return true;
   } catch (error: any) {
     console.error('Print Error:', error);

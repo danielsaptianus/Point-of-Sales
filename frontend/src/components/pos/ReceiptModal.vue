@@ -100,10 +100,13 @@ const formatDate = (isoString?: string) => {
 
 const handlePrintBluetooth = async () => {
   if (!localTx.value) return;
-  const success = await printReceiptBluetooth(localTx.value);
-  if (success) {
-    // Optional: show a small toast or notification
-    console.log('Bluetooth print successful');
+  try {
+    const success = await printReceiptBluetooth(localTx.value);
+    if (success) {
+      alert('Berhasil mengirim data cetak ke printer Bluetooth!');
+    }
+  } catch (err: any) {
+    alert('Terjadi kesalahan tidak terduga: ' + err.message);
   }
 };
 
