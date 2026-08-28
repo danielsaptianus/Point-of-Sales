@@ -248,18 +248,19 @@ export async function printReceiptBluetooth(transaction: any): Promise<boolean> 
   
   // Meta
   builder.alignLeft();
-  builder.textLine(`No: ${transaction.id}`);
+  builder.textLine(`No: ${transaction.invoice_number || transaction.id}`);
   builder.textLine(`Tgl: ${new Date(transaction.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}`);
-  builder.textLine(`Kasir: ${transaction.cashier?.first_name || transaction.cashier_id || 'Admin'}`);
+  builder.textLine(`Kasir: ${transaction.cashier_name || 'Admin'}`);
   
   builder.divider();
 
   // Items
-  for (const item of transaction.transaction_items) {
-    const itemName = item.product.name;
+  const items = transaction.items || transaction.transaction_items || [];
+  for (const item of items) {
+    const itemName = item.product_name || (item.product ? item.product.name : 'Item');
     const qty = item.quantity;
-    const price = item.price_at_time;
-    const sub = qty * price;
+    const price = item.price || item.price_at_time || 0;
+    const sub = item.subtotal || (qty * price);
     
     // Print item name (wrap if too long)
     if (itemName.length > 32) {
