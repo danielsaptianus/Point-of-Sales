@@ -232,8 +232,9 @@ export async function printReceiptBluetooth(transaction: any): Promise<boolean> 
     if (!connected) return false;
   }
 
-  const formatPrice = (price: number) => {
-    return price.toLocaleString('id-ID'); // "10.000" without Rp to save space
+  const formatPrice = (price: any) => {
+    if (price === null || price === undefined || isNaN(Number(price))) return '0';
+    return Number(price).toLocaleString('id-ID'); // "10.000" without Rp to save space
   };
 
   const builder = new EscPosBuilder();
@@ -279,17 +280,20 @@ export async function printReceiptBluetooth(transaction: any): Promise<boolean> 
   builder.divider();
 
   // Totals
-  const subtotal = transaction.total_amount - transaction.tax_amount + transaction.discount_amount;
+  const subtotal = transaction.subtotal || 0;
   builder.rowTwoColumns('Subtotal', formatPrice(subtotal));
   
-  if (transaction.discount_amount > 0) {
-    builder.rowTwoColumns('Diskon', '-' + formatPrice(transaction.discount_amount));
+  const discountAmount = transaction.discount_amount || 0;
+  if (discountAmount > 0) {
+    builder.rowTwoColumns('Diskon', '-' + formatPrice(discountAmount));
   }
   
-  builder.rowTwoColumns('PPN (11%)', formatPrice(transaction.tax_amount));
+  const taxAmount = transaction.tax_amount || 0;
+  builder.rowTwoColumns('PPN (11%)', formatPrice(taxAmount));
   
   builder.dividerThin();
-  builder.bold(true).rowTwoColumns('TOTAL', formatPrice(transaction.total_amount)).bold(false);
+  const grandTotal = transaction.grand_total || transaction.total_amount || 0;
+  builder.bold(true).rowTwoColumns('TOTAL', formatPrice(grandTotal)).bold(false);
   
   builder.newline();
   const paymentMethod = transaction.payment?.payment_method || 'CASH';
