@@ -283,16 +283,16 @@ export async function printReceiptBluetooth(transaction: any): Promise<boolean> 
   const subtotal = transaction.subtotal || 0;
   builder.rowTwoColumns('Subtotal', formatPrice(subtotal));
   
-  const discountAmount = transaction.discount_amount || 0;
+  const discountAmount = transaction.discount || transaction.discount_amount || 0;
   if (discountAmount > 0) {
     builder.rowTwoColumns('Diskon', '-' + formatPrice(discountAmount));
   }
   
-  const taxAmount = transaction.tax_amount || 0;
+  const taxAmount = transaction.tax || transaction.tax_amount || 0;
   builder.rowTwoColumns('PPN (11%)', formatPrice(taxAmount));
   
   builder.dividerThin();
-  const grandTotal = transaction.grand_total || transaction.total_amount || 0;
+  const grandTotal = transaction.total || transaction.grand_total || transaction.total_amount || 0;
   builder.bold(true).rowTwoColumns('TOTAL', formatPrice(grandTotal)).bold(false);
   
   builder.newline();
