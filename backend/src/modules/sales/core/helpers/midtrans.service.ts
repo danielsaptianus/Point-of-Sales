@@ -54,6 +54,10 @@ export class MidtransService {
       credit_card: {
         secure: true,
       },
+      custom_expiry: {
+        expiry_duration: 10,
+        unit: 'minute',
+      },
     };
 
     const paymentMap: Record<string, string[]> = {
