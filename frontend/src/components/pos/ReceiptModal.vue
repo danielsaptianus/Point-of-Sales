@@ -288,10 +288,7 @@ const handlePrint = () => {
         </a>
         
         <button class="btn btn-outline" @click="handlePrintBluetooth">
-          <Printer :size="18" /> Cetak Bluetooth
-        </button>
-        <button class="btn btn-outline" @click="handlePrint">
-          <Printer :size="18" /> Print Web
+          <Printer :size="18" /> Cetak Struk
         </button>
         <button class="btn btn-primary" @click="emit('new-transaction')">
           <PlusCircle :size="18" />
