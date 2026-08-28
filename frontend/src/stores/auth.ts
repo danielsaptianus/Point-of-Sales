@@ -12,6 +12,14 @@ export interface AuthUser {
   marital_status?: string;
   phone?: string;
   address?: string;
+  employee_number?: string;
+  employment_type?: string;
+  salary?: number;
+  hire_date?: string;
+  termination_date?: string;
+  bank_name?: string;
+  bank_account_number?: string;
+  bank_account_name?: string;
   position: {
     id: number;
     name: string;

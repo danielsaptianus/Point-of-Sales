@@ -187,7 +187,12 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    const { email, password, first_name, last_name, is_active, gender, birth_date, marital_status, phone, address } = updateUserDto;
+    const { 
+      email, password, first_name, last_name, is_active, 
+      gender, birth_date, marital_status, phone, address,
+      employee_number, employment_type, salary, hire_date, termination_date,
+      bank_name, bank_account_number, bank_account_name 
+    } = updateUserDto;
 
     // Check email uniqueness if changing email
     if (email && email !== user.email) {
@@ -214,7 +219,9 @@ export class UsersService {
         ...(hashedPassword && { password: hashedPassword }),
         ...(is_active !== undefined && { is_active }),
         ...(user.employee &&
-          (first_name || last_name || gender || birth_date || marital_status || phone || address) && {
+          (first_name || last_name || gender || birth_date || marital_status || phone || address || 
+           employee_number || employment_type || salary !== undefined || hire_date || termination_date || 
+           bank_name || bank_account_number || bank_account_name) && {
             employee: {
               update: {
                 ...(first_name && { first_name }),
@@ -224,6 +231,14 @@ export class UsersService {
                 ...(marital_status && { marital_status }),
                 ...(phone && { phone }),
                 ...(address && { address }),
+                ...(employee_number && { employee_number }),
+                ...(employment_type && { employment_type }),
+                ...(salary !== undefined && { salary }),
+                ...(hire_date && { hire_date: new Date(hire_date) }),
+                ...(termination_date && { termination_date: new Date(termination_date) }),
+                ...(bank_name && { bank_name }),
+                ...(bank_account_number && { bank_account_number }),
+                ...(bank_account_name && { bank_account_name }),
               },
             },
           }),

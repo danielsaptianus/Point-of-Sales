@@ -29,6 +29,30 @@ export class UserResponseDto {
   @ApiPropertyOptional()
   address?: string;
 
+  @ApiPropertyOptional()
+  employee_number?: string;
+
+  @ApiPropertyOptional()
+  employment_type?: string;
+
+  @ApiPropertyOptional()
+  salary?: number;
+
+  @ApiPropertyOptional()
+  hire_date?: string;
+
+  @ApiPropertyOptional()
+  termination_date?: string;
+
+  @ApiPropertyOptional()
+  bank_name?: string;
+
+  @ApiPropertyOptional()
+  bank_account_number?: string;
+
+  @ApiPropertyOptional()
+  bank_account_name?: string;
+
   @ApiProperty()
   is_active: boolean;
 

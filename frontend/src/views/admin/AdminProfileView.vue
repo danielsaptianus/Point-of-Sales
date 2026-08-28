@@ -25,6 +25,14 @@ const profileForm = ref({
   marital_status: user?.marital_status || '',
   phone: user?.phone || '',
   address: user?.address || '',
+  employee_number: user?.employee_number || '',
+  employment_type: user?.employment_type || '',
+  salary: user?.salary || 0,
+  hire_date: user?.hire_date ? new Date(user.hire_date).toISOString().split('T')[0] : '',
+  termination_date: user?.termination_date ? new Date(user.termination_date).toISOString().split('T')[0] : '',
+  bank_name: user?.bank_name || '',
+  bank_account_number: user?.bank_account_number || '',
+  bank_account_name: user?.bank_account_name || '',
 });
 
 const passwordForm = ref({
@@ -67,6 +75,14 @@ const handleProfileSave = async () => {
       marital_status: profileForm.value.marital_status,
       phone: profileForm.value.phone,
       address: profileForm.value.address,
+      employee_number: profileForm.value.employee_number,
+      employment_type: profileForm.value.employment_type,
+      salary: profileForm.value.salary,
+      hire_date: profileForm.value.hire_date || null,
+      termination_date: profileForm.value.termination_date || null,
+      bank_name: profileForm.value.bank_name,
+      bank_account_number: profileForm.value.bank_account_number,
+      bank_account_name: profileForm.value.bank_account_name,
     });
     
     // Update local store if needed
@@ -79,6 +95,14 @@ const handleProfileSave = async () => {
       authStore.user.marital_status = profileForm.value.marital_status;
       authStore.user.phone = profileForm.value.phone;
       authStore.user.address = profileForm.value.address;
+      authStore.user.employee_number = profileForm.value.employee_number;
+      authStore.user.employment_type = profileForm.value.employment_type;
+      authStore.user.salary = profileForm.value.salary;
+      authStore.user.hire_date = profileForm.value.hire_date;
+      authStore.user.termination_date = profileForm.value.termination_date;
+      authStore.user.bank_name = profileForm.value.bank_name;
+      authStore.user.bank_account_number = profileForm.value.bank_account_number;
+      authStore.user.bank_account_name = profileForm.value.bank_account_name;
     }
 
     successMessage.value = 'Profile updated successfully!';
@@ -249,6 +273,56 @@ const handlePasswordSave = () => {
             <div class="form-group">
               <label>Address</label>
               <textarea v-model="profileForm.address" rows="3" placeholder="Full address..." class="select-input" style="padding: 10px 12px; font-family: inherit; resize: vertical;"></textarea>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 16px;">Employment Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Employee ID (NIP)</label>
+                <input v-model="profileForm.employee_number" type="text" placeholder="EMP-XXX" class="select-input" />
+              </div>
+              <div class="form-group">
+                <label>Employment Type</label>
+                <select v-model="profileForm.employment_type" class="select-input">
+                  <option value="">-- Select Type --</option>
+                  <option value="FULL_TIME">Full Time</option>
+                  <option value="PART_TIME">Part Time</option>
+                  <option value="CONTRACT">Contract</option>
+                  <option value="INTERN">Intern</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label>Hire Date</label>
+                <input v-model="profileForm.hire_date" type="date" class="select-input" style="width: 100%;" />
+              </div>
+              <div class="form-group">
+                <label>Termination Date</label>
+                <input v-model="profileForm.termination_date" type="date" class="select-input" style="width: 100%;" />
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Salary (Rp)</label>
+              <input v-model="profileForm.salary" type="number" placeholder="5000000" class="select-input" />
+            </div>
+
+            <h3 class="section-title" style="margin-top: 16px;">Bank Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Bank Name</label>
+                <input v-model="profileForm.bank_name" type="text" placeholder="BCA / Mandiri / dll" class="select-input" />
+              </div>
+              <div class="form-group">
+                <label>Account Number</label>
+                <input v-model="profileForm.bank_account_number" type="text" placeholder="1234567890" class="select-input" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Account Name</label>
+              <input v-model="profileForm.bank_account_name" type="text" placeholder="John Doe" class="select-input" />
             </div>
             
             <div class="form-actions">

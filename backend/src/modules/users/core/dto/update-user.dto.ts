@@ -48,6 +48,45 @@ export class UpdateUserDto {
   @IsOptional()
   address?: string;
 
+  @ApiPropertyOptional({ example: 'EMP-001' })
+  @IsString()
+  @IsOptional()
+  employee_number?: string;
+
+  @ApiPropertyOptional({ example: 'FULL_TIME' })
+  @IsString()
+  @IsOptional()
+  employment_type?: string;
+
+  @ApiPropertyOptional({ example: 5000000 })
+  @IsOptional()
+  salary?: number;
+
+  @ApiPropertyOptional({ example: '2020-01-01' })
+  @IsString()
+  @IsOptional()
+  hire_date?: string;
+
+  @ApiPropertyOptional({ example: '2025-01-01' })
+  @IsString()
+  @IsOptional()
+  termination_date?: string;
+
+  @ApiPropertyOptional({ example: 'BCA' })
+  @IsString()
+  @IsOptional()
+  bank_name?: string;
+
+  @ApiPropertyOptional({ example: '1234567890' })
+  @IsString()
+  @IsOptional()
+  bank_account_number?: string;
+
+  @ApiPropertyOptional({ example: 'John Doe' })
+  @IsString()
+  @IsOptional()
+  bank_account_name?: string;
+
   @ApiPropertyOptional({ example: true })
   @IsBoolean()
   @IsOptional()
