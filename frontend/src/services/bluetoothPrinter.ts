@@ -46,7 +46,6 @@ export async function connectPrinter(): Promise<boolean> {
       throw new Error('GATT Server not available');
     }
 
-    // Try to find a valid printing service
     let service: BluetoothRemoteGATTService | null = null;
     let foundUuid = '';
     
@@ -178,7 +177,7 @@ async function sendRawData(data: Uint8Array) {
   }
 
   console.log(`Sending ${data.length} bytes to printer...`);
-  const CHUNK_SIZE = 20; // Safe limit for BLE (default MTU is 23 bytes)
+  const CHUNK_SIZE = 20;
   for (let i = 0; i < data.length; i += CHUNK_SIZE) {
     const chunk = data.slice(i, i + CHUNK_SIZE);
     try {
@@ -189,14 +188,14 @@ async function sendRawData(data: Uint8Array) {
       }
     } catch (e: any) {
       console.warn(`Error writing chunk ${i}:`, e);
-      // Try fallback to the other write method
+      
       try {
         await writeCharacteristic.writeValue(chunk);
       } catch (err) {
         console.error('Fallback write failed', err);
       }
     }
-    // Small delay to prevent overwhelming the printer buffer
+    
     await new Promise(resolve => setTimeout(resolve, 20));
   }
 }

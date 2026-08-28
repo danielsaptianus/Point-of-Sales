@@ -1,5 +1,6 @@
 import { Product, Transaction, Stock } from '@prisma/client';
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '@common/prisma/prisma.service';
 import { MidtransService } from './core/helpers/midtrans.service';
 import { CreateSaleDto } from '@modules/sales/core/dto/create-sale.dto';
@@ -7,6 +8,8 @@ import { VouchersService } from '@modules/vouchers/vouchers.service';
 
 @Injectable()
 export class SalesService {
+  private readonly logger = new Logger(SalesService.name);
+
   constructor(
     private prisma: PrismaService,
     private midtransService: MidtransService,
@@ -433,19 +436,49 @@ export class SalesService {
         }
 
         // KEMBALIKAN (RESTORE) STOK BARANG KARENA PEMBAYARAN ONLINE GAGAL
-        for (const item of transaction.transaction_items) {
-          await tx.stock.create({
-            data: {
-              product_id: item.product_id,
-              quantity: item.quantity, // Nilai positif untuk mengembalikan stok
-              type: 'IN', // Tipe IN untuk penambahan stok kembali
-              notes: `Stock restored from failed online transaction ${transaction.invoice_number}`,
-              transaction_id: transaction.id,
-            },
-          });
-        }
+        await this.restoreStock(transaction.id, tx, `Stock restored from failed online transaction ${transaction.invoice_number}`);
       });
       console.log('Transaction status updated to FAILED and stock restored successfully.');
+    }
+  }
+
+  /**
+   * Helper internal untuk mengembalikan stok (Stock IN & InventoryBatch)
+   */
+  private async restoreStock(transactionId: number, tx: any, notes: string) {
+    const transaction = await tx.transaction.findUnique({
+      where: { id: transactionId },
+      include: { transaction_items: true },
+    });
+
+    if (!transaction) return;
+
+    // 1. Buat record mutasi Stock IN
+    for (const item of transaction.transaction_items) {
+      await tx.stock.create({
+        data: {
+          product_id: item.product_id,
+          quantity: item.quantity,
+          type: 'IN',
+          notes: notes,
+          transaction_id: transaction.id,
+        },
+      });
+    }
+
+    // 2. Kembalikan kuantitas ke InventoryBatch berdasarkan TransactionItemBatch
+    const txItemsIds = transaction.transaction_items.map((i: any) => i.id);
+    if (txItemsIds.length > 0) {
+      const txItemBatches = await tx.transactionItemBatch.findMany({
+        where: { transaction_item_id: { in: txItemsIds } },
+      });
+
+      for (const batchLink of txItemBatches) {
+        await tx.inventoryBatch.update({
+          where: { id: batchLink.inventory_batch_id },
+          data: { remaining_quantity: { increment: batchLink.quantity_deducted } },
+        });
+      }
     }
   }
 
@@ -505,17 +538,7 @@ export class SalesService {
       // 5. Restock barang jika transaksi sebelumnya berstatus PAID atau PENDING (stok sempat terpotong)
       // (Menggunakan penambahan record IN baru tanpa mengubah/menimpa record mutasi lama)
       if (originalStatus === 'PAID' || originalStatus === 'PENDING') {
-        for (const item of transaction.transaction_items) {
-          await tx.stock.create({
-            data: {
-              product_id: item.product_id,
-              quantity: item.quantity, // Nilai positif untuk mengembalikan stok
-              type: 'IN', // Tipe IN untuk penambahan stok kembali
-              notes: `Stock restoration from voided sale ${transaction.invoice_number}`,
-              transaction_id: transaction.id,
-            },
-          });
-        }
+        await this.restoreStock(transaction.id, tx, `Stock restoration from voided sale ${transaction.invoice_number}`);
       }
 
       // 6. Ambil data transaksi yang sudah terupdate
@@ -529,5 +552,70 @@ export class SalesService {
 
       return this.transformTransactionDetail(updatedTransaction);
     });
+  }
+
+  /**
+   * CRON JOB: Membatalkan transaksi PENDING yang sudah melewati 10 menit
+   */
+  @Cron(CronExpression.EVERY_MINUTE)
+  async cancelExpiredTransactions() {
+    this.logger.debug('Running cancelExpiredTransactions cron job...');
+
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    
+    const expiredTransactions = await this.prisma.transaction.findMany({
+      where: {
+        status: 'PENDING',
+        created_at: { lt: tenMinutesAgo },
+        deleted_at: null,
+      },
+    });
+
+    if (expiredTransactions.length === 0) {
+      return;
+    }
+
+    this.logger.log(`Found ${expiredTransactions.length} expired pending transactions. Cancelling them...`);
+
+    for (const transaction of expiredTransactions) {
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          // 1. Update status
+          await tx.transaction.update({
+            where: { id: transaction.id },
+            data: { status: 'CANCELLED' },
+          });
+
+          const payment = await tx.payment.findFirst({
+            where: { transaction_id: transaction.id },
+          });
+
+          if (payment) {
+            await tx.payment.update({
+              where: { id: payment.id },
+              data: { status: 'CANCELLED' },
+            });
+          }
+
+          // 2. Revert voucher usage
+          if (transaction.applied_voucher_id) {
+            await tx.voucher.update({
+              where: { id: transaction.applied_voucher_id },
+              data: { used_count: { decrement: 1 } },
+            });
+            await tx.transactionVoucher.deleteMany({
+              where: { transaction_id: transaction.id },
+            });
+          }
+
+          // 3. Restore Stock & InventoryBatch
+          await this.restoreStock(transaction.id, tx, `Stock restored from auto-cancelled expired transaction ${transaction.invoice_number}`);
+        });
+
+        this.logger.log(`Successfully cancelled transaction ${transaction.invoice_number}`);
+      } catch (error) {
+        this.logger.error(`Failed to cancel transaction ${transaction.invoice_number}`, error);
+      }
+    }
   }
 }

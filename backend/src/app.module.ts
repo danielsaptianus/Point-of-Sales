@@ -7,6 +7,7 @@ import appConfig from './config/app.config';
 import jwtConfig from './config/jwt.config';
 import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // Common modules
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -45,6 +46,9 @@ import { ShiftsModule } from './modules/shifts/shifts.module';
       ttl: 60000,
       limit: 100, // 100 req per minute globally
     }]),
+
+    // Schedule
+    ScheduleModule.forRoot(),
 
     // Common modules
     PrismaModule,
