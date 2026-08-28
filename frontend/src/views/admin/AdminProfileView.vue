@@ -17,9 +17,14 @@ const isAdmin = computed(() => {
 const activeTab = ref('profile');
 
 const profileForm = ref({
-  first_name: user?.first_name || '',
-  last_name: user?.last_name || '',
+  first_name: user?.employee?.first_name || user?.first_name || '',
+  last_name: user?.employee?.last_name || user?.last_name || '',
   email: user?.email || '',
+  gender: user?.employee?.gender || 'L',
+  birth_date: user?.employee?.birth_date ? new Date(user?.employee?.birth_date).toISOString().split('T')[0] : '',
+  marital_status: user?.employee?.marital_status || '',
+  phone: user?.employee?.phone || '',
+  address: user?.employee?.address || '',
 });
 
 const passwordForm = ref({
@@ -57,6 +62,11 @@ const handleProfileSave = async () => {
       first_name: profileForm.value.first_name,
       last_name: profileForm.value.last_name,
       email: profileForm.value.email,
+      gender: profileForm.value.gender,
+      birth_date: profileForm.value.birth_date,
+      marital_status: profileForm.value.marital_status,
+      phone: profileForm.value.phone,
+      address: profileForm.value.address,
     });
     
     // Update local store if needed
@@ -64,6 +74,15 @@ const handleProfileSave = async () => {
       authStore.user.first_name = profileForm.value.first_name;
       authStore.user.last_name = profileForm.value.last_name;
       authStore.user.email = profileForm.value.email;
+      if (authStore.user.employee) {
+        authStore.user.employee.first_name = profileForm.value.first_name;
+        authStore.user.employee.last_name = profileForm.value.last_name;
+        authStore.user.employee.gender = profileForm.value.gender;
+        authStore.user.employee.birth_date = profileForm.value.birth_date;
+        authStore.user.employee.marital_status = profileForm.value.marital_status;
+        authStore.user.employee.phone = profileForm.value.phone;
+        authStore.user.employee.address = profileForm.value.address;
+      }
     }
 
     successMessage.value = 'Profile updated successfully!';
@@ -182,13 +201,58 @@ const handlePasswordSave = () => {
                 </div>
               </div>
             </div>
-            
-            <div class="form-group">
-              <label>Email Address</label>
-              <div class="input-with-icon">
-                <Mail class="input-icon" :size="18" />
-                <input type="email" v-model="profileForm.email" required />
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Gender</label>
+                <div class="radio-group" style="display: flex; gap: 16px; margin-top: 8px;">
+                  <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" v-model="profileForm.gender" value="L">
+                    <span>Male (L)</span>
+                  </label>
+                  <label class="radio-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" v-model="profileForm.gender" value="P">
+                    <span>Female (P)</span>
+                  </label>
+                </div>
               </div>
+              <div class="form-group">
+                <label>Birth Date</label>
+                <input v-model="profileForm.birth_date" type="date" class="select-input" style="width: 100%;" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Marital Status</label>
+                <select v-model="profileForm.marital_status" class="select-input">
+                  <option value="">-- Select Status --</option>
+                  <option value="SINGLE">Single</option>
+                  <option value="MARRIED">Married</option>
+                  <option value="DIVORCED">Divorced</option>
+                  <option value="WIDOWED">Widowed</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 16px;">Contact Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-with-icon">
+                  <Mail class="input-icon" :size="18" />
+                  <input type="email" v-model="profileForm.email" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input v-model="profileForm.phone" type="tel" placeholder="08..." class="select-input" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Address</label>
+              <textarea v-model="profileForm.address" rows="3" placeholder="Full address..." class="select-input" style="padding: 10px 12px; font-family: inherit; resize: vertical;"></textarea>
             </div>
             
             <div class="form-actions">
@@ -262,8 +326,8 @@ const handlePasswordSave = () => {
 }
 
 .profile-layout {
-  display: grid;
-  grid-template-columns: 240px 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 24px;
 }
 
@@ -277,9 +341,10 @@ const handlePasswordSave = () => {
 
 .profile-tabs {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   padding: 12px;
-  height: fit-content;
+  gap: 8px;
+  overflow-x: auto;
 }
 
 .tab-btn {
@@ -295,7 +360,7 @@ const handlePasswordSave = () => {
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s;
-  text-align: left;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {

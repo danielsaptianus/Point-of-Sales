@@ -187,7 +187,7 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    const { email, password, first_name, last_name, is_active } = updateUserDto;
+    const { email, password, first_name, last_name, is_active, gender, birth_date, marital_status, phone, address } = updateUserDto;
 
     // Check email uniqueness if changing email
     if (email && email !== user.email) {
@@ -214,11 +214,16 @@ export class UsersService {
         ...(hashedPassword && { password: hashedPassword }),
         ...(is_active !== undefined && { is_active }),
         ...(user.employee &&
-          (first_name || last_name) && {
+          (first_name || last_name || gender || birth_date || marital_status || phone || address) && {
             employee: {
               update: {
                 ...(first_name && { first_name }),
                 ...(last_name && { last_name }),
+                ...(gender && { gender }),
+                ...(birth_date && { birth_date: new Date(birth_date) }),
+                ...(marital_status && { marital_status }),
+                ...(phone && { phone }),
+                ...(address && { address }),
               },
             },
           }),

@@ -23,6 +23,31 @@ export class UpdateUserDto {
   @IsOptional()
   last_name?: string;
 
+  @ApiPropertyOptional({ example: 'L' })
+  @IsString()
+  @IsOptional()
+  gender?: string;
+
+  @ApiPropertyOptional({ example: '1990-01-01' })
+  @IsString()
+  @IsOptional()
+  birth_date?: string;
+
+  @ApiPropertyOptional({ example: 'SINGLE' })
+  @IsString()
+  @IsOptional()
+  marital_status?: string;
+
+  @ApiPropertyOptional({ example: '08123456789' })
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @ApiPropertyOptional({ example: 'Jl. Jendral Sudirman No 1' })
+  @IsString()
+  @IsOptional()
+  address?: string;
+
   @ApiPropertyOptional({ example: true })
   @IsBoolean()
   @IsOptional()
