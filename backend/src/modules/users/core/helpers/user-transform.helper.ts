@@ -27,6 +27,11 @@ export class UserTransformHelper {
       updated_at: user.updated_at,
       first_name: employee?.first_name || '',
       last_name: employee?.last_name || '',
+      gender: employee?.gender,
+      birth_date: employee?.birth_date ? employee.birth_date.toISOString() : undefined,
+      marital_status: employee?.marital_status || undefined,
+      phone: employee?.phone || undefined,
+      address: employee?.address || undefined,
       position_id: employee?.position_id || 0,
       permissions,
       position: position

@@ -7,6 +7,11 @@ export interface AuthUser {
   email: string;
   first_name: string;
   last_name: string;
+  gender?: string;
+  birth_date?: string;
+  marital_status?: string;
+  phone?: string;
+  address?: string;
   position: {
     id: number;
     name: string;

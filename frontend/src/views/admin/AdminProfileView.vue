@@ -17,14 +17,14 @@ const isAdmin = computed(() => {
 const activeTab = ref('profile');
 
 const profileForm = ref({
-  first_name: user?.employee?.first_name || user?.first_name || '',
-  last_name: user?.employee?.last_name || user?.last_name || '',
+  first_name: user?.first_name || '',
+  last_name: user?.last_name || '',
   email: user?.email || '',
-  gender: user?.employee?.gender || 'L',
-  birth_date: user?.employee?.birth_date ? new Date(user?.employee?.birth_date).toISOString().split('T')[0] : '',
-  marital_status: user?.employee?.marital_status || '',
-  phone: user?.employee?.phone || '',
-  address: user?.employee?.address || '',
+  gender: user?.gender || 'L',
+  birth_date: user?.birth_date ? new Date(user.birth_date).toISOString().split('T')[0] : '',
+  marital_status: user?.marital_status || '',
+  phone: user?.phone || '',
+  address: user?.address || '',
 });
 
 const passwordForm = ref({
@@ -74,15 +74,11 @@ const handleProfileSave = async () => {
       authStore.user.first_name = profileForm.value.first_name;
       authStore.user.last_name = profileForm.value.last_name;
       authStore.user.email = profileForm.value.email;
-      if (authStore.user.employee) {
-        authStore.user.employee.first_name = profileForm.value.first_name;
-        authStore.user.employee.last_name = profileForm.value.last_name;
-        authStore.user.employee.gender = profileForm.value.gender;
-        authStore.user.employee.birth_date = profileForm.value.birth_date;
-        authStore.user.employee.marital_status = profileForm.value.marital_status;
-        authStore.user.employee.phone = profileForm.value.phone;
-        authStore.user.employee.address = profileForm.value.address;
-      }
+      authStore.user.gender = profileForm.value.gender;
+      authStore.user.birth_date = profileForm.value.birth_date;
+      authStore.user.marital_status = profileForm.value.marital_status;
+      authStore.user.phone = profileForm.value.phone;
+      authStore.user.address = profileForm.value.address;
     }
 
     successMessage.value = 'Profile updated successfully!';

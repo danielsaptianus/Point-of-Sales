@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 
 export class UserResponseDto {
@@ -13,6 +13,21 @@ export class UserResponseDto {
 
   @ApiProperty({ required: false })
   last_name?: string;
+
+  @ApiPropertyOptional()
+  gender?: string;
+
+  @ApiPropertyOptional()
+  birth_date?: string;
+
+  @ApiPropertyOptional()
+  marital_status?: string;
+
+  @ApiPropertyOptional()
+  phone?: string;
+
+  @ApiPropertyOptional()
+  address?: string;
 
   @ApiProperty()
   is_active: boolean;
