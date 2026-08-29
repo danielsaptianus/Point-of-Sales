@@ -6,9 +6,11 @@ import {
   Receipt,
   FileText,
   Search,
-  Download
+  Download,
+  Loader2
 } from 'lucide-vue-next';
 import { useReportsStore } from '@/stores/reports';
+import { apiClient } from '@/services/api';
 
 // Chart.js setup
 import {
@@ -144,7 +146,37 @@ const filteredTransactions = computed(() => {
     t.invoice_number.toLowerCase().includes(q) ||
     t.cashier_name.toLowerCase().includes(q)
   );
-});
+const startDate = ref('');
+const endDate = ref('');
+const isExporting = ref(false);
+
+const downloadExcel = async () => {
+  try {
+    isExporting.value = true;
+    const response = await apiClient.get('/reports/export-transactions', {
+      params: {
+        startDate: startDate.value || undefined,
+        endDate: endDate.value || undefined
+      },
+      responseType: 'blob'
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    const filename = `Laporan_Transaksi_${startDate.value || 'All'}_to_${endDate.value || 'All'}.xlsx`;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to export:', error);
+    alert('Gagal mengunduh laporan. Silakan coba lagi.');
+  } finally {
+    isExporting.value = false;
+  }
+};
 
 </script>
 
@@ -155,10 +187,16 @@ const filteredTransactions = computed(() => {
         <h1 class="page-title">Sales Analytics</h1>
         <p class="page-subtitle">Track your revenue and recent transactions.</p>
       </div>
-      <button class="btn-outline">
-        <Download :size="18" />
-        <span>Export Report</span>
-      </button>
+      <div class="flex items-center gap-3">
+        <input type="date" v-model="startDate" class="form-input text-sm h-10 w-36" title="Start Date" />
+        <span class="text-slate-400">to</span>
+        <input type="date" v-model="endDate" class="form-input text-sm h-10 w-36" title="End Date" />
+        <button class="btn-outline ml-2 h-10" @click="downloadExcel" :disabled="isExporting">
+          <Loader2 v-if="isExporting" class="animate-spin" :size="18" />
+          <Download v-else :size="18" />
+          <span>{{ isExporting ? 'Exporting...' : 'Export Excel' }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Summary Metrics -->

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@common/prisma/prisma.service';
+import * as ExcelJS from 'exceljs';
 
 @Injectable()
 export class ReportsService {
@@ -102,5 +103,97 @@ export class ReportsService {
         }
       }
     });
+  }
+
+  async exportTransactionsToExcel(startDate?: string, endDate?: string): Promise<Buffer> {
+    const whereClause: any = { deleted_at: null };
+
+    if (startDate || endDate) {
+      whereClause.created_at = {};
+      if (startDate) {
+        whereClause.created_at.gte = new Date(`${startDate}T00:00:00.000Z`);
+      }
+      if (endDate) {
+        whereClause.created_at.lte = new Date(`${endDate}T23:59:59.999Z`);
+      }
+    }
+
+    const transactions = await this.prisma.transaction.findMany({
+      where: whereClause,
+      orderBy: { created_at: 'desc' },
+      include: {
+        user: { select: { employee: { select: { first_name: true, last_name: true } } } },
+        payment: true,
+        transaction_items: {
+          include: {
+            product: true,
+          }
+        },
+      }
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    
+    // Sheet 1: Ringkasan Invoice
+    const invoiceSheet = workbook.addWorksheet('Ringkasan Transaksi');
+    invoiceSheet.columns = [
+      { header: 'No. Invoice', key: 'invoice_number', width: 22 },
+      { header: 'Tanggal', key: 'created_at', width: 20 },
+      { header: 'Kasir', key: 'cashier', width: 20 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Metode Pembayaran', key: 'payment_method', width: 20 },
+      { header: 'Subtotal', key: 'subtotal', width: 15 },
+      { header: 'Diskon', key: 'discount', width: 15 },
+      { header: 'PPN', key: 'tax', width: 15 },
+      { header: 'Total', key: 'total', width: 15 },
+    ];
+
+    // Styling Headers
+    invoiceSheet.getRow(1).font = { bold: true };
+
+    for (const t of transactions) {
+      invoiceSheet.addRow({
+        invoice_number: t.invoice_number,
+        created_at: t.created_at.toLocaleString('id-ID'),
+        cashier: t.user?.employee ? `${t.user.employee.first_name} ${t.user.employee.last_name || ''}`.trim() : 'Admin',
+        status: t.status,
+        payment_method: t.payment?.payment_method || '-',
+        subtotal: t.subtotal,
+        discount: t.discount,
+        tax: t.tax,
+        total: t.total,
+      });
+    }
+
+    // Sheet 2: Rincian Barang
+    const itemSheet = workbook.addWorksheet('Rincian Barang Terjual');
+    itemSheet.columns = [
+      { header: 'No. Invoice', key: 'invoice_number', width: 22 },
+      { header: 'Tanggal', key: 'created_at', width: 20 },
+      { header: 'Kode Barang (SKU)', key: 'sku', width: 20 },
+      { header: 'Nama Barang', key: 'product_name', width: 30 },
+      { header: 'Harga Satuan', key: 'price', width: 15 },
+      { header: 'Kuantitas', key: 'qty', width: 12 },
+      { header: 'Subtotal Item', key: 'subtotal', width: 15 },
+    ];
+
+    itemSheet.getRow(1).font = { bold: true };
+
+    for (const t of transactions) {
+      for (const item of t.transaction_items) {
+        itemSheet.addRow({
+          invoice_number: t.invoice_number,
+          created_at: t.created_at.toLocaleString('id-ID'),
+          sku: item.product?.sku || '-',
+          product_name: item.product?.name || '-',
+          price: item.price,
+          qty: item.quantity,
+          subtotal: item.subtotal,
+        });
+      }
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return buffer as Buffer;
   }
 }

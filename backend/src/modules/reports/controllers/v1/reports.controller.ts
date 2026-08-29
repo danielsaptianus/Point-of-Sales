@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ReportsService } from '../../reports.service';
 import { Permissions } from '@common/decorators/permissions.decorator';
@@ -43,5 +44,30 @@ export class ReportsController {
       message: 'Recent transactions retrieved successfully',
       data,
     };
+  }
+
+  @Get('export-transactions')
+  @ApiOperation({ summary: 'Export transactions to Excel' })
+  @ApiResponse({ status: 200, description: 'Excel file downloaded successfully.' })
+  async exportTransactions(
+    @Res() res: Response,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    try {
+      const buffer = await this.reportsService.exportTransactionsToExcel(startDate, endDate);
+      
+      const fileName = `Laporan_Transaksi_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Content-Length': buffer.length,
+      });
+
+      res.end(buffer);
+    } catch (error) {
+      throw new HttpException('Failed to generate Excel file', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
