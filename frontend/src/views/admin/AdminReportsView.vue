@@ -146,6 +146,8 @@ const filteredTransactions = computed(() => {
     t.invoice_number.toLowerCase().includes(q) ||
     t.cashier_name.toLowerCase().includes(q)
   );
+});
+
 const startDate = ref('');
 const endDate = ref('');
 const isExporting = ref(false);
