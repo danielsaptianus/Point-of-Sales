@@ -17,10 +17,22 @@ const productStore = useProductStore();
 const inventoryStore = useInventoryStore();
 
 const selectedProductId = ref<number | ''>('');
+const searchProductQuery = ref('');
+const isDropdownOpen = ref(false);
+
 const transactionType = ref<'IN' | 'OUT' | 'ADJUSTMENT'>('IN');
 const quantity = ref<number>(0);
 const notes = ref<string>('');
 const errorMsg = ref<string>('');
+
+const filteredProducts = computed(() => {
+  const query = searchProductQuery.value.toLowerCase();
+  if (!query) return productStore.products;
+  return productStore.products.filter(p => 
+    p.name.toLowerCase().includes(query) || 
+    (p.sku && p.sku.toLowerCase().includes(query))
+  );
+});
 
 const selectedProduct = computed(() => {
   if (!selectedProductId.value) return null;
@@ -73,12 +85,21 @@ async function handleSave() {
 
 function resetAndClose() {
   selectedProductId.value = '';
+  searchProductQuery.value = '';
+  isDropdownOpen.value = false;
   transactionType.value = 'IN';
   quantity.value = 0;
   notes.value = '';
   errorMsg.value = '';
   emit('close');
 }
+
+function selectProduct(product: any) {
+  selectedProductId.value = product.id;
+  searchProductQuery.value = product.name;
+  isDropdownOpen.value = false;
+}
+
 </script>
 
 <template>
@@ -102,14 +123,34 @@ function resetAndClose() {
               <span>{{ errorMsg }}</span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group custom-dropdown-container">
               <label>Select Product</label>
-              <select v-model="selectedProductId" required>
-                <option value="" disabled>-- Choose a product --</option>
-                <option v-for="product in productStore.products" :key="product.id" :value="product.id">
-                  {{ product.name }} (Current: {{ product.stock_quantity || 0 }})
-                </option>
-              </select>
+              <div class="searchable-select">
+                <input 
+                  type="text" 
+                  v-model="searchProductQuery" 
+                  @focus="isDropdownOpen = true"
+                  @blur="isDropdownOpen = false"
+                  @input="isDropdownOpen = true; selectedProductId = ''"
+                  placeholder="Search product by name or SKU..." 
+                  class="search-input-field"
+                  required
+                />
+                <div class="dropdown-list" v-show="isDropdownOpen">
+                  <div 
+                    class="dropdown-item" 
+                    v-for="product in filteredProducts" 
+                    :key="product.id"
+                    @mousedown.prevent="selectProduct(product)"
+                  >
+                    <span class="product-name">{{ product.name }}</span>
+                    <span class="product-stock">(Current: {{ product.stock_quantity || 0 }})</span>
+                  </div>
+                  <div v-if="filteredProducts.length === 0" class="dropdown-item no-results">
+                    No products found
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="form-row">
@@ -403,5 +444,84 @@ function resetAndClose() {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+/* Custom Searchable Select */
+.custom-dropdown-container {
+  position: relative;
+}
+
+.searchable-select {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-field {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.2s;
+  background-color: #f8fafc;
+}
+
+.search-input-field:focus {
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dropdown-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.dropdown-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background-color: #f8fafc;
+}
+
+.product-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.product-stock {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.no-results {
+  justify-content: center;
+  color: #94a3b8;
+  cursor: default;
+}
+.no-results:hover {
+  background-color: transparent;
 }
 </style>
