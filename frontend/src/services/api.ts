@@ -1,13 +1,7 @@
-import axios from 'axios';
+import api from '@/plugins/axios';
 import type { Product, Category, Transaction, User } from '@/types';
 
-export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export const apiClient = api;
 
 // Mock Initial Data for Immediate Interactive Demo & Fallback
 export const MOCK_CATEGORIES: Category[] = [

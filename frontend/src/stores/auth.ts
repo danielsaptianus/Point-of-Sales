@@ -47,9 +47,14 @@ export const useAuthStore = defineStore('auth', () => {
         email,
         password: pass,
       });
-      const userData = response.data.data.user;
+      const resData = response.data?.data || response.data;
+      const userData = resData.user;
+      const token = resData.access_token;
       user.value = userData;
       localStorage.setItem('arto_user', JSON.stringify(userData));
+      if (token) {
+        localStorage.setItem('arto_token', token);
+      }
       return true;
     } catch (error: any) {
       console.error('Login failed:', error);
@@ -65,6 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       user.value = null;
       localStorage.removeItem('arto_user');
+      localStorage.removeItem('arto_token');
       window.location.href = '/login';
     }
   }

@@ -1,8 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
-async function main() {
-  const t = await prisma.transaction.findMany({ orderBy: { id: 'desc' }, take: 3 });
-  console.log(JSON.stringify(t, null, 2));
+const bcrypt = require('bcrypt');
+async function test() {
+  const hash = '$2b$10$bDWLe26kIePt79FMfa2K0OwESW9ppYFkaWgINZ9PqbbpOLrN1nopC';
+  const match = await bcrypt.compare('password123', hash);
+  console.log('Matches:', match);
 }
-main().catch(console.error).finally(() => prisma.$disconnect());
+test();

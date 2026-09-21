@@ -31,7 +31,7 @@ export class AuthController {
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    return { user };
+    return { user, access_token };
   }
 
   @Public()
@@ -50,7 +50,7 @@ export class AuthController {
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-    return { user };
+    return { user, access_token };
   }
 
   @Public()
