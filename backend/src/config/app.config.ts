@@ -6,5 +6,6 @@ export default registerAs('app', () => ({
   name: process.env.APP_NAME,
   apiPrefix: process.env.API_PREFIX || 'api',
 
-  corsOrigin: process.env.CORS_ORIGIN || '*',
+  corsOrigin: process.env.CORS_ORIGIN || 'https://pos.danielsaptianus.my.id',
+
 }));
